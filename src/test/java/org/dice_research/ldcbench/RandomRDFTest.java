@@ -1,23 +1,28 @@
 package org.dice_research.ldcbench;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-public class RandomRDFTest extends TestCase {
+public class RandomRDFTest {
 	int N;
 	RandomRDF g;
-	
+
 	//	private static Random generator ;
-	protected void setUp() {
-		g = new RandomRDF("Barabasi");        
+    @Before
+	public void setUp() {
+		g = new RandomRDF("Barabasi");
 		N = 40000;
 	}
 
+    @Test
 	public void testValidDegree() {
 		int act_nE=g.getBarabasiRDF(N,0.9,123);
 		System.out.println("Number of edges: " + act_nE);
 		assertTrue(act_nE==0);
 	}
-	
+
+    @Test
 	public void testRealDegree() {
 		int act_nE=g.getBarabasiRDF(N,1.5,123);
 		System.out.println("Number of edges: " + act_nE);
@@ -25,7 +30,8 @@ public class RandomRDFTest extends TestCase {
 		//g.print();
 		//g.saveToFile(String.format("D:\\RandGj_N%d.txt", N));
 	}
-	
+
+    @Test
 	public void testIntDegree() {
 		int act_nE=g.getBarabasiRDF(N,5,123);
 		System.out.println("Number of edges: " + act_nE);
