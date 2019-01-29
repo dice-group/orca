@@ -57,4 +57,18 @@ public interface Graph {
      * @return the type IDs of the edges
      */
     public int[] incomingEdgeTypes(int nodeId);
+    
+    /**
+     * Returns the number of nodes of this graph.
+     * 
+     * @return the number of nodes of this graph.
+     */
+    public int getNumberOfNodes();
+    
+    /**
+     * Returns the number of edges of this graph.
+     * 
+     * @return the number of edges of this graph.
+     */
+    public int getNumberOfEdges();
 }
