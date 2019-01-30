@@ -93,6 +93,7 @@ public class GrphBasedGraph implements GraphBuilder {
         try {
             edgeTypes.set(edge, typeId);
         } catch (IndexOutOfBoundsException e) {
+            // Assume new edge IDs are sequential. Otherwise this will throw.
             edgeTypes.add(edge, typeId);
         }
         return true;
