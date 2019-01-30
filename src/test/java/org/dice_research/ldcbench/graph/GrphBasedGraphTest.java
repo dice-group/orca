@@ -14,6 +14,12 @@ public class GrphBasedGraphTest {
     }
 
     @Test
+    public void testEmptyGraph() {
+        assertEquals("Number of nodes", 0, g.getNumberOfNodes());
+        assertEquals("Number of edges", 0, g.getNumberOfEdges());
+    }
+
+    @Test
     public void testNumberOfNodes() {
         g.addNode();
         g.addNode();
