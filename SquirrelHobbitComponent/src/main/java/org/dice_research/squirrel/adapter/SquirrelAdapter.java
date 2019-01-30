@@ -3,6 +3,8 @@ package org.dice_research.squirrel.adapter;
 import java.io.IOException;
 
 import org.hobbit.core.components.AbstractSystemAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -10,6 +12,9 @@ import org.hobbit.core.components.AbstractSystemAdapter;
  *
  */
 public class SquirrelAdapter extends AbstractSystemAdapter {
+	
+	private static final Logger logger = LoggerFactory.getLogger(SquirrelAdapter.class);
+
 	
 	@Override
 	public void init() throws Exception {
@@ -19,17 +24,18 @@ public class SquirrelAdapter extends AbstractSystemAdapter {
 
 	@Override
 	public void receiveGeneratedData(byte[] data) {
-		// TODO Auto-generated method stub
+		String dataStr = new String(data);
+	    logger.trace("receiveGeneratedData(" + new String(data) + "): " + dataStr);
 		
 	}
 
 	@Override
 	public void receiveGeneratedTask(String taskId, byte[] data) {
 		
-		byte[] result = null;
+		String result = "result_" + taskId;
 		
 		try {
-			sendResultToEvalStorage(taskId, result);
+			sendResultToEvalStorage(taskId, result.getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
