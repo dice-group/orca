@@ -1,6 +1,5 @@
 package org.dice_research.ldcbench.graph;
 
-import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -11,27 +10,6 @@ public class GrphBasedGraph implements GraphBuilder {
 
     protected Grph graph = new InMemoryGrph();
     protected ArrayList<Integer> edgeTypes = new ArrayList<>();
-
-    /**
-     * Given a vertice ID and edge ID, returns the other vertice ID
-     * of a vertice which is also incident to that edge.
-     *
-     * @param thisVertice
-     *            the vertice ID
-     * @param edge
-     *            the edge ID
-     * @return the vertice ID which is not equal to thisVertice
-     */
-    private IntUnaryOperator getOtherVerticeIncidentToEdge(int thisVertice) {
-        return (edge) -> {
-            for (int vertice : graph.getVerticesIncidentToEdge(edge)) {
-                if (vertice != thisVertice) {
-                    return vertice;
-                }
-            }
-            throw new IllegalStateException("No other vertice found for edge");
-        };
-    }
 
     /**
      * Given an edge ID, returns type of that edge.
@@ -75,7 +53,7 @@ public class GrphBasedGraph implements GraphBuilder {
     }
 
     public int[] outgoingEdgeTargets(int nodeId) {
-        return orderedOutgoingEdges(nodeId).map(getOtherVerticeIncidentToEdge(nodeId)).toArray();
+        return orderedOutgoingEdges(nodeId).map(graph::getDirectedSimpleEdgeHead).toArray();
     }
 
     public int[] outgoingEdgeTypes(int nodeId) {
@@ -83,7 +61,7 @@ public class GrphBasedGraph implements GraphBuilder {
     }
 
     public int[] incomingEdgeSources(int nodeId) {
-        return orderedIncomingEdges(nodeId).map(getOtherVerticeIncidentToEdge(nodeId)).toArray();
+        return orderedIncomingEdges(nodeId).map(graph::getDirectedSimpleEdgeTail).toArray();
     }
 
     public int[] incomingEdgeTypes(int nodeId) {
