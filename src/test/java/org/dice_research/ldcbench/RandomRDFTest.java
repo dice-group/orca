@@ -11,20 +11,20 @@ public class RandomRDFTest {
 	//	private static Random generator ;
     @Before
 	public void setUp() {
-		g = new RandomRDF("Barabasi");
+		g = new RandomRDF("Barabasi Random RDF");
 		N = 40000;
 	}
 
     @Test
 	public void testValidDegree() {
-		int act_nE=g.getBarabasiRDF(N,0.9,123);
+		int act_nE=g.generate(N,0.9,123,"Barabasi");
 		System.out.println("Number of edges: " + act_nE);
 		assertTrue(act_nE==0);
 	}
 
     @Test
 	public void testRealDegree() {
-		int act_nE=g.getBarabasiRDF(N,1.5,123);
+		int act_nE=g.generate(N,1.5,123,"Barabasi");
 		System.out.println("Number of edges: " + act_nE);
 		assertTrue(act_nE==60000);
 		//g.print();
@@ -33,7 +33,7 @@ public class RandomRDFTest {
 
     @Test
 	public void testIntDegree() {
-		int act_nE=g.getBarabasiRDF(N,5,123);
+		int act_nE=g.generate(N,5,123,"Barabasi");
 		System.out.println("Number of edges: " + act_nE);
 		assertTrue(act_nE==200000);
 		//g.print();

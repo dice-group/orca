@@ -1,3 +1,6 @@
+//28/1/2019
+//ToDo: add one method to generate graphs that takes the algorithm as a parameter.
+
 package org.dice_research.ldcbench;
 
 import java.io.FileWriter;
@@ -75,12 +78,30 @@ public class RandomRDF {
 	}
 	
 	/**
+	 * generate a random RDF graph using algorithm  
+	 * 
+	 * @param N the number of nodes
+	 * @param degree the average degree of the nodes in the graph
+	 * @param seed the random seed to be able to reproduce the results.
+	 * @param algorithm the algorithm used to generate the graph values ("Barabasi")
+	 * @return the number of edges if successful and zero otherwise
+	 */
+		protected int generate(int N, double degree, int seed,String algorithm) {
+			if(algorithm.equals("Barabasi")) {
+				return(getBarabasiRDF( N,  degree,  seed));
+			}else {
+				System.out.println("Unknown algorithm: "+algorithm);
+				return(0);
+			}
+		}
+		
+	/**
 	 * generate a random RDF graph using Barabasi algorithm and 
 	 * inverting some edges to be sure that the graph is connected (reachable from a single source).
 	 * @param N the number of nodes
 	 * @param degree the average degree of the nodes in the graph
 	 * @param seed the random seed to be able to reproduce the results.
-	 * @return
+	 * @return the number of edges if successful and zero otherwise
 	 */
 		protected int getBarabasiRDF(int N, double degree, int seed) {
 			/* nodes are numbered from 1 to N */
