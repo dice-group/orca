@@ -9,9 +9,9 @@
   <version>0.1-SNAPSHOT</version>
 
   <name>ldcbench</name>
-  <description>A simple ldcbench.</description>
+  <description>Linked Data Crawler Benchmark.</description>
   <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+  <url>https://github.com/dice-group/ldcbench</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
