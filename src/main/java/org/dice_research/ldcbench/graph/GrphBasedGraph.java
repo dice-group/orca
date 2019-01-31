@@ -1,10 +1,13 @@
 package org.dice_research.ldcbench.graph;
 
-import java.util.stream.IntStream;
-import java.util.Arrays;
 import java.util.ArrayList;
-import grph.in_memory.InMemoryGrph;
+import java.util.Arrays;
+import java.util.stream.IntStream;
+
 import grph.Grph;
+import grph.in_memory.InMemoryGrph;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 public class GrphBasedGraph implements GraphBuilder {
 
@@ -23,9 +26,9 @@ public class GrphBasedGraph implements GraphBuilder {
     }
 
     /**
-     * Returns a Stream containing edges that have the given node as source
-     * sorted by edge ID. Used to construct arrays of edge targets
-     * and edge types in the same order.
+     * Returns a Stream containing edges that have the given node as source sorted
+     * by edge ID. Used to construct arrays of edge targets and edge types in the
+     * same order.
      *
      * @param nodeId
      *            the source node ID of the edges
@@ -38,9 +41,9 @@ public class GrphBasedGraph implements GraphBuilder {
     }
 
     /**
-     * Returns a Stream containing edges that have the given node as target
-     * sorted by edge ID. Used to construct arrays of edge sources
-     * and edge types in the same order.
+     * Returns a Stream containing edges that have the given node as target sorted
+     * by edge ID. Used to construct arrays of edge sources and edge types in the
+     * same order.
      *
      * @param nodeId
      *            the target node ID of the edges
@@ -103,4 +106,21 @@ public class GrphBasedGraph implements GraphBuilder {
         return graph.addVertex();
     }
 
+    @Override
+    public int[] addNodes(int nodeCount) {
+        IntSet ids = graph.addNVertices(nodeCount);
+        int min = Integer.MAX_VALUE, max = -1;
+        IntIterator iterator = ids.iterator();
+        int id;
+        while (iterator.hasNext()) {
+            id = iterator.nextInt();
+            if (min > id) {
+                min = id;
+            }
+            if (max < id) {
+                max = id;
+            }
+        }
+        return new int[] { min, max + 1 };
+    }
 }
