@@ -1,4 +1,5 @@
-package org.dice_research.ldcbench;
+//package org.dice_research.ldcbench;
+package org.dice_research.ldcbench.generate;
 
 import org.junit.Before;
 import org.junit.Test;
