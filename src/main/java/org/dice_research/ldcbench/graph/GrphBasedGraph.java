@@ -103,4 +103,21 @@ public class GrphBasedGraph implements GraphBuilder {
         return graph.addVertex();
     }
 
+    /**
+     * Adds a new node with specified ID to the graph. Returns {@code true}
+     * if the node could be added.
+     *
+     * @param nodeId the id of the node
+     * @return {@code true} if the node could be added. Otherwise {@code false} is
+     *         returned.
+     */
+    public boolean addNode(int nodeId) {
+        if (graph.containsVertex(nodeId)) {
+            return false;
+        }
+
+        graph.addVertex(nodeId);
+        return true;
+    }
+
 }
