@@ -113,4 +113,11 @@ public class GrphBasedGraphTest {
             assertEquals("Second type", 1, types[1]);
         }
     }
+
+    @Test
+    public void testDuplicateNodes() {
+        assertTrue("Node added successfully", ((GrphBasedGraph) g).addNode(0));
+        assertFalse("Duplicate node wasn't added", ((GrphBasedGraph) g).addNode(0));
+        assertEquals("Number of nodes", 1, g.getNumberOfNodes());
+    }
 }
