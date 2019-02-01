@@ -71,4 +71,11 @@ public interface Graph {
      * @return the number of edges of this graph.
      */
     public int getNumberOfEdges();
+    
+    /**
+     * Returns the IDs of the entrance nodes (i.e., nodes from which all other nodes can be reached).
+     * 
+     * @return the IDs of the entrance nodes
+     */
+    public int[] getEntranceNodes();
 }

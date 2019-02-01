@@ -52,4 +52,11 @@ public interface GraphBuilder extends Graph {
      *         node after the last added node ([1], exclusive).
      */
     public int[] addNodes(int nodeCount);
+    
+    /**
+     * Sets the IDs of the entrance nodes (i.e., nodes from which all other nodes can be reached).
+     * 
+     * @param entranceNodes the IDs of the entrance nodes
+     */
+    public void setEntranceNodes(int[] entranceNodes);
 }

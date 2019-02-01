@@ -13,6 +13,7 @@ public class GrphBasedGraph implements GraphBuilder {
 
     protected Grph graph = new InMemoryGrph();
     protected ArrayList<Integer> edgeTypes = new ArrayList<>();
+    protected int[] entranceNodes = new int[0];
 
     /**
      * Given an edge ID, returns type of that edge.
@@ -139,5 +140,15 @@ public class GrphBasedGraph implements GraphBuilder {
             }
         }
         return new int[] { min, max + 1 };
+    }
+    
+    @Override
+    public void setEntranceNodes(int[] entranceNodes) {
+        this.entranceNodes = entranceNodes;   
+    }
+    
+    @Override
+    public int[] getEntranceNodes() {
+        return entranceNodes;
     }
 }
