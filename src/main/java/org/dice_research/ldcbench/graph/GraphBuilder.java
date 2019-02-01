@@ -48,15 +48,36 @@ public interface GraphBuilder extends Graph {
      * 
      * @param nodeCount
      *            the number of nodes that should be added
-     * @return the range of IDs from the first added node ([0], inclusive) to the first
-     *         node after the last added node ([1], exclusive).
+     * @return the range of IDs from the first added node ([0], inclusive) to the
+     *         first node after the last added node ([1], exclusive).
      */
     public int[] addNodes(int nodeCount);
-    
+
     /**
-     * Sets the IDs of the entrance nodes (i.e., nodes from which all other nodes can be reached).
+     * Sets the IDs of the entrance nodes (i.e., nodes from which all other nodes
+     * can be reached).
      * 
-     * @param entranceNodes the IDs of the entrance nodes
+     * @param entranceNodes
+     *            the IDs of the entrance nodes
      */
     public void setEntranceNodes(int[] entranceNodes);
+
+    /**
+     * Sets the graph ID of the given node. By default, all nodes have
+     * {@link #INTERNAL_NODE_GRAPH_ID} as graph ID meaning that they are part of this
+     * graph. However, to mark external nodes (i.e., nodes that are not part of this
+     * graph but are linked from one of the nodes of this graph), this method can be
+     * used to store their graph ID as well as their ID in the other graph.
+     * 
+     * @param nodeId
+     *            the ID of the node in this graph
+     * @param graphId
+     *            the ID of the graph in the other graph. Use
+     *            {@link #INTERNAL_NODE_GRAPH_ID} to delete the marking of a node being
+     *            external.
+     * @param externalId
+     *            the ID of this node inside the other graph (only used if the
+     *            graphID != {@link #INTERNAL_NODE_GRAPH_ID})
+     */
+    public void setGraphIdOfNode(int nodeId, int graphId, int externalId);
 }

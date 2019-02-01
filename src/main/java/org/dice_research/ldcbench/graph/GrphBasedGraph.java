@@ -2,6 +2,8 @@ package org.dice_research.ldcbench.graph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 import grph.Grph;
@@ -11,9 +13,27 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 
 public class GrphBasedGraph implements GraphBuilder {
 
+    /**
+     * Index of the graph ID in the array used as value in {@link #externalNodes}.
+     */
+    protected static final int EXTERNAL_NODE_GRAPH_ID_INDEX = 0;
+    /**
+     * Index of the external node ID in the array used as value in
+     * {@link #externalNodes}.
+     */
+    protected static final int EXTERNAL_NODE_NODE_ID_INDEX = 1;
+
     protected Grph graph = new InMemoryGrph();
     protected ArrayList<Integer> edgeTypes = new ArrayList<>();
+    /**
+     * Entrance nodes of this graph.
+     */
     protected int[] entranceNodes = new int[0];
+    /**
+     * Storage of additional information (graph ID and node ID in this graph) of
+     * external nodes.
+     */
+    protected Map<Integer, int[]> externalNodes = new HashMap<>();
 
     /**
      * Given an edge ID, returns type of that edge.
@@ -108,10 +128,11 @@ public class GrphBasedGraph implements GraphBuilder {
     }
 
     /**
-     * Adds a new node with specified ID to the graph. Returns {@code true}
-     * if the node could be added.
+     * Adds a new node with specified ID to the graph. Returns {@code true} if the
+     * node could be added.
      *
-     * @param nodeId the id of the node
+     * @param nodeId
+     *            the id of the node
      * @return {@code true} if the node could be added. Otherwise {@code false} is
      *         returned.
      */
@@ -141,14 +162,55 @@ public class GrphBasedGraph implements GraphBuilder {
         }
         return new int[] { min, max + 1 };
     }
-    
+
     @Override
     public void setEntranceNodes(int[] entranceNodes) {
-        this.entranceNodes = entranceNodes;   
+        this.entranceNodes = entranceNodes;
     }
-    
+
     @Override
     public int[] getEntranceNodes() {
         return entranceNodes;
+    }
+
+    @Override
+    public int getGraphId(int nodeId) {
+        Integer n = nodeId;
+        if (externalNodes.containsKey(n)) {
+            int[] externalNode = externalNodes.get(n);
+            if ((externalNode != null) && (externalNode.length > EXTERNAL_NODE_GRAPH_ID_INDEX)) {
+                return externalNode[EXTERNAL_NODE_GRAPH_ID_INDEX];
+            }
+        }
+        return INTERNAL_NODE_GRAPH_ID;
+    }
+
+    @Override
+    public int getExternalNodeId(int nodeId) {
+        Integer n = nodeId;
+        if (externalNodes.containsKey(n)) {
+            int[] externalNode = externalNodes.get(n);
+            if ((externalNode != null) && (externalNode.length > EXTERNAL_NODE_NODE_ID_INDEX)) {
+                return externalNode[EXTERNAL_NODE_NODE_ID_INDEX];
+            }
+        }
+        return nodeId;
+    }
+
+    @Override
+    public void setGraphIdOfNode(int nodeId, int graphId, int externalId) {
+        Integer n = nodeId;
+        if (externalNodes.containsKey(n)) {
+            // Reuse the existing array if possible
+            int[] externalNode = externalNodes.get(n);
+            if ((externalNode != null) && (externalNode.length > EXTERNAL_NODE_NODE_ID_INDEX)) {
+                externalNode[EXTERNAL_NODE_GRAPH_ID_INDEX] = graphId;
+                externalNode[EXTERNAL_NODE_NODE_ID_INDEX] = externalId;
+                // The information has been updated. So let's leave the method
+                return;
+            }
+        }
+        // There is nothing we can reuse so create a new array
+        externalNodes.put(n, new int[] { graphId, externalId });
     }
 }
