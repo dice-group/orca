@@ -41,4 +41,15 @@ public interface GraphBuilder extends Graph {
      * @return the ID of the newly created node
      */
     public int addNode();
+
+    /**
+     * Adds the given number of nodes to the graph and returns the range of node
+     * IDs.
+     * 
+     * @param nodeCount
+     *            the number of nodes that should be added
+     * @return the range of IDs from the first added node ([0], inclusive) to the first
+     *         node after the last added node ([1], exclusive).
+     */
+    public int[] addNodes(int nodeCount);
 }

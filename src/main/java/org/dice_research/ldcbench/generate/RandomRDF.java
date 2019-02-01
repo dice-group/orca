@@ -1,4 +1,8 @@
-package org.dice_research.ldcbench;
+//28/1/2019
+//ToDo: add one method to generate graphs that takes the algorithm as a parameter. Done!
+
+//package org.dice_research.ldcbench;
+package org.dice_research.ldcbench.generate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -6,27 +10,30 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Random;
 
-public class RandomRDF {
+import org.dice_research.ldcbench.graph.GraphBuilder;
+
+public class RandomRDF implements GraphGenerator{
+	protected Random generator;
 	public String name;
-	protected int nNodes;
+	/*protected int nNodes;
 	public long nEdges;
 	protected int[] subject;// index of subject node (values are from 1 to nNodes)
 	protected int[] object;// index of object node (values are from 1 to nNodes)
 	protected Random generator;
-	int gseed;
-	double gdegree;
+	long gseed;
+	double gdegree;*/
 
 	public RandomRDF(String gname) {
 		name = gname;
 	}
 	
-	public int getNumberOfEdges() {
+	/*public int getNumberOfEdges() {
 		return(subject.length);		
 	}
 	
 	public int getNumberOfNodes() {
 		return(nNodes);		
-	}
+	}*/
 	
 /**
  * Samples numbers from 1 to n; m times without replacement using weights in wt
@@ -74,17 +81,36 @@ public class RandomRDF {
 		return (Res);
 	}
 	
+	/*
+	 * generate a random RDF graph using algorithm  
+	 * 
+	 * @param N the number of nodes
+	 * @param degree the average degree of the nodes in the graph
+	 * @param seed the random seed to be able to reproduce the results.
+	 * @param algorithm the algorithm used to generate the graph values ("Barabasi")
+	 * @return the number of edges if successful and zero otherwise
+	 *
+		protected int generate(int N, double degree, long seed,String algorithm) {
+			if(algorithm.equals("Barabasi")) {
+				return(getBarabasiRDF( N,  degree,  seed));
+			}else {
+				System.out.println("Unknown algorithm: "+algorithm);
+				return(0);
+			}
+		}
+		*/
 	/**
 	 * generate a random RDF graph using Barabasi algorithm and 
 	 * inverting some edges to be sure that the graph is connected (reachable from a single source).
 	 * @param N the number of nodes
 	 * @param degree the average degree of the nodes in the graph
 	 * @param seed the random seed to be able to reproduce the results.
-	 * @return
+	 * @return the number of edges if successful and zero otherwise
 	 */
-		protected int getBarabasiRDF(int N, double degree, int seed) {
+		protected void getBarabasiRDF(int N, double degree, long seed, GraphBuilder builder) {
 			/* nodes are numbered from 1 to N */
 			int indexToEdgeList = 0;// index to edge list
+			//Random generator;
 			// RDF_graph g=new RDF_graph();
 			int nE=(int) Math.ceil(N*degree);
 			int[] subj = new int[nE];
@@ -94,17 +120,21 @@ public class RandomRDF {
 			inDeg[0] = 0;// not used
 
 			if (degree < 1) {
-				System.out.println("Degree must be more than 1.");
-				return (0);
+				//System.out.println("Degree must be more than 1.");
+				//return (0);
+	
+				throw new IllegalArgumentException("Degree must be more than 1.");
 			}
 			
 			generator = new Random(seed);// seed
-			subj[indexToEdgeList] = 1;
-			obj[indexToEdgeList] = 2;// first edge
-			indexToEdgeList++;
-			inDeg[2] = 2;
 			int m = (int) Math.floor(degree);// average degree of graph
-			
+			if(m >1 ) {
+				subj[indexToEdgeList] = 1;
+				obj[indexToEdgeList] = 2;// first edge
+				indexToEdgeList++;
+				inDeg[2] = 2;
+			}
+						
 			// initial part
 			if (m > 2) {
 				for (int i = 3; i <= m; i++) {
@@ -157,17 +187,25 @@ public class RandomRDF {
 				if (i % 10000 == 0)
 					System.out.println(String.format("processed nodes: %d", i));
 			}
-
-			nEdges = indexToEdgeList;
-			subject = subj;
+			
+			//System.out.println("nE =" + nE +" indexToEdgeList:" + indexToEdgeList);
+			
+			int nEdges = indexToEdgeList;
+			/*subject = subj;
 			object = obj;
 			gdegree = degree;
-			gseed  = seed;
+			gseed  = seed;*/			
+			int[] idRange=builder.addNodes(N);//Range
+			for(int i=0; i < nEdges; i++) {
+				if(!builder.addEdge(subj[i]-1 + idRange[0], obj[i]-1+idRange[0], 0)) {
+					System.out.println("Failed to add edge : i="+i+" subj="+subj[i]+" idRange[0]=" + idRange[0]+" obj[i]="+ obj[i]);
+				};
+			}
 			
-			return (indexToEdgeList);
+			//System.out.println("nEdges =" + nEdges +" g.#Edges:" + builder.getNumberOfEdges());			
 		}
 
-	public void print() {
+	/*public void print() {
 		System.out.println("nNodes:" + nNodes + " nEdges:" + nEdges);
 		for (int i = 0; i < nEdges; i++)
 			System.out.println(subject[i] + "->" + object[i]);
@@ -183,5 +221,18 @@ public class RandomRDF {
 			System.out.println("Failed to open output file. ");
 			e.printStackTrace();
 		}
+	}*/
+
+	@Override
+	public void generateGraph(int numberOfNodes, double avgDegree, long seed, GraphBuilder builder) {
+		
+		//this.generate(numberOfNodes, avgDegree, seed,"Barabasi");//String algorithm	
+		this.getBarabasiRDF(numberOfNodes, avgDegree, seed,builder);//String algorithm	
+	}
+
+	@Override
+	public void generateGraph(double avgDegree, int numberOfEdges, long seed, GraphBuilder builder) {		
+		//this.generate((int)Math.floor(numberOfEdges*avgDegree), avgDegree, seed,"Barabasi");
+		this.getBarabasiRDF((int)Math.ceil(numberOfEdges/avgDegree), avgDegree, seed,builder);
 	}
 }
