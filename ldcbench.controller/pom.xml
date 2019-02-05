@@ -22,6 +22,12 @@
     <dependency>
       <groupId>org.hobbit</groupId>
       <artifactId>core</artifactId>
+      <exclusions>
+          <exclusion>
+              <groupId>com.google.guava</groupId>
+              <artifactId>guava</artifactId>
+          </exclusion>
+      </exclusions>
     </dependency>
     <!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
     <!-- slf4j: Logging API -->
@@ -48,6 +54,34 @@
       <artifactId>system-rules</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- HOBBIT SDK -->
+    <dependency>
+      <groupId>org.hobbit</groupId>
+      <artifactId>hobbit-java-sdk</artifactId>
+      <version>1.1.18-ldcbench-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- HOBBIT controller -->
+    <dependency>
+        <groupId>org.hobbit</groupId>
+        <artifactId>platform-controller</artifactId>
+        <version>2.0.5</version>
+        <scope>test</scope>
+    </dependency>
     <!-- ~~~~~~~~~~~~~~~~~~~ End Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.17</version>
+          <configuration>
+            <systemPropertyVariables>
+              <sdkJarFilePath>${project.build.directory}/${project.build.finalName}.jar</sdkJarFilePath>
+            </systemPropertyVariables>
+          </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

@@ -1,0 +1,10 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix hobbit: <http://w3id.org/hobbit/vocab#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://project-hobbit.eu/sdk-example-benchmark/benchmark> a hobbit:Benchmark;
+    rdfs:label "SDK Example Benchmark"@en;
+    rdfs:comment    "Created out of https://github.com/hobbit-project/java-sdk-example"@en;
+    hobbit:imageName    "git.project-hobbit.eu:4567/sdk-examples/sdk-example-benchmark/benchmark-controller";
+    hobbit:version "v1.0"@en;
+    hobbit:hasAPI <http://project-hobbit.eu/sdk-example-benchmark/API> .
