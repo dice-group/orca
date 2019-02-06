@@ -3,3 +3,13 @@
 # Linked Data Crawler Benchmark
 
 Benchmark linked data crawlers with [the HOBBIT platform](http://project-hobbit.eu/).
+
+# Parameters
+
+## Seed
+
+## Number of nodes
+
+## Triples per node
+
+# API

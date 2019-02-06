@@ -6,7 +6,7 @@ public class Constants {
     public static String GIT_REPO_PATH = "git.project-hobbit.eu:4567/"+GIT_USERNAME+"/";
     //public static String GIT_REPO_PATH = "";
 
-    public static String PROJECT_NAME = "benchmark";
+    public static String PROJECT_NAME = "ldcbench";
 
     //use these constants within BenchmarkController
     public static final String BENCHMARK_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/benchmark-controller";

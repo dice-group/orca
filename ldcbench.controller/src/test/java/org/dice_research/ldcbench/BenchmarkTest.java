@@ -12,6 +12,7 @@ import org.hobbit.sdk.docker.builders.hobbit.*;
 
 import org.dice_research.ldcbench.benchmark.*;
 import org.dice_research.ldcbench.system.SystemAdapter;
+import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.sdk.utils.CommandQueueListener;
 import org.hobbit.sdk.utils.ComponentsExecutor;
 import org.hobbit.sdk.utils.ModelsHandler;
@@ -197,7 +198,9 @@ public class BenchmarkTest {
         Model model = createDefaultModel();
         Resource experimentResource = model.createResource(org.hobbit.core.Constants.NEW_EXPERIMENT_URI);
         model.add(experimentResource, RDF.type, HOBBIT.Experiment);
-        model.add(experimentResource, model.createProperty(BENCHMARK_URI+"#messages"),"100");
+        model.add(experimentResource, LDCBench.seed, "100");
+        model.add(experimentResource, LDCBench.numberOfNodes, "2");
+        model.add(experimentResource, LDCBench.triplesPerNode, "100");
         return model;
 
     }

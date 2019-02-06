@@ -2,9 +2,11 @@ package org.dice_research.ldcbench.benchmark;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.jena.rdf.model.NodeIterator;
+import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.core.Commands;
 import org.hobbit.core.components.AbstractBenchmarkController;
 import org.hobbit.core.rabbit.RabbitMQUtils;
+import org.hobbit.utils.rdf.RdfHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,8 +25,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // Your initialization code comes here...
 
         // You might want to load parameters from the benchmarks parameter model
-        NodeIterator iterator = benchmarkParamModel.listObjectsOfProperty(benchmarkParamModel
-                .getProperty("http://example.org/myParameter"));
+        int seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getInt();
+        int nodesAmount = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfNodes).getInt();
+        int triplesPerNode = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.triplesPerNode).getInt();
 
         // Create the other components
 
