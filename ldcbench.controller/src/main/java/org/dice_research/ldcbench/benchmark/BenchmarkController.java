@@ -1,10 +1,16 @@
 package org.dice_research.ldcbench.benchmark;
 
+import java.util.concurrent.Semaphore;
+import org.dice_research.ldcbench.graph.Graph;
+import com.rabbitmq.client.Consumer;
+import org.hobbit.core.rabbit.DataReceiverImpl;
+import com.rabbitmq.client.Channel;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.jena.rdf.model.NodeIterator;
 import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.core.Commands;
+import org.hobbit.core.Constants;
 import org.hobbit.core.components.AbstractBenchmarkController;
+import org.hobbit.core.components.AbstractEvaluationStorage;
 import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.utils.rdf.RdfHelper;
 import org.slf4j.Logger;
@@ -15,14 +21,17 @@ import java.io.IOException;
 import static org.dice_research.ldcbench.Constants.*;
 
 public class BenchmarkController extends AbstractBenchmarkController {
-    private static final Logger logger = LoggerFactory.getLogger(BenchmarkController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkController.class);
+
+    private Semaphore nodeGraphMutex = new Semaphore(0);
+
+    Channel dataGeneratorsChannel;
+
+    String dataGeneratorsExchange;
 
     @Override
     public void init() throws Exception {
         super.init();
-        logger.debug("Init()");
-
-        // Your initialization code comes here...
 
         // You might want to load parameters from the benchmarks parameter model
         int seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getInt();
@@ -31,53 +40,76 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         // Create the other components
 
-        // Create data generators
+        dataGeneratorsChannel = cmdQueueFactory.getConnection().createChannel();
+        String queueName = dataGeneratorsChannel.queueDeclare().getQueue();
+        String dataGeneratorsExchange = java.util.UUID.randomUUID().toString();
+        dataGeneratorsChannel.exchangeDeclare(dataGeneratorsExchange, "fanout", false, true, null);
+        dataGeneratorsChannel.queueBind(queueName, dataGeneratorsExchange, "");
 
-        int numberOfDataGenerators = 1;
-        String[] envVariables = new String[]{"key1=value1" };
+        Consumer consumer = new GraphConsumer(dataGeneratorsChannel) {
+            @Override
+            public void handleNodeGraph(Graph g) {
+                LOGGER.info("Got the node graph");
+                nodeGraphMutex.release();
+            }
+        };
+        dataGeneratorsChannel.basicConsume(queueName, true, consumer);
 
-        logger.debug("createDataGenerators()");
-        createDataGenerators(DATAGEN_IMAGE_NAME, numberOfDataGenerators, envVariables);
+        LOGGER.debug("Starting all cloud nodes...");
+        // TODO
 
+        LOGGER.debug("Creating data generators...");
 
-        // Create task generators
-        int numberOfTaskGenerators = 1;
-        envVariables = new String[]{"key1=value1" };
+        // Node graph generator
+        String[] envVariables = new String[]{
+            DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.NODE_GRAPH_GENERATOR,
+            DataGenerator.ENV_SEED_KEY + "=" + seed,
+            DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
+            DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
+            DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
+        };
+        createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
 
-        logger.debug("createTaskGenerators()");
-        createTaskGenerators(TASKGEN_IMAGE_NAME, numberOfTaskGenerators, envVariables);
+        // RDF graph generators
+        envVariables = new String[]{
+            DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.RDF_GRAPH_GENERATOR,
+            DataGenerator.ENV_SEED_KEY + "=" + seed,
+            DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
+            DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,
+            DataGenerator.ENV_BENCHMARK_QUEUE_KEY + "=" + "1",
+            DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
+        };
+        createDataGenerators(DATAGEN_IMAGE_NAME, nodesAmount, envVariables);
 
-        // Create evaluation storage
-        logger.debug("createEvaluationStorage()");
-        //You can use standard evaluation storage (git.project-hobbit.eu:4567/defaulthobbituser/defaultevaluationstorage)
-        //createEvaluationStorage();
-        //or simplified local-one from the SDK
-        envVariables = (String[]) ArrayUtils.add(DEFAULT_EVAL_STORAGE_PARAMETERS, "HOBBIT_RABBIT_HOST=" + this.rabbitMQHostName);
-        this.createEvaluationStorage(EVAL_STORAGE_IMAGE_NAME, envVariables);
+        LOGGER.debug("Creating task generator...");
+        createTaskGenerators(TASKGEN_IMAGE_NAME, 1, new String[]{});
 
+        LOGGER.debug("Creating evaluation storage...");
+        envVariables = ArrayUtils.add(DEFAULT_EVAL_STORAGE_PARAMETERS, AbstractEvaluationStorage.RECEIVE_TIMESTAMP_FOR_SYSTEM_RESULTS_KEY + "=false");
+        envVariables = ArrayUtils.add(envVariables, Constants.ACKNOWLEDGEMENT_FLAG_KEY + "=false");
+        createEvaluationStorage(EVAL_STORAGE_IMAGE_NAME, envVariables);
 
-        // Wait for all components to finish their initialization
+        LOGGER.debug("Waiting for components to initialize...");
         waitForComponentsToInitialize();
     }
 
-
-
     @Override
     protected void executeBenchmark() throws Exception {
-        logger.debug("executeBenchmark(sending TASK_GENERATOR_START_SIGNAL & DATA_GENERATOR_START_SIGNAL)");
-        // give the start signals
+        LOGGER.debug("BenchmarkController.executeBenchmark()");
         sendToCmdQueue(Commands.TASK_GENERATOR_START_SIGNAL);
         sendToCmdQueue(Commands.DATA_GENERATOR_START_SIGNAL);
 
-        // wait for the data generators to finish their work
+        LOGGER.debug("Waiting for the node graph...");
+        nodeGraphMutex.acquire();
 
-        logger.debug("waitForDataGenToFinish() to send DATA_GENERATION_FINISHED_SIGNAL");
+        LOGGER.debug("Waiting for the data generators to finish...");
         waitForDataGenToFinish();
 
-////
-////        // wait for the task generators to finish their work
+        LOGGER.debug("Sending seed URI to the system...");
+        // TODO Send seed URI to the system
 
-        logger.debug("waitForTaskGenToFinish() to finish to send TASK_GENERATION_FINISHED_SIGNAL");
+        // TODO Remove
+        LOGGER.debug("Waiting for the task generators to finish...");
         waitForTaskGenToFinish();
 
 ////
@@ -87,15 +119,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
 ////        // will wait for the system to terminate.
         //taskGenContainerIds.add("system");
 
-        logger.debug("waitForSystemToFinish() to finish to send TASK_GENERATION_FINISHED_SIGNAL");
+        LOGGER.debug("Waiting for the system to finish...");
         waitForSystemToFinish();
 
-        // Create the evaluation module
+        // TODO Implement evaluation
+        createEvaluationModule(EVALMODULE_IMAGE_NAME, new String[]{});
 
-        String[] envVariables = new String[]{"key1=value1" };
-        createEvaluationModule(EVALMODULE_IMAGE_NAME, envVariables);
-
-        // wait for the evaluation to finish
         waitForEvalComponentsToFinish();
 
         // the evaluation module should have sent an RDF model containing the
@@ -104,13 +133,13 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // this.resultModel.add(...);
 
         // Send the resultModul to the platform controller and terminate
-        logger.debug("Sending result model: {}", RabbitMQUtils.writeModel2String(resultModel));
+        LOGGER.debug("Sending result model: {}", RabbitMQUtils.writeModel2String(resultModel));
         sendResultModel(resultModel);
     }
 
     @Override
     public void close() throws IOException {
-        logger.debug("close()");
+        LOGGER.debug("BenchmarkController.close()");
         // Free the resources you requested here
 
         // Always close the super class after yours!

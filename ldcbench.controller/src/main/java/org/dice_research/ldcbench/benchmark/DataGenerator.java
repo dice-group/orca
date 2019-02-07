@@ -1,6 +1,20 @@
 package org.dice_research.ldcbench.benchmark;
 
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Consumer;
+import java.nio.ByteBuffer;
+import java.util.concurrent.Semaphore;
+import org.dice_research.ldcbench.generate.GraphGenerator;
+import org.dice_research.ldcbench.generate.RandomRDF;
+import org.dice_research.ldcbench.graph.Graph;
+import org.dice_research.ldcbench.graph.GraphBuilder;
+import org.dice_research.ldcbench.graph.GrphBasedGraph;
+import org.dice_research.ldcbench.graph.serialization.DumbSerializer;
+import org.dice_research.ldcbench.graph.serialization.SerializationHelper;
 import org.hobbit.core.components.AbstractDataGenerator;
+import org.hobbit.core.rabbit.DataSender;
+import org.hobbit.core.rabbit.DataSenderImpl;
+import org.hobbit.utils.EnvVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,53 +23,122 @@ import java.io.IOException;
 import static org.dice_research.ldcbench.Constants.*;
 
 public class DataGenerator extends AbstractDataGenerator {
-    private static final Logger logger = LoggerFactory.getLogger(DataGenerator.class);
+    public static final String ENV_TYPE_KEY = "LDCBENCH_DATAGENERATOR_TYPE";
+    public static final String ENV_SEED_KEY = "LDCBENCH_DATAGENERATOR_SEED";
+    public static final String ENV_NUMBER_OF_NODES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_NODES";
+    public static final String ENV_AVERAGE_DEGREE_KEY = "LDCBENCH_DATAGENERATOR_AVERAGE_DEGREE";
+    public static final String ENV_NUMBER_OF_EDGES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_EDGES";
+    public static final String ENV_BENCHMARK_QUEUE_KEY = "LDCBENCH_BENCHMARKCONTROLLER_QUEUE";
+    public static final String ENV_DATAGENERATOR_EXCHANGE_KEY = "LDCBENCH_DATAGENERATOR_EXCHANGE";
 
-    int type;
+    public static enum types {
+        NODE_GRAPH_GENERATOR,
+        RDF_GRAPH_GENERATOR
+    };
 
-    int messages = 10;
+    private Semaphore nodeGraphMutex = new Semaphore(0);
+
+    private static final Class<DumbSerializer> serializerClass = DumbSerializer.class;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataGenerator.class);
+
+    private int generatorId;
+
+    private int seed;
+    private types type;
+    private int numberOfNodes;
+    private double avgDegree;
+    private int numberOfEdges;
+
+    private DataSender sender2Benchmark;
+    private Channel dataGeneratorsChannel;
+    private String dataGeneratorsExchange;
+
+    private Graph nodeGraph;
 
     @Override
     public void init() throws Exception {
         // Always init the super class first!
         super.init();
-        logger.debug("Init()");
-        // Your initialization code comes here...
 
-        if(System.getenv().containsKey(BENCHMARK_URI+"#messages")){
-            messages = Integer.parseInt(System.getenv().get(BENCHMARK_URI+"#messages"));
+        generatorId = getGeneratorId();
+        seed = EnvVariables.getInt(ENV_SEED_KEY);
+        type = types.valueOf(EnvVariables.getString(ENV_TYPE_KEY));
+        numberOfNodes = EnvVariables.getInt(ENV_NUMBER_OF_NODES_KEY, 0);
+        avgDegree = Double.parseDouble(EnvVariables.getString(ENV_AVERAGE_DEGREE_KEY));
+        numberOfEdges = EnvVariables.getInt(ENV_NUMBER_OF_EDGES_KEY, 0);
+
+        // BenchmarkController and DataGenerators communication
+        dataGeneratorsExchange = EnvVariables.getString(ENV_DATAGENERATOR_EXCHANGE_KEY);
+        dataGeneratorsChannel = cmdQueueFactory.getConnection().createChannel();
+        String queueName = dataGeneratorsChannel.queueDeclare().getQueue();
+        dataGeneratorsChannel.queueBind(queueName, dataGeneratorsExchange, "");
+        Consumer consumer = new GraphConsumer(dataGeneratorsChannel) {
+            @Override
+            public boolean filter(int id, int type) {
+                return id != generatorId;
+            }
+            @Override
+            public void handleNodeGraph(Graph g) {
+                nodeGraph = g;
+                LOGGER.info("Got the node graph");
+                nodeGraphMutex.release();
+            }
+        };
+        dataGeneratorsChannel.basicConsume(queueName, true, consumer);
+
+        // Queue for sending final graphs to BenchmarkController
+        if (type == types.RDF_GRAPH_GENERATOR) {
+            String benchmarkQueueName = EnvVariables.getString(ENV_BENCHMARK_QUEUE_KEY);
+            sender2Benchmark = DataSenderImpl.builder().queue(getFactoryForOutgoingDataQueues(),
+                    generateSessionQueueName(benchmarkQueueName)).build();
         }
+
+        LOGGER.info("DataGenerator initialized (ID: {}, type: {})", generatorId, type);
     }
 
     @Override
     protected void generateData() throws Exception {
-        // Create your data inside this method. You might want to use the
-        // id of this data generator and the number of all data generators
-        // running in parallel.
-        int dataGeneratorId = getGeneratorId();
-        int numberOfGenerators = getNumberOfGenerators();
+        GraphGenerator generator = new RandomRDF("Graph " + generatorId);
+        GraphBuilder graph = new GrphBasedGraph();
 
-        logger.debug("generateData()");
-        String data;
-        int i=0;
-        while(i<messages) {
-            i++;
-            // Create your data here
-            data = new String("data_"+String.valueOf(i));
-
-            // the data can be sent to the task generator(s) ...
-            logger.trace("sendDataToTaskGenerator()->{}",data);
-            sendDataToTaskGenerator(data.getBytes());
-            // an to system adapter
-            //logger.debug("sendDataToSystemAdapter()->{}",data);
-            //sendDataToSystemAdapter(data.getBytes());
+        if (type == types.NODE_GRAPH_GENERATOR) {
+            nodeGraph = graph;
         }
+
+        if (numberOfNodes != 0) {
+            LOGGER.debug("Generating a graph with {} nodes and {} average degree", numberOfNodes, avgDegree);
+            generator.generateGraph(numberOfNodes, avgDegree, seed, graph);
+        } else {
+            LOGGER.debug("Generating a graph with {} average degree and {} edges", avgDegree, numberOfEdges);
+            generator.generateGraph(avgDegree, numberOfEdges, seed, graph);
+        }
+
+        if (type == types.NODE_GRAPH_GENERATOR) {
+            LOGGER.debug("Broadcasting the node graph...");
+            byte[] data = SerializationHelper.serialize(serializerClass, nodeGraph);
+            ByteBuffer buf = ByteBuffer.allocate(2 * Integer.SIZE + data.length);
+            buf.putInt(generatorId);
+            buf.putInt(type.ordinal());
+            buf.put(data);
+            dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.array());
+        } else {
+            LOGGER.debug("Waiting for the node graph...");
+            nodeGraphMutex.acquire();
+
+            // TODO
+
+            // Send the graph data to BenchmarkController.
+            sender2Benchmark.sendData(SerializationHelper.serialize(serializerClass, graph));
+        }
+
+        LOGGER.debug("Generator {}: Generation done.", generatorId);
     }
 
     @Override
     public void close() throws IOException {
         // Free the resources you requested here
-        logger.debug("close()");
+        LOGGER.debug("close()");
         // Always close the super class after yours!
         super.close();
     }
