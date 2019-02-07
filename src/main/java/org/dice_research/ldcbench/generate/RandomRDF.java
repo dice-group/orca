@@ -120,10 +120,11 @@ public class RandomRDF implements GraphGenerator{
 			inDeg[0] = 0;// not used
 
 			if (degree < 1) {
-				//System.out.println("Degree must be more than 1.");
-				//return (0);
-	
 				throw new IllegalArgumentException("Degree must be more than 1.");
+			}
+			
+			if (degree > N) {
+				throw new IllegalArgumentException("Degree can NOT be more than the number of nodes.");
 			}
 			
 			generator = new Random(seed);// seed
