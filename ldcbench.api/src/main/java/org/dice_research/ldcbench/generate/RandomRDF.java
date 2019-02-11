@@ -17,7 +17,6 @@ public class RandomRDF implements GraphGenerator{
 		name = gname;
 	}
 	
-	
 /**
  * Samples numbers from 1 to n; m times without replacement using weights in wt
  * @param n number of values to choose from.
