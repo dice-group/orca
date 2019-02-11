@@ -4,9 +4,6 @@
 //package org.dice_research.ldcbench;
 package org.dice_research.ldcbench.generate;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -15,25 +12,11 @@ import org.dice_research.ldcbench.graph.GraphBuilder;
 public class RandomRDF implements GraphGenerator{
 	protected Random generator;
 	public String name;
-	/*protected int nNodes;
-	public long nEdges;
-	protected int[] subject;// index of subject node (values are from 1 to nNodes)
-	protected int[] object;// index of object node (values are from 1 to nNodes)
-	protected Random generator;
-	long gseed;
-	double gdegree;*/
-
+	
 	public RandomRDF(String gname) {
 		name = gname;
 	}
 	
-	/*public int getNumberOfEdges() {
-		return(subject.length);		
-	}
-	
-	public int getNumberOfNodes() {
-		return(nNodes);		
-	}*/
 	
 /**
  * Samples numbers from 1 to n; m times without replacement using weights in wt
@@ -118,7 +101,9 @@ public class RandomRDF implements GraphGenerator{
 			int[] inDeg = new int[N + 1];
 			Arrays.fill(inDeg, 1);
 			inDeg[0] = 0;// not used
-
+			long t0 = System.currentTimeMillis();
+			long ti0 = System.currentTimeMillis();
+			
 			if (degree < 1) {
 				throw new IllegalArgumentException("Degree must be more than 1.");
 			}
@@ -155,55 +140,79 @@ public class RandomRDF implements GraphGenerator{
 					indexToEdgeList++;// inverted link randomly
 				}
 			}
+			
 			System.out.println(String.format("init graph: m0=%d, nE=%d", m, indexToEdgeList ));
 			
 			int P1 = (m + 1)*(N-m) - (nE - indexToEdgeList) + m ;
 			
 			System.out.println("Adding other nodes: " + (N - m) +" P1:" + P1);			
+			
+			double biasedCoin=((m/2.0-1)/(m-1));
 			for (int i = m + 1; i <= N; i++) {
 
 				int[] tmp = weightedSampleWithoutReplacement((i - 1), m, inDeg);// #new links
 
-				// in- link
+				 //in- link
 				int vin_ix = (int) Math.floor(generator.nextDouble() * m);
 				if (vin_ix == m)
 					vin_ix--;
-
+               /*
 				for (int k = 0; k < m; k++) {
 					if (k != vin_ix) {
 						inDeg[tmp[k]] = inDeg[tmp[k]] + 1;
 						subj[indexToEdgeList] = i;
-						obj[indexToEdgeList] = tmp[k];
-						indexToEdgeList++;
+						obj[indexToEdgeList] = tmp[k];						
 					} else {// inverted link
 						inDeg[i] = inDeg[i] + 1;
 						subj[indexToEdgeList] = tmp[k];
-						obj[indexToEdgeList] = i;
-						indexToEdgeList++;
+						obj[indexToEdgeList] = i;						
 					}
+					indexToEdgeList++;
+				} */
+				/*
+				 * 8/2/2019: choose randomly the number of in-links [1,m],
+				 * 	 1. select randomly one link to be in-link then 
+				 *   2. toss a biased coin ((m/2)-1 inlink,(m/2) outlink)
+				 */
+				for (int k = 0; k < m; k++) {					
+					if (k != vin_ix && (generator.nextDouble() > biasedCoin) ) {						
+						inDeg[tmp[k]] = inDeg[tmp[k]] + 1;
+						subj[indexToEdgeList] = i;
+						obj[indexToEdgeList] = tmp[k];						
+					} else {// inverted link
+						inDeg[i] = inDeg[i] + 1;
+						subj[indexToEdgeList] = tmp[k];
+						obj[indexToEdgeList] = i;						
+					}
+					indexToEdgeList++;
+				}
+				if(i==P1) { 
+					    m = m + 1;//second part
+				        biasedCoin=((m/2.0-1)/(m-1));
 				}
                 
-				if(i==P1) m=m+1;//second part
-                
-				if (i % 10000 == 0)
-					System.out.println(String.format("processed nodes: %d", i));
+				if (i % 10000 == 0) {
+					long ti1;
+					ti1= System.currentTimeMillis();
+					System.out.println(String.format("processed nodes: %d, time: %.1f", i,(ti1-ti0)/1000.0));
+					ti0= System.currentTimeMillis();				
+				}
 			}
 			
-			//System.out.println("nE =" + nE +" indexToEdgeList:" + indexToEdgeList);
+			long t_barabasi = System.currentTimeMillis();
+			System.out.println("time Barabsi =" + ((t_barabasi-t0)/1000.0));
+			
+			System.out.println("nE =" + nE +" indexToEdgeList:" + indexToEdgeList);
 			
 			int nEdges = indexToEdgeList;
-			/*subject = subj;
-			object = obj;
-			gdegree = degree;
-			gseed  = seed;*/			
 			int[] idRange=builder.addNodes(N);//Range
 			for(int i=0; i < nEdges; i++) {
 				if(!builder.addEdge(subj[i]-1 + idRange[0], obj[i]-1+idRange[0], 0)) {
 					System.out.println("Failed to add edge : i="+i+" subj="+subj[i]+" idRange[0]=" + idRange[0]+" obj[i]="+ obj[i]);
 				};
 			}
-			
-			//System.out.println("nEdges =" + nEdges +" g.#Edges:" + builder.getNumberOfEdges());			
+			long t_gbuilder = System.currentTimeMillis();
+			System.out.println("time Barabsi =" + ((t_barabasi-t0)/1000.0) +" time formatting = " + ((t_gbuilder-t_barabasi)/1000.0) + " sec");			
 		}
 
 	/*public void print() {
@@ -212,17 +221,7 @@ public class RandomRDF implements GraphGenerator{
 			System.out.println(subject[i] + "->" + object[i]);
 	}
 
-	public void saveToFile(String fname) {
-		try {
-			PrintWriter oout = new PrintWriter(new FileWriter(fname));
-			for (int i = 0; i < nEdges; i++)
-				oout.println(subject[i] + " " + object[i]);
-			oout.close();
-		} catch (IOException e) {
-			System.out.println("Failed to open output file. ");
-			e.printStackTrace();
-		}
-	}*/
+	*/
 
 	@Override
 	public void generateGraph(int numberOfNodes, double avgDegree, long seed, GraphBuilder builder) {
