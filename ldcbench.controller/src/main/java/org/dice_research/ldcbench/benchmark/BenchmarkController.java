@@ -80,6 +80,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
             };
             createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
+            Thread.sleep(1000);
             generatorsCount += 1;
         }
 
@@ -95,6 +96,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
             };
             createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {}
         });
 
         LOGGER.debug("Creating task generator...");
