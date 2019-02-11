@@ -1,6 +1,8 @@
 package org.dice_research.ldcbench.benchmark;
 
 import java.util.concurrent.Semaphore;
+import java.util.function.IntUnaryOperator;
+import java.util.stream.IntStream;
 import org.dice_research.ldcbench.graph.Graph;
 import com.rabbitmq.client.Consumer;
 import org.hobbit.core.rabbit.DataReceiverImpl;
@@ -60,32 +62,47 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         LOGGER.debug("Creating data generators...");
 
-        // Node graph generator
-        String[] envVariables = new String[]{
-            DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.NODE_GRAPH_GENERATOR,
-            DataGenerator.ENV_SEED_KEY + "=" + seed,
-            DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
-            DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
-            DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
+        IntUnaryOperator getSeed = new IntUnaryOperator() {
+            private static final int c = 2;
+            public int applyAsInt(int i) {
+                return seed + c * (i+1)*(i+1);
+            }
         };
-        createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
+
+        int generatorsCount = 0;
+        // Node graph generator
+        {
+            String[] envVariables = new String[]{
+                DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.NODE_GRAPH_GENERATOR,
+                DataGenerator.ENV_SEED_KEY + "=" + getSeed.applyAsInt(0),
+                DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
+                DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
+                DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
+            };
+            createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
+            generatorsCount += 1;
+        }
 
         // RDF graph generators
-        envVariables = new String[]{
-            DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.RDF_GRAPH_GENERATOR,
-            DataGenerator.ENV_SEED_KEY + "=" + seed,
-            DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
-            DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,
-            DataGenerator.ENV_BENCHMARK_QUEUE_KEY + "=" + "1",
-            DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
-        };
-        createDataGenerators(DATAGEN_IMAGE_NAME, nodesAmount, envVariables);
+        IntStream.range(generatorsCount, generatorsCount + nodesAmount)
+                .map(getSeed).forEachOrdered(generatorSeed -> {
+            String[] envVariables = new String[]{
+                DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.RDF_GRAPH_GENERATOR,
+                DataGenerator.ENV_SEED_KEY + "=" + generatorSeed,
+                DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
+                DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,
+                DataGenerator.ENV_BENCHMARK_QUEUE_KEY + "=" + "1",
+                DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
+            };
+            createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
+        });
 
         LOGGER.debug("Creating task generator...");
         createTaskGenerators(TASKGEN_IMAGE_NAME, 1, new String[]{});
 
         LOGGER.debug("Creating evaluation storage...");
-        envVariables = ArrayUtils.add(DEFAULT_EVAL_STORAGE_PARAMETERS, AbstractEvaluationStorage.RECEIVE_TIMESTAMP_FOR_SYSTEM_RESULTS_KEY + "=false");
+        String[] envVariables = ArrayUtils.add(DEFAULT_EVAL_STORAGE_PARAMETERS,
+                AbstractEvaluationStorage.RECEIVE_TIMESTAMP_FOR_SYSTEM_RESULTS_KEY + "=false");
         envVariables = ArrayUtils.add(envVariables, Constants.ACKNOWLEDGEMENT_FLAG_KEY + "=false");
         createEvaluationStorage(EVAL_STORAGE_IMAGE_NAME, envVariables);
 

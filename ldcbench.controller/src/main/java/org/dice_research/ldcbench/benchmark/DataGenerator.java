@@ -68,6 +68,8 @@ public class DataGenerator extends AbstractDataGenerator {
         avgDegree = Double.parseDouble(EnvVariables.getString(ENV_AVERAGE_DEGREE_KEY));
         numberOfEdges = EnvVariables.getInt(ENV_NUMBER_OF_EDGES_KEY, 0);
 
+        LOGGER.info("Seed: {}", seed);
+
         // BenchmarkController and DataGenerators communication
         dataGeneratorsExchange = EnvVariables.getString(ENV_DATAGENERATOR_EXCHANGE_KEY);
         dataGeneratorsChannel = cmdQueueFactory.getConnection().createChannel();
