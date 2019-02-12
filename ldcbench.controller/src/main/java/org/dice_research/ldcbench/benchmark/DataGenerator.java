@@ -2,6 +2,7 @@ package org.dice_research.ldcbench.benchmark;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Consumer;
+import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
 import org.dice_research.ldcbench.generate.GraphGenerator;
@@ -12,8 +13,7 @@ import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.dice_research.ldcbench.graph.serialization.DumbSerializer;
 import org.dice_research.ldcbench.graph.serialization.SerializationHelper;
 import org.hobbit.core.components.AbstractDataGenerator;
-import org.hobbit.core.rabbit.DataSender;
-import org.hobbit.core.rabbit.DataSenderImpl;
+import org.hobbit.core.rabbit.SimpleFileSender;
 import org.hobbit.utils.EnvVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_NUMBER_OF_NODES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_NODES";
     public static final String ENV_AVERAGE_DEGREE_KEY = "LDCBENCH_DATAGENERATOR_AVERAGE_DEGREE";
     public static final String ENV_NUMBER_OF_EDGES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_EDGES";
-    public static final String ENV_BENCHMARK_QUEUE_KEY = "LDCBENCH_BENCHMARKCONTROLLER_QUEUE";
+    public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
     public static final String ENV_DATAGENERATOR_EXCHANGE_KEY = "LDCBENCH_DATAGENERATOR_EXCHANGE";
 
     public static enum types {
@@ -50,7 +50,7 @@ public class DataGenerator extends AbstractDataGenerator {
     private double avgDegree;
     private int numberOfEdges;
 
-    private DataSender sender2Benchmark;
+    private SimpleFileSender dataSender;
     private Channel dataGeneratorsChannel;
     private String dataGeneratorsExchange;
 
@@ -91,9 +91,8 @@ public class DataGenerator extends AbstractDataGenerator {
 
         // Queue for sending final graphs to BenchmarkController
         if (type == types.RDF_GRAPH_GENERATOR) {
-            String benchmarkQueueName = EnvVariables.getString(ENV_BENCHMARK_QUEUE_KEY);
-            sender2Benchmark = DataSenderImpl.builder().queue(getFactoryForOutgoingDataQueues(),
-                    generateSessionQueueName(benchmarkQueueName)).build();
+            String dataQueueName = EnvVariables.getString(ENV_DATA_QUEUE_KEY);
+            dataSender = SimpleFileSender.create(outgoingDataQueuefactory, dataQueueName);
         }
 
         LOGGER.info("DataGenerator initialized (ID: {}, type: {})", generatorId, type);
@@ -130,8 +129,9 @@ public class DataGenerator extends AbstractDataGenerator {
 
             // TODO
 
-            // Send the graph data to BenchmarkController.
-            sender2Benchmark.sendData(SerializationHelper.serialize(serializerClass, graph));
+            // Send the final graph data.
+            LOGGER.info("Sending the graph data to the node...");
+            dataSender.streamData(new ByteArrayInputStream(SerializationHelper.serialize(serializerClass, graph)), "");
         }
 
         LOGGER.debug("Generator {}: Generation done.", generatorId);

@@ -31,6 +31,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     String dataGeneratorsExchange;
 
+    private String getRandomNameForRabbitMQ() {
+        return java.util.UUID.randomUUID().toString();
+    }
+
     @Override
     public void init() throws Exception {
         super.init();
@@ -44,7 +48,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         dataGeneratorsChannel = cmdQueueFactory.getConnection().createChannel();
         String queueName = dataGeneratorsChannel.queueDeclare().getQueue();
-        String dataGeneratorsExchange = java.util.UUID.randomUUID().toString();
+        String dataGeneratorsExchange = getRandomNameForRabbitMQ();
         dataGeneratorsChannel.exchangeDeclare(dataGeneratorsExchange, "fanout", false, true, null);
         dataGeneratorsChannel.queueBind(queueName, dataGeneratorsExchange, "");
 
@@ -56,6 +60,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
             }
         };
         dataGeneratorsChannel.basicConsume(queueName, true, consumer);
+
+        // Greate queues for sending data to nodes
+        String[] dataQueues = new String[nodesAmount];
+        for (int i = 0; i < nodesAmount; i++) {
+            dataQueues[i] = dataGeneratorsChannel.queueDeclare(getRandomNameForRabbitMQ(), false, false, true, null).getQueue();
+        }
 
         LOGGER.debug("Starting all cloud nodes...");
         // TODO
@@ -69,7 +79,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
             }
         };
 
-        int generatorsCount = 0;
         // Node graph generator
         {
             String[] envVariables = new String[]{
@@ -81,18 +90,16 @@ public class BenchmarkController extends AbstractBenchmarkController {
             };
             createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
             Thread.sleep(1000);
-            generatorsCount += 1;
         }
 
         // RDF graph generators
-        IntStream.range(generatorsCount, generatorsCount + nodesAmount)
-                .map(getSeed).forEachOrdered(generatorSeed -> {
+        IntStream.range(0, nodesAmount).forEachOrdered(i -> {
             String[] envVariables = new String[]{
                 DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.RDF_GRAPH_GENERATOR,
-                DataGenerator.ENV_SEED_KEY + "=" + generatorSeed,
+                DataGenerator.ENV_SEED_KEY + "=" + getSeed.applyAsInt(1 + i),
                 DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
                 DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,
-                DataGenerator.ENV_BENCHMARK_QUEUE_KEY + "=" + "1",
+                DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                 DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
             };
             createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
