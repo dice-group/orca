@@ -23,6 +23,8 @@ import java.io.IOException;
 import static org.dice_research.ldcbench.Constants.*;
 
 public class BenchmarkController extends AbstractBenchmarkController {
+    public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkController.class);
 
     private Semaphore nodeGraphMutex = new Semaphore(0);
@@ -68,7 +70,13 @@ public class BenchmarkController extends AbstractBenchmarkController {
         }
 
         LOGGER.debug("Starting all cloud nodes...");
-        // TODO
+        IntStream.range(0, nodesAmount).forEachOrdered(i -> {
+            String[] envVariables = new String[]{
+                ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
+            };
+
+            // TODO
+        });
 
         LOGGER.debug("Creating data generators...");
 
