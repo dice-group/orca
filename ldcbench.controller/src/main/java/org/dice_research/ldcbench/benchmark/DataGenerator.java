@@ -87,7 +87,9 @@ public class DataGenerator extends AbstractDataGenerator {
                 nodeGraphMutex.release();
             }
         };
-        dataGeneratorsChannel.basicConsume(queueName, true, consumer);
+        if (type == types.RDF_GRAPH_GENERATOR) {
+            dataGeneratorsChannel.basicConsume(queueName, true, consumer);
+        }
 
         // Queue for sending final graphs to BenchmarkController
         if (type == types.RDF_GRAPH_GENERATOR) {
