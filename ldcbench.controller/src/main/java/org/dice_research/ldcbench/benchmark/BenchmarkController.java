@@ -23,6 +23,7 @@ import java.io.IOException;
 import static org.dice_research.ldcbench.Constants.*;
 
 public class BenchmarkController extends AbstractBenchmarkController {
+    public static final String ENV_BENCHMARK_EXCHANGE_KEY = "LDCBENCH_BENCHMARK_EXCHANGE";
     public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkController.class);
@@ -63,6 +64,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
         };
         dataGeneratorsChannel.basicConsume(queueName, true, consumer);
 
+        // Exchange for broadcasting metadata to nodes
+        String benchmarkExchange = getRandomNameForRabbitMQ();
+
         // Greate queues for sending data to nodes
         String[] dataQueues = new String[nodesAmount];
         for (int i = 0; i < nodesAmount; i++) {
@@ -72,6 +76,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         LOGGER.debug("Starting all cloud nodes...");
         IntStream.range(0, nodesAmount).forEachOrdered(i -> {
             String[] envVariables = new String[]{
+                ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                 ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
             };
 
