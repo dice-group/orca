@@ -198,6 +198,24 @@ public class DataGenerator extends AbstractDataGenerator {
 
             LOGGER.info("Got all relevant rdf graphs", generatorId);
 
+            for (Map.Entry<Integer, GraphMetadata> entry : rdfMetadata.entrySet()) {
+                int targetNodeGraph = entry.getKey();
+                GraphMetadata gm = entry.getValue();
+
+                // FIXME use random node
+                int nodeWithOutgoingLink = 0;
+
+                // FIXME use random node
+                // FIXME use gm.entranceNodes
+                int entranceInTargetGraph = 0;
+
+                int externalNode = graph.addNode();
+                graph.setGraphIdOfNode(externalNode, targetNodeGraph, entranceInTargetGraph);
+
+                // FIXME don't always use edge type 0
+                graph.addEdge(nodeWithOutgoingLink, externalNode, 0);
+            }
+
             // TODO
 
             // Send the final graph data.
