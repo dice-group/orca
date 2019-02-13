@@ -4,10 +4,13 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 import org.dice_research.ldcbench.benchmark.DataGenerator.types;
 import org.dice_research.ldcbench.graph.Graph;
+import org.dice_research.ldcbench.graph.GraphMetadata;
 import org.dice_research.ldcbench.graph.serialization.SerializationHelper;
 
 public class GraphConsumer extends DefaultConsumer {
@@ -18,9 +21,9 @@ public class GraphConsumer extends DefaultConsumer {
 
     public boolean filter(int id, int type) { return true; }
 
-    public void handleNodeGraph(Graph g) {}
+    public void handleNodeGraph(int senderId, Graph g) {}
 
-    public void handleRdfGraph(Graph g) {}
+    public void handleRdfGraph(int senderId, GraphMetadata gm) {}
 
     @Override
     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
@@ -28,18 +31,26 @@ public class GraphConsumer extends DefaultConsumer {
         ByteBuffer buf = ByteBuffer.wrap(body);
         int senderId = buf.getInt();
         int senderType = buf.getInt();
+        buf = buf.compact();
         if (filter(senderId, senderType)) {
-            Graph g;
-            try {
-                g = SerializationHelper.deserialize(buf.compact().array());
-            } catch (Exception e) {
-                // FIXME
-                return;
-            }
             if (senderType == types.NODE_GRAPH_GENERATOR.ordinal()) {
-                handleNodeGraph(g);
+                Graph g;
+                try {
+                    g = SerializationHelper.deserialize(buf.array());
+                } catch (Exception e) {
+                    throw new IOException(e);
+                }
+
+                handleNodeGraph(senderId, g);
             } else {
-                handleRdfGraph(g);
+                GraphMetadata gm;
+                try {
+                    gm = (GraphMetadata) new ObjectInputStream(new ByteArrayInputStream(buf.array())).readObject();
+                } catch (ClassNotFoundException e) {
+                    throw new IOException(e);
+                }
+
+                handleRdfGraph(senderId, gm);
             }
         }
     }

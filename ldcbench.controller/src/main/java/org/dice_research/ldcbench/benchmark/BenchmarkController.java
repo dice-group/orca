@@ -54,7 +54,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         Consumer consumer = new GraphConsumer(dataGeneratorsChannel) {
             @Override
-            public void handleNodeGraph(Graph g) {
+            public void handleNodeGraph(int senderId, Graph g) {
                 LOGGER.info("Got the node graph");
                 nodeGraphMutex.release();
             }

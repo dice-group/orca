@@ -3,12 +3,18 @@ package org.dice_research.ldcbench.benchmark;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Consumer;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.concurrent.Semaphore;
+import java.util.HashMap;
+import java.util.Map;
 import org.dice_research.ldcbench.generate.GraphGenerator;
 import org.dice_research.ldcbench.generate.RandomRDF;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.graph.GraphBuilder;
+import org.dice_research.ldcbench.graph.GraphMetadata;
 import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.dice_research.ldcbench.graph.serialization.DumbSerializer;
 import org.dice_research.ldcbench.graph.serialization.SerializationHelper;
@@ -36,7 +42,10 @@ public class DataGenerator extends AbstractDataGenerator {
         RDF_GRAPH_GENERATOR
     };
 
-    private Semaphore nodeGraphMutex = new Semaphore(0);
+    private Semaphore nodeGraphReceivedMutex = new Semaphore(0);
+    private Semaphore nodeGraphProcessedMutex = new Semaphore(0);
+    private Map<Integer, GraphMetadata> rdfMetadata;
+    private Semaphore targetMetadataReceivedSemaphore = new Semaphore(0);
 
     private static final Class<DumbSerializer> serializerClass = DumbSerializer.class;
 
@@ -55,6 +64,19 @@ public class DataGenerator extends AbstractDataGenerator {
     private String dataGeneratorsExchange;
 
     private Graph nodeGraph;
+    private Integer nodeId;
+
+    private int getNodeId() {
+        return getNodeId(generatorId);
+    }
+
+    private int getNodeId(int generatorId) {
+        if (type == types.RDF_GRAPH_GENERATOR) {
+            return generatorId - 1;
+        }
+
+        throw new IllegalStateException();
+    }
 
     @Override
     public void init() throws Exception {
@@ -81,10 +103,24 @@ public class DataGenerator extends AbstractDataGenerator {
                 return id != generatorId;
             }
             @Override
-            public void handleNodeGraph(Graph g) {
+            public void handleNodeGraph(int senderId, Graph g) {
                 nodeGraph = g;
                 LOGGER.info("Got the node graph");
-                nodeGraphMutex.release();
+                nodeGraphReceivedMutex.release();
+            }
+            @Override
+            public void handleRdfGraph(int senderId, GraphMetadata gm) {
+                try {
+                    nodeGraphProcessedMutex.acquire();
+                } catch (InterruptedException e) {
+                    LOGGER.error("Interrupted", e);
+                }
+                int senderNodeId = getNodeId(senderId);
+                if (rdfMetadata.containsKey(senderNodeId)) {
+                    LOGGER.info("Got the rdf graph metadata for node {}", senderNodeId);
+                    rdfMetadata.put(senderNodeId, gm);
+                    targetMetadataReceivedSemaphore.release();
+                }
             }
         };
         if (type == types.RDF_GRAPH_GENERATOR) {
@@ -95,6 +131,9 @@ public class DataGenerator extends AbstractDataGenerator {
         if (type == types.RDF_GRAPH_GENERATOR) {
             String dataQueueName = EnvVariables.getString(ENV_DATA_QUEUE_KEY);
             dataSender = SimpleFileSender.create(outgoingDataQueuefactory, dataQueueName);
+
+            // Identify node ID for this generator.
+            nodeId = getNodeId();
         }
 
         LOGGER.info("DataGenerator initialized (ID: {}, type: {})", generatorId, type);
@@ -119,15 +158,45 @@ public class DataGenerator extends AbstractDataGenerator {
 
         if (type == types.NODE_GRAPH_GENERATOR) {
             LOGGER.debug("Broadcasting the node graph...");
+        } else {
+            LOGGER.debug("Waiting for the node graph...");
+            nodeGraphReceivedMutex.acquire();
+            LOGGER.debug("Broadcasting the rdf graph metadata...", nodeId);
+        }
+
+        ByteBuffer header = ByteBuffer.allocate(2 * (Integer.SIZE / Byte.SIZE));
+        header.putInt(generatorId);
+        header.putInt(type.ordinal());
+
+        if (type == types.NODE_GRAPH_GENERATOR) {
+            // Broadcast our graph.
             byte[] data = SerializationHelper.serialize(serializerClass, nodeGraph);
-            ByteBuffer buf = ByteBuffer.allocate(2 * (Integer.SIZE / Byte.SIZE) + data.length);
-            buf.putInt(generatorId);
-            buf.putInt(type.ordinal());
+            ByteBuffer buf = ByteBuffer.allocate(header.capacity() + data.length);
+            buf.put(header.array());
             buf.put(data);
             dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.array());
         } else {
-            LOGGER.debug("Waiting for the node graph...");
-            nodeGraphMutex.acquire();
+            // Broadcast our graph's metadata.
+            GraphMetadata gm = new GraphMetadata();
+            gm.numberOfNodes = graph.getNumberOfNodes();
+            gm.entranceNodes = graph.getEntranceNodes();
+
+            ByteArrayOutputStream buf = new ByteArrayOutputStream();
+            buf.write(header.array(), 0, header.capacity());
+            ObjectOutputStream output = new ObjectOutputStream(buf);
+            output.writeObject(gm);
+            dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.toByteArray());
+        }
+
+        if (type == types.RDF_GRAPH_GENERATOR) {
+            // Identify nodes linked from this node.
+            rdfMetadata = Arrays.stream(nodeGraph.outgoingEdgeTargets(nodeId)).boxed().collect(HashMap::new, (m, v) -> m.put(v, null), HashMap::putAll);
+
+            LOGGER.info("Waiting for {} rdf graphs relevant to this node...", generatorId, rdfMetadata.size());
+            nodeGraphProcessedMutex.release(nodeGraph.getNumberOfNodes() - 1);
+            targetMetadataReceivedSemaphore.acquire(rdfMetadata.size());
+
+            LOGGER.info("Got all relevant rdf graphs", generatorId);
 
             // TODO
 
