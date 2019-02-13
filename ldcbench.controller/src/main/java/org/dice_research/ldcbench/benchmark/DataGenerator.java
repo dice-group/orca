@@ -42,7 +42,7 @@ public class DataGenerator extends AbstractDataGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataGenerator.class);
 
-    private int generatorId;
+    private int generatorId = -1;
 
     private int seed;
     private types type;
