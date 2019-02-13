@@ -26,7 +26,7 @@ public class SerializationHelper {
         byte[] data = serializer.serialize(graph);
 
         byte[] serializerName = serializerClass.getName().getBytes();
-        ByteBuffer buf = ByteBuffer.allocate(Integer.SIZE + serializerName.length + data.length);
+        ByteBuffer buf = ByteBuffer.allocate((Integer.SIZE / Byte.SIZE) + serializerName.length + data.length);
         buf.putInt(serializerName.length);
         buf.put(serializerName);
 

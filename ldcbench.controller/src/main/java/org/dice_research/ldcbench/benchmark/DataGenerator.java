@@ -118,7 +118,7 @@ public class DataGenerator extends AbstractDataGenerator {
         if (type == types.NODE_GRAPH_GENERATOR) {
             LOGGER.debug("Broadcasting the node graph...");
             byte[] data = SerializationHelper.serialize(serializerClass, nodeGraph);
-            ByteBuffer buf = ByteBuffer.allocate(2 * Integer.SIZE + data.length);
+            ByteBuffer buf = ByteBuffer.allocate(2 * (Integer.SIZE / Byte.SIZE) + data.length);
             buf.putInt(generatorId);
             buf.putInt(type.ordinal());
             buf.put(data);
