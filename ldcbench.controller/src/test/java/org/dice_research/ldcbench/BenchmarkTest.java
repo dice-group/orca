@@ -199,7 +199,7 @@ public class BenchmarkTest {
         Resource experimentResource = model.createResource(org.hobbit.core.Constants.NEW_EXPERIMENT_URI);
         model.add(experimentResource, RDF.type, HOBBIT.Experiment);
         model.add(experimentResource, LDCBench.seed, "100");
-        model.add(experimentResource, LDCBench.numberOfNodes, "2");
+        model.add(experimentResource, LDCBench.numberOfNodes, "3");
         model.add(experimentResource, LDCBench.triplesPerNode, "100");
         return model;
 
