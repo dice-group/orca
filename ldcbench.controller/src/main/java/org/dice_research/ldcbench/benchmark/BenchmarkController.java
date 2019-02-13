@@ -1,9 +1,12 @@
 package org.dice_research.ldcbench.benchmark;
 
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.util.concurrent.Semaphore;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
 import org.dice_research.ldcbench.graph.Graph;
+import org.dice_research.ldcbench.NodeMetadata;
 import com.rabbitmq.client.Consumer;
 import org.hobbit.core.rabbit.DataReceiverImpl;
 import com.rabbitmq.client.Channel;
@@ -66,6 +69,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         // Exchange for broadcasting metadata to nodes
         String benchmarkExchange = getRandomNameForRabbitMQ();
+        dataGeneratorsChannel.exchangeDeclare(benchmarkExchange, "fanout", false, true, null);
 
         // Greate queues for sending data to nodes
         String[] dataQueues = new String[nodesAmount];
@@ -74,6 +78,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         }
 
         LOGGER.debug("Starting all cloud nodes...");
+        NodeMetadata[] nodeMetadata = new NodeMetadata[nodesAmount];
         IntStream.range(0, nodesAmount).forEachOrdered(i -> {
             String[] envVariables = new String[]{
                 ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
@@ -81,7 +86,17 @@ public class BenchmarkController extends AbstractBenchmarkController {
             };
 
             // TODO
+            nodeMetadata[i] = new NodeMetadata();
+            nodeMetadata[i].setHostname("FIXME");
         });
+
+        LOGGER.debug("Waiting for all cloud nodes to be ready...");
+        // TODO
+
+        LOGGER.debug("Broadcasting metadata to cloud nodes...");
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        new ObjectOutputStream(buf).writeObject(nodeMetadata);
+        dataGeneratorsChannel.basicPublish(benchmarkExchange, "", null, buf.toByteArray());
 
         LOGGER.debug("Creating data generators...");
 
