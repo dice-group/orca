@@ -85,13 +85,6 @@ protected int[] weightedSampleWithoutReplacementbs(int n, int m, int[] wt) {
 			rand =  generator.nextInt(aw[last]);
 
 			// find interval
-/*			for (i = 1; i < n; i++) {
-				if (rand <= aw[i]) {
-					Res[j] = i;
-					break;
-				}
-			}
-	*/		
 			Res[j] = Math.abs(Arrays.binarySearch(aw, rand)+1);
 			
 			System.out.println("Sample j="+ j + " i="+i+" Res[j]=" + Res[j]+" n="+n);
@@ -130,7 +123,7 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 		// find interval
 		for (i = 1; i <= n1; i++) {
 			rand-=wt1[i];
-			if (rand < 0) {
+			if (rand < 0) {//to avoid getting nodes set to zero degree, must be less than
 				Res[j] = i;				
 				Sum -= wt1[i];
 				wt1[i] = 0;// to avoid replacement
@@ -139,31 +132,13 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 			}
 		}
 	
-		System.out.println("Sample j="+ j + " i="+i+" Res[j]=" + Res[j]+ " rand="+rand+" Sum="+Sum+" n1="+n1);
+		//System.out.println("Sample j="+ j + " i="+i+" Res[j]=" + Res[j]+ " rand="+rand+" Sum="+Sum+" n1="+n1);
 		
 	}
 
 	return (Res);
 }
 
-/*
-	 * generate a random RDF graph using algorithm  
-	 * 
-	 * @param N the number of nodes
-	 * @param degree the average degree of the nodes in the graph
-	 * @param seed the random seed to be able to reproduce the results.
-	 * @param algorithm the algorithm used to generate the graph values ("Barabasi")
-	 * @return the number of edges if successful and zero otherwise
-	 *
-		protected int generate(int N, double degree, long seed,String algorithm) {
-			if(algorithm.equals("Barabasi")) {
-				return(getBarabasiRDF( N,  degree,  seed));
-			}else {
-				System.out.println("Unknown algorithm: "+algorithm);
-				return(0);
-			}
-		}
-		*/
 	/**
 	 * generate a random RDF graph using Barabasi algorithm and 
 	 * inverting some edges to be sure that the graph is connected (reachable from a single source).
@@ -174,58 +149,21 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 	 */
 		protected void getBarabasiRDF(int N, double degree, long seed, GraphBuilder builder) {
 			/* nodes are numbered from 1 to N */
-			int indexToEdgeList = 0;// index to edge list
-			//Random generator;
-			// RDF_graph g=new RDF_graph();
+			
+			int indexToEdgeList ;// index to edge list
+			long t0 = System.currentTimeMillis();
+			long ti0 = System.currentTimeMillis();
+			
 			int nE=(int) Math.ceil(N*degree);
 			int[] subj = new int[nE];
 			int[] obj = new int[nE];
 			int[] inDeg = new int[N + 1];
 			Arrays.fill(inDeg, 1);
-			inDeg[0] = 0;// not used
-			long t0 = System.currentTimeMillis();
-			long ti0 = System.currentTimeMillis();
-			
-			if (degree < 1) {
-				throw new IllegalArgumentException("Degree must be more than 1.");
-			}
-			
-			if (degree > N) {
-				throw new IllegalArgumentException("Degree can NOT be more than the number of nodes.");
-			}
-			
-			generator = new Random(seed);// seed
-//			generator = new XorShift1024StarRandom(seed);// seed
+			inDeg[0] = 0;// not used			
 			int m = (int) Math.floor(degree);// average degree of graph
-			if(m >1 ) {
-				subj[indexToEdgeList] = 1;
-				obj[indexToEdgeList] = 2;// first edge
-				indexToEdgeList++;
-				inDeg[2] = 2;
-			}
-						
-			// initial part
-			if (m > 2) {
-				for (int i = 3; i <= m; i++) {
-					//int[] tmp = weightedSampleWithoutReplacement(i - 1, 2, inDeg);// new links
-					int[] tmp = weightedSampleWithoutReplacementbs(i - 1, 2, inDeg);// new links
-//					int[] tmp = weightedSampleWithoutReplacementOhneaw(i - 1, 2, inDeg);// new links
-					boolean randIndex = generator.nextBoolean();// runif(1)
-					int vto;
-					if (randIndex) {
-						vto = 0;
-					} else {
-						vto = 1;
-					}
-					subj[indexToEdgeList] = i;
-					obj[indexToEdgeList] = tmp[1 - vto];
-					indexToEdgeList++;
-					subj[indexToEdgeList] = tmp[vto];
-					obj[indexToEdgeList] = i;
-					indexToEdgeList++;// inverted link randomly
-				}
-			}
 			
+			indexToEdgeList=getInitGraph(N,degree,seed,subj,obj,inDeg,m);
+		
 			System.out.println(String.format("init graph: m0=%d, nE=%d", m, indexToEdgeList ));
 			
 			int P1 = (m + 1)*(N-m) - (nE - indexToEdgeList) + m ;
@@ -245,19 +183,7 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 				int vin_ix = generator.nextInt(m) ;
 				if (vin_ix == m)
 					vin_ix--;
-               /*
-				for (int k = 0; k < m; k++) {
-					if (k != vin_ix) {
-						inDeg[tmp[k]] = inDeg[tmp[k]] + 1;
-						subj[indexToEdgeList] = i;
-						obj[indexToEdgeList] = tmp[k];						
-					} else {// inverted link
-						inDeg[i] = inDeg[i] + 1;
-						subj[indexToEdgeList] = tmp[k];
-						obj[indexToEdgeList] = i;						
-					}
-					indexToEdgeList++;
-				} */
+               
 				/*
 				 * 8/2/2019: choose randomly the number of in-links [1,m],
 				 * 	 1. select randomly one link to be in-link then 
@@ -311,62 +237,25 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 
 		protected void getBarabasiRDFum(int N, double degree, long seed, GraphBuilder builder) {
 			/* nodes are numbered from 1 to N */
-			int indexToEdgeList = 0;// index to edge list
-			//Random generator;
-			// RDF_graph g=new RDF_graph();
+			
+			int indexToEdgeList ;// index to edge list
+			long t0 = System.currentTimeMillis();
+			long ti0 = System.currentTimeMillis();
+			
 			int nE=(int) Math.ceil(N*degree);
 			int[] subj = new int[nE];
 			int[] obj = new int[nE];
 			int[] inDeg = new int[N + 1];
 			Arrays.fill(inDeg, 1);
-			inDeg[0] = 0;// not used
-			long t0 = System.currentTimeMillis();
-			long ti0 = System.currentTimeMillis();
-			
-			if (degree < 1) {
-				throw new IllegalArgumentException("Degree must be more than 1.");
-			}
-			
-			if (degree > (N-1)) {// max links created at any step is N-1
-				throw new IllegalArgumentException("Degree can NOT be more than (N-1).");
-			}
-			
-			generator = new Random(seed);// seed
-//			generator = new XorShift1024StarRandom(seed);// seed
+			inDeg[0] = 0;// not used			
 			int m = (int) Math.floor(degree);// average degree of graph
-			if(m >1 ) {
-				subj[indexToEdgeList] = 1;
-				obj[indexToEdgeList] = 2;// first edge
-				indexToEdgeList++;
-				inDeg[2] = 2;
-			}
-						
-			// initial part
-			if (m > 2) {
-				for (int i = 3; i <= m; i++) {
-					//int[] tmp = weightedSampleWithoutReplacement(i - 1, 2, inDeg);// new links
-					int[] tmp = weightedSampleWithoutReplacementbs(i - 1, 2, inDeg);// new links
-//					int[] tmp = weightedSampleWithoutReplacementOhneaw(i - 1, 2, inDeg);// new links
-					boolean randIndex = generator.nextBoolean();
-					int vto;
-					if (randIndex) {
-						vto = 0;
-					} else {
-						vto = 1;
-					}
-					subj[indexToEdgeList] = i;
-					obj[indexToEdgeList] = tmp[1 - vto];
-					indexToEdgeList++;
-					subj[indexToEdgeList] = tmp[vto];
-					obj[indexToEdgeList] = i;
-					indexToEdgeList++;// inverted link randomly
-				}
-			}
 			
+			indexToEdgeList=getInitGraph(N,degree,seed,subj,obj,inDeg,m);
+	
 			System.out.println(String.format("init graph: m0=%d, nE=%d", m, indexToEdgeList ));
 			
 			int P1 = (m + 1)*(N-m) - (nE - indexToEdgeList) + m ;
-			if (P1<=m ) P1 = m+1;			
+			if (P1<=m ) P1 = m + 1;			
 			System.out.println("Adding other nodes: " + (N - m) +" P1:" + P1);			
 			
 			double biasedCoin=((m/2.0-1)/(m-1));
@@ -390,7 +279,9 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 				int vin_ix = generator.nextInt(m1) ;
 				if (vin_ix == m1)
 					vin_ix--;
-System.out.println("m1="+m1+" cntE="+cntE+" vin_ix="+vin_ix+" nE="+nE);            
+				
+				System.out.println("m1="+m1+" cntE="+cntE+" vin_ix="+vin_ix+" nE="+nE);            
+				
 				/*
 				 * 8/2/2019: choose randomly the number of in-links [1,m],
 				 * 	 1. select randomly one link to be in-link then 
@@ -429,6 +320,7 @@ System.out.println("m1="+m1+" cntE="+cntE+" vin_ix="+vin_ix+" nE="+nE);
 			
 			System.out.println("nE =" + nE +" indexToEdgeList:" + indexToEdgeList);
 			
+			//Grph structure ----------------------------------------------
 			int nEdges = indexToEdgeList;
 			int[] idRange=builder.addNodes(N);//Range
 			for(int i=0; i < nEdges; i++) {
@@ -442,16 +334,196 @@ System.out.println("m1="+m1+" cntE="+cntE+" vin_ix="+vin_ix+" nE="+nE);
 			long t_gbuilder = System.currentTimeMillis();
 			System.out.println("time Barabsi =" + ((t_barabasi-t0)/1000.0) +" time formatting = " + ((t_gbuilder-t_barabasi)/1000.0) + " sec");			
 		}
+//-------------------------------------------------------------------------------------------
+		protected int getInitGraph(int N, double degree, long seed,int[] subj,int[]obj,int[] inDeg,int m) {
+			int indexToEdgeList = 0;
+			
+			if (degree < 1) {
+				throw new IllegalArgumentException("Degree must be more than 1.");
+			}
+			
+			if (degree > (N-1)) {// max links created at any step is N-1
+				throw new IllegalArgumentException("Degree can NOT be more than (N-1).");
+			}
+			
+			generator = new Random(seed);// seed
+			
+			if(m >1 ) {
+				subj[indexToEdgeList] = 1;
+				obj[indexToEdgeList] = 2;// first edge
+				indexToEdgeList++;
+				inDeg[2] = 2;
+			}
+						
+			// initial part
+			if (m > 2) {
+				for (int i = 3; i <= m; i++) {
+					//int[] tmp = weightedSampleWithoutReplacement(i - 1, 2, inDeg);// new links
+					int[] tmp = weightedSampleWithoutReplacementbs(i - 1, 2, inDeg);// new links
+//					int[] tmp = weightedSampleWithoutReplacementOhneaw(i - 1, 2, inDeg);// new links
+					boolean randIndex = generator.nextBoolean();
+					int vto;
+					if (randIndex) {
+						vto = 0;
+					} else {
+						vto = 1;
+					}
+					subj[indexToEdgeList] = i;
+					obj[indexToEdgeList] = tmp[1 - vto];
+					indexToEdgeList++;
+					subj[indexToEdgeList] = tmp[vto];
+					obj[indexToEdgeList] = i;
+					indexToEdgeList++;// inverted link randomly
+				}
+			}
 
+			return(indexToEdgeList);
+		}
+		//---------------------------------------------------------
+		protected void getBarabasiRDFumChkRep(int N, double degree, long seed, GraphBuilder builder) {
+			/* nodes are numbered from 1 to N */
+			
+			int indexToEdgeList ;// index to edge list
+			long t0 = System.currentTimeMillis();
+			long ti0 = System.currentTimeMillis();
+			
+			int nE=(int) Math.ceil(N*degree);
+			int[] subj = new int[nE];
+			int[] obj = new int[nE];
+			int[] inDeg = new int[N + 1];
+			Arrays.fill(inDeg, 1);
+			inDeg[0] = 0;// not used			
+			int m = (int) Math.floor(degree);// average degree of graph
+			
+			indexToEdgeList=getInitGraph(N,degree,seed,subj,obj,inDeg,m);
+			
+			System.out.println(String.format("init graph: m0=%d, nE=%d", m, indexToEdgeList ));
+			
+			int P1 = (m + 1)*(N-m) - (nE - indexToEdgeList) + m ;
+			if (P1<=m ) P1 = m+1;			
+			System.out.println("Adding other nodes: " + (N - m) +" P1:" + P1);			
+			
+			int[] tmp=new int[2*(m+1)];
+			double biasedCoin=((m/2.0-1)/(m-1));
+			long ts10k=0;
+			int cntE=indexToEdgeList,ki,lastNode = 0;
+			long totalrepeats=0;
+			for (int i = m + 1; i <= N; i++) {
+				long ts1=System.currentTimeMillis();
+				int m1= 1+ generator.nextInt(2*m);
+				if(m1 >= i-1) m1=i-2;
+				if(m1 > 2*m) m1=2*m;
+
+				cntE += m1;
+				if(cntE > nE) {m1-=(cntE-nE);
+				      cntE=nE;
+				}
+//				int[] tmp = weightedSampleWithoutReplacement((i - 1), m1, inDeg);// #new links
+
+				ts10k += (System.currentTimeMillis()-ts1);
+				
+				 //in- link
+				int vin_ix = generator.nextInt(m1) ;
+				if (vin_ix == m1)
+					vin_ix--;
+				
+//				System.out.println("i="+i+" m1="+m1+" cntE="+cntE+" vin_ix="+vin_ix+" nE="+nE);            
+				
+				/*
+				 * 8/2/2019: choose randomly the number of in-links [1,m],
+				 * 	 1. select randomly one link to be in-link then 
+				 *   2. toss a biased coin ((m/2)-1 inlink,(m/2) outlink)
+				 */
+				//if(m1==i-1)
+					
+				biasedCoin=((m1/2.0-1)/(m1-1));
+				for (int k = 0; k < m1; k++) {	
+					boolean isRep=true;
+					int distNode=0;
+					while(isRep) {
+						int rand =  generator.nextInt(i+indexToEdgeList-1);//Number of nodes (since all in Deg is initialized by 1) + nE
+						// find interval
+						for (int ni = 1; ni < i; ni++) {
+							rand -= inDeg[ni];
+//							if(i==20) System.out.println("rand="+rand+" ni="+ni+" inDeg[ni]="+inDeg[ni]);
+							if (rand <= 0) {
+								distNode = ni;	
+								break;
+							}
+						}
+//						if(i==20) System.out.println("i="+ i +" k="+k+" distNode="+distNode);
+						ki=0;// search in tmp
+						isRep=false;
+						while(ki < k ) {
+							if(tmp[ki]==distNode) {
+								isRep=true; 
+								totalrepeats++;
+								break;
+							}
+							ki++;
+						}
+					}
+					tmp[k]=distNode;
+					if (k != vin_ix && (generator.nextDouble() > biasedCoin) ) {						
+						inDeg[tmp[k]] = inDeg[tmp[k]] + 1;
+						subj[indexToEdgeList] = i;
+						obj[indexToEdgeList] = tmp[k];						
+					} else {// inverted link
+						inDeg[i] = inDeg[i] + 1;
+						subj[indexToEdgeList] = tmp[k];
+						obj[indexToEdgeList] = i;						
+					}
+					indexToEdgeList++;					
+				}
+				if(i==P1) { 
+					    m = m + 1;//second part
+				}
+				if (i % 10000 == 0) {
+					long ti1;
+					ti1= System.currentTimeMillis();
+					System.out.println(String.format("processed nodes: %d, time: %.1f, time sampling:%.2f ratio=%.1f", i,(ti1-ti0)/1000.0,ts10k/1000.0,
+							     ts10k*100.0/(ti1-ti0)));
+					ts10k=0;
+					ti0= System.currentTimeMillis();				
+				}
+				if(indexToEdgeList >= nE) {
+					lastNode=i;
+					break;
+				}
+			}
+			
+			System.out.println("totalrepeats="+totalrepeats);
+			long t_barabasi = System.currentTimeMillis();
+			System.out.println("time Barabsi =" + ((t_barabasi-t0)/1000.0));
+			
+			System.out.println("N="+lastNode+" nE =" + nE +" indexToEdgeList:" + indexToEdgeList);
+			
+			//Grph structure ----------------------------------------------
+			int nEdges = indexToEdgeList;
+			int[] idRange=builder.addNodes(N);//Range
+			for(int i=0; i < nEdges; i++) {
+				
+				if(!builder.addEdge(subj[i]-1 + idRange[0], obj[i]-1+idRange[0], 0)) {
+					System.out.println("Failed to add edge : i="+i+" subj="+subj[i]+" idRange[0]=" + idRange[0]+" obj[i]="+ obj[i]);
+				};
+			}
+			int[] entranceNodes= {0};
+			builder.setEntranceNodes(entranceNodes);
+			
+			long t_gbuilder = System.currentTimeMillis();
+			System.out.println("time Barabsi =" + ((t_barabasi-t0)/1000.0) +" time formatting = " + ((t_gbuilder-t_barabasi)/1000.0) + " sec");			
+		}
+
+//--------------------------------------------------------------------------------------------
 	@Override
 	public void generateGraph(int numberOfNodes, double avgDegree, long seed, GraphBuilder builder) {
 //		this.getBarabasiRDF(numberOfNodes, avgDegree, seed,builder);//String algorithm	
-		this.getBarabasiRDFum(numberOfNodes, avgDegree, seed,builder);//String algorithm	
+		this.getBarabasiRDFumChkRep(numberOfNodes, avgDegree, seed,builder);//String algorithm	
 	}
 
 	@Override
 	public void generateGraph(double avgDegree, int numberOfEdges, long seed, GraphBuilder builder) {		
 //		this.getBarabasiRDF((int)Math.ceil(numberOfEdges/avgDegree), avgDegree, seed,builder);
-		this.getBarabasiRDFum((int)Math.ceil(numberOfEdges/avgDegree), avgDegree, seed,builder);
+		this.getBarabasiRDFumChkRep((int)Math.ceil(numberOfEdges/avgDegree), avgDegree, seed,builder);
 	}
 }
