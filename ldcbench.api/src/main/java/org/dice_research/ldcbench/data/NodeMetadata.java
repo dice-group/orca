@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench;
+package org.dice_research.ldcbench.data;
 
 import java.io.Serializable;
 
