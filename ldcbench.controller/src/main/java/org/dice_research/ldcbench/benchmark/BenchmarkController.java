@@ -32,6 +32,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkController.class);
 
+    private Semaphore nodesReadySemaphore = new Semaphore(0);
     private Semaphore nodeGraphMutex = new Semaphore(0);
 
     Channel dataGeneratorsChannel;
@@ -85,9 +86,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
             String[] envVariables = new String[] { ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                     ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i], };
 
-            // TODO
+            String containerId = "localhost" /*createContainer("hello-world", Constants.CONTAINER_TYPE_BENCHMARK, envVariables)*/;
+
             nodeMetadata[i] = new NodeMetadata();
-            nodeMetadata[i].setHostname("FIXME");
+            nodeMetadata[i].setHostname(containerId);
         });
 
         LOGGER.debug("Waiting for all cloud nodes to be ready...");
@@ -191,6 +193,17 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // Send the resultModul to the platform controller and terminate
         LOGGER.debug("Sending result model: {}", RabbitMQUtils.writeModel2String(resultModel));
         sendResultModel(resultModel);
+    }
+
+    @Override
+    public void receiveCommand(byte command, byte[] data) {
+        switch (command) {
+        case ApiConstants.NODE_READY_SIGNAL:
+            LOGGER.debug("Received NODE_READY_SIGNAL");
+            nodesReadySemaphore.release();
+        }
+
+        super.receiveCommand(command, data);
     }
 
     @Override
