@@ -39,7 +39,7 @@ public class CrawleableResourceContainer implements Container {
     public void handle(Request request, Response response) {
         int id = 0;
         try (OutputStream out = response.getOutputStream()) {
-            while ((id < resources.length) && (resources[id].handleRequest(request, response, out))) {
+            while ((id < resources.length) && (!resources[id].handleRequest(request, response, out))) {
                 ++id;
             }
             if (id >= resources.length) {

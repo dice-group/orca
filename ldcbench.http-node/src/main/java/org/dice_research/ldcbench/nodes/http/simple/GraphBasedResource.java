@@ -15,19 +15,25 @@ import org.apache.jena.riot.system.StreamOps;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
 import org.dice_research.ldcbench.graph.Graph;
+import org.dice_research.ldcbench.nodes.http.utils.NullValueHelper;
 import org.dice_research.ldcbench.rdf.UriHelper;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Status;
 
 public class GraphBasedResource extends AbstractCrawleableResource {
 
+    protected static final Lang DEFAULT_LANG = Lang.TURTLE;
+
     protected final int domainId;
     protected final String[] domains;
     protected final Graph[] graphs;
+    protected boolean failIfContentTypeMismatch = false;
+    protected Lang defaultLang = DEFAULT_LANG;
 
     public GraphBasedResource(int domainId, String[] domains, Graph[] graphs, Predicate<Request> predicate,
             String[] contentTypes) {
-        super(predicate, contentTypes);
+        super(predicate, NullValueHelper.valueOrDefault(DEFAULT_LANG.getContentType().getCharset(), DEFAULT_CHARSET),
+                DEFAULT_LANG.getContentType().getContentType(), new String[0], contentTypes);
         this.domainId = domainId;
         this.domains = domains;
         this.graphs = graphs;
@@ -37,19 +43,22 @@ public class GraphBasedResource extends AbstractCrawleableResource {
     public boolean handleRequest(String target, String contentType, String charset, OutputStream out)
             throws SimpleHTTPException {
         Lang lang = RDFLanguages.contentTypeToLang(contentType);
-        if (lang == null) {
+        if ((lang == null) && (failIfContentTypeMismatch)) {
             throw new SimpleHTTPException(
                     "Couldn't transform content type \"" + contentType + "\" into a known RDF language.",
                     Status.INTERNAL_SERVER_ERROR);
+        } else {
+            lang = defaultLang;
         }
         // parse target
         int ids[] = parseIds(target);
 
+        // TODO add a prefix map
         StreamRDF writerStream = StreamRDFWriter.getWriterStream(out, lang);
         writerStream.start();
         StreamOps.sendTriplesToStream(new TripleIterator(this, ids[0], ids[1]), writerStream);
         writerStream.finish();
-        return false;
+        return true;
     }
 
     private int[] parseIds(String target) throws SimpleHTTPException {
@@ -84,6 +93,12 @@ public class GraphBasedResource extends AbstractCrawleableResource {
         }
     }
 
+    public void setDefaultLang(Lang defaultLang) {
+        this.defaultLang = defaultLang;
+        setDefaultCharset(NullValueHelper.valueOrDefault(defaultLang.getContentType().getCharset(), DEFAULT_CHARSET));
+        setDefaultContentType(defaultLang.getContentType().getContentType());
+    }
+
     public class TripleIterator implements Iterator<Triple> {
 
         protected GraphBasedResource parent;
@@ -115,7 +130,7 @@ public class GraphBasedResource extends AbstractCrawleableResource {
         }
 
         private Triple createTriple(int targetId, int propertyId) {
-            return new Triple(createNode(nodeId, false), createNode(propertyId, true), createNode(nodeId, false));
+            return new Triple(createNode(nodeId, false), createNode(propertyId, true), createNode(targetId, false));
         }
 
         private Node createNode(int nodeId, boolean isProperty) {

@@ -4,25 +4,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.ResIterator;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.riot.Lang;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.graph.GraphBuilder;
 import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.dice_research.ldcbench.rdf.UriHelper;
-import org.hobbit.core.components.AbstractComponent;
 import org.hobbit.core.components.Component;
 import org.hobbit.core.rabbit.DataHandler;
 import org.hobbit.core.rabbit.DataReceiver;
-import org.hobbit.core.rabbit.DataReceiverImpl;
-import org.hobbit.utils.EnvVariables;
 import org.simpleframework.http.core.Container;
 import org.simpleframework.http.core.ContainerServer;
 import org.simpleframework.transport.Server;
@@ -56,7 +48,7 @@ public class SimpleHttpServerComponent /* extends AbstractComponent */ implement
         // XXX FOR DEBUGGING (remove me)
         GraphBuilder builder = new GrphBasedGraph();
         int nodeIds[] = builder.addNodes(2);
-        builder.addEdge(nodeIds[0], nodeIds[1], 0);
+        builder.addEdge(nodeIds[0], nodeIds[0] + 1, 0);
         graph = builder;
         // XXX END DEBUGGING
         if (graph == null) {
@@ -65,11 +57,12 @@ public class SimpleHttpServerComponent /* extends AbstractComponent */ implement
 
         // container = new CrawleableResourceContainer(resources.toArray(new
         // CrawleableResource[resources.size()]));
-        container = new CrawleableResourceContainer(
-                new GraphBasedResource(0, new String[] { "example.org" }, new Graph[] { graph },
-                        (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
-                                && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
-                        new String[] { "application/rdf+xml", "text/plain", "*/*" }));
+        container = new CrawleableResourceContainer(new GraphBasedResource(0, new String[] { "example.org" },
+                new Graph[] { graph }, (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
+                        && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
+                new String[] {
+                // "application/rdf+xml", "text/plain", "*/*"
+                }));
         server = new ContainerServer(container);
         connection = new SocketConnection(server);
         // TODO make port configurable

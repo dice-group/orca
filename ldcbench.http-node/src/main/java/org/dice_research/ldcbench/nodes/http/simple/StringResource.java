@@ -22,7 +22,7 @@ public class StringResource extends AbstractCrawleableResource implements Crawle
     }
 
     public StringResource(Predicate<Request> predicate, String content, String contentType) {
-        super(predicate, content, contentType);
+        super(predicate, new String[] {contentType});
         this.content = content;
     }
 
