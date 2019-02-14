@@ -16,7 +16,7 @@
 		</init-param>
 		<init-param>
 			<param-name>contextConfigLocation</param-name>
-			<param-value>org.dice_research.ldcbench.nodes.http.RootConfig</param-value>
+			<param-value>org.dice_research.ldcbench.nodes.http.spring.RootConfig</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
