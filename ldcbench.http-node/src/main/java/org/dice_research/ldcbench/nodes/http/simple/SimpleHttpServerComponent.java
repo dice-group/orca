@@ -4,17 +4,20 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.graph.Graph;
-import org.dice_research.ldcbench.graph.GraphBuilder;
-import org.dice_research.ldcbench.graph.GrphBasedGraph;
+import org.dice_research.ldcbench.nodes.rabbit.GraphHandler;
 import org.dice_research.ldcbench.rdf.UriHelper;
+import org.hobbit.core.components.AbstractCommandReceivingComponent;
 import org.hobbit.core.components.Component;
-import org.hobbit.core.rabbit.DataHandler;
 import org.hobbit.core.rabbit.DataReceiver;
+import org.hobbit.core.rabbit.DataReceiverImpl;
+import org.hobbit.utils.EnvVariables;
 import org.simpleframework.http.core.Container;
 import org.simpleframework.http.core.ContainerServer;
 import org.simpleframework.transport.Server;
@@ -23,42 +26,65 @@ import org.simpleframework.transport.connect.SocketConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SimpleHttpServerComponent /* extends AbstractComponent */ implements Component, DataHandler {
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Consumer;
+import com.rabbitmq.client.DefaultConsumer;
+import com.rabbitmq.client.Envelope;
+
+public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent implements Component {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServerComponent.class);
 
     protected Container container;
     protected Server server;
     protected Connection connection;
-    protected String graphNames[];
+    protected Channel bcBroadcastChannel;
     protected DataReceiver receiver;
 
     @Override
     public void init() throws Exception {
-        // super.init();
-        // TODO initialize exchange with BC
-        // TODO initialize graph queue
-        // String queueName = EnvVariables.getString("TODO PLEASE ADD KEY NAME FOR QUEUE
-        // NAMES!!!");
-        // receiver =
-        // DataReceiverImpl.builder().dataHandler(this).queue(this.incomingDataQueueFactory,
-        // queueName).build();
+        super.init();
 
-        Graph graph;
-        // XXX FOR DEBUGGING (remove me)
-        GraphBuilder builder = new GrphBasedGraph();
-        int nodeIds[] = builder.addNodes(2);
-        builder.addEdge(nodeIds[0], nodeIds[0] + 1, 0);
-        graph = builder;
-        // XXX END DEBUGGING
-        if (graph == null) {
-            throw new IllegalArgumentException("Couldn't read graph.");
+        // initialize exchange with BC
+        String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);
+        bcBroadcastChannel = cmdQueueFactory.getConnection().createChannel();
+        String queueName = bcBroadcastChannel.queueDeclare().getQueue();
+        bcBroadcastChannel.exchangeDeclare(exchangeName, "fanout", false, true, null);
+        bcBroadcastChannel.queueBind(queueName, exchangeName, "");
+
+        Consumer consumer = new DefaultConsumer(bcBroadcastChannel) {
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
+                    byte[] body) throws IOException {
+                try {
+                    // FIXME add method for handling incoming broadcast from BC!!!
+                    handleCmd(body, properties.getReplyTo());
+                } catch (Exception e) {
+                    LOGGER.error("Exception while trying to handle incoming command.", e);
+                }
+            }
+        };
+        bcBroadcastChannel.basicConsume(queueName, true, consumer);
+        
+        // initialize graph queue
+        queueName = EnvVariables.getString(ApiConstants.ENV_DATA_QUEUE_KEY);
+        GraphHandler graphHandler = new GraphHandler();
+        receiver = DataReceiverImpl.builder().dataHandler(graphHandler).queue(this.incomingDataQueueFactory, queueName)
+                .build();
+        
+        // FIXME make the node wait here for data to arrive.
+
+        if(graphHandler.encounteredError()) {
+            throw new IllegalStateException("Encountered an error while receiving graphs.");
+        }
+        List<Graph> graphs = graphHandler.getGraphs();
+        if (graphs.isEmpty()) {
+            throw new IllegalStateException("Didn't received a single graph.");
         }
 
-        // container = new CrawleableResourceContainer(resources.toArray(new
-        // CrawleableResource[resources.size()]));
         container = new CrawleableResourceContainer(new GraphBasedResource(0, new String[] { "example.org" },
-                new Graph[] { graph }, (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
+                graphs.toArray(new Graph[graphs.size()]), (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
                         && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
                 new String[] {
                 // "application/rdf+xml", "text/plain", "*/*"
@@ -88,6 +114,11 @@ public class SimpleHttpServerComponent /* extends AbstractComponent */ implement
     }
 
     @Override
+    public void receiveCommand(byte command, byte[] data) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
     public void run() throws Exception {
         synchronized (this) {
             this.wait();
@@ -105,13 +136,12 @@ public class SimpleHttpServerComponent /* extends AbstractComponent */ implement
             LOGGER.error("Exception while closing server. It will be ignored.", e);
         }
         IOUtils.closeQuietly(receiver);
-        // super.close();
+        if (bcBroadcastChannel != null) {
+            try {
+                bcBroadcastChannel.close();
+            } catch (Exception e) {
+            }
+        }
+        super.close();
     }
-
-    @Override
-    public void handleData(byte[] data) {
-        // TODO parse incoming graph
-
-    }
-
 }
