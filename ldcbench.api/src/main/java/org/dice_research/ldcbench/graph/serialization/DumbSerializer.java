@@ -10,7 +10,7 @@ import org.dice_research.ldcbench.graph.GrphBasedGraph;
 public class DumbSerializer implements Serializer {
 
     public byte[] serialize(Graph graph) {
-        ByteBuffer buf = ByteBuffer.allocate((2 + graph.getNumberOfEdges() * 3) * Integer.SIZE);
+        ByteBuffer buf = ByteBuffer.allocate((2 + graph.getNumberOfEdges() * 3) * (Integer.SIZE / Byte.SIZE));
         buf.putInt(graph.getNumberOfNodes());
         buf.putInt(graph.getNumberOfEdges());
 
