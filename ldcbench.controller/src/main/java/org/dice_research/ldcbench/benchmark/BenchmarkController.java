@@ -5,8 +5,11 @@ import java.io.ObjectOutputStream;
 import java.util.concurrent.Semaphore;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
+
+import org.dice_research.ldcbench.ApiConstants;
+import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.graph.Graph;
-import org.dice_research.ldcbench.NodeMetadata;
+
 import com.rabbitmq.client.Consumer;
 import org.hobbit.core.rabbit.DataReceiverImpl;
 import com.rabbitmq.client.Channel;
@@ -26,8 +29,6 @@ import java.io.IOException;
 import static org.dice_research.ldcbench.Constants.*;
 
 public class BenchmarkController extends AbstractBenchmarkController {
-    public static final String ENV_BENCHMARK_EXCHANGE_KEY = "LDCBENCH_BENCHMARK_EXCHANGE";
-    public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkController.class);
 
@@ -74,16 +75,15 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // Greate queues for sending data to nodes
         String[] dataQueues = new String[nodesAmount];
         for (int i = 0; i < nodesAmount; i++) {
-            dataQueues[i] = dataGeneratorsChannel.queueDeclare(getRandomNameForRabbitMQ(), false, false, true, null).getQueue();
+            dataQueues[i] = dataGeneratorsChannel.queueDeclare(getRandomNameForRabbitMQ(), false, false, true, null)
+                    .getQueue();
         }
 
         LOGGER.debug("Starting all cloud nodes...");
         NodeMetadata[] nodeMetadata = new NodeMetadata[nodesAmount];
         IntStream.range(0, nodesAmount).forEachOrdered(i -> {
-            String[] envVariables = new String[]{
-                ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
-                ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
-            };
+            String[] envVariables = new String[] { ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
+                    ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i], };
 
             // TODO
             nodeMetadata[i] = new NodeMetadata();
@@ -102,42 +102,42 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         IntUnaryOperator getSeed = new IntUnaryOperator() {
             private static final int c = 2;
+
             public int applyAsInt(int i) {
-                return seed + c * (i+1)*(i+1);
+                return seed + c * (i + 1) * (i + 1);
             }
         };
 
         // Node graph generator
         {
-            String[] envVariables = new String[]{
-                DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.NODE_GRAPH_GENERATOR,
-                DataGenerator.ENV_SEED_KEY + "=" + getSeed.applyAsInt(0),
-                DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
-                DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
-                DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
-            };
+            String[] envVariables = new String[] {
+                    DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.NODE_GRAPH_GENERATOR,
+                    DataGenerator.ENV_SEED_KEY + "=" + getSeed.applyAsInt(0),
+                    DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
+                    DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
+                    DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, };
             createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
             Thread.sleep(1000);
         }
 
         // RDF graph generators
         IntStream.range(0, nodesAmount).forEachOrdered(i -> {
-            String[] envVariables = new String[]{
-                DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.RDF_GRAPH_GENERATOR,
-                DataGenerator.ENV_SEED_KEY + "=" + getSeed.applyAsInt(1 + i),
-                DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
-                DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,
-                DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
-                DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
-            };
+            String[] envVariables = new String[] {
+                    DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.RDF_GRAPH_GENERATOR,
+                    DataGenerator.ENV_SEED_KEY + "=" + getSeed.applyAsInt(1 + i),
+                    DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
+                    DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,
+                    DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
+                    DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, };
             createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
             try {
                 Thread.sleep(1000);
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+            }
         });
 
         LOGGER.debug("Creating task generator...");
-        createTaskGenerators(TASKGEN_IMAGE_NAME, 1, new String[]{});
+        createTaskGenerators(TASKGEN_IMAGE_NAME, 1, new String[] {});
 
         LOGGER.debug("Creating evaluation storage...");
         String[] envVariables = ArrayUtils.add(DEFAULT_EVAL_STORAGE_PARAMETERS,
@@ -168,18 +168,18 @@ public class BenchmarkController extends AbstractBenchmarkController {
         LOGGER.debug("Waiting for the task generators to finish...");
         waitForTaskGenToFinish();
 
-////
-////        // wait for the system to terminate. Note that you can also use
-////        // the method waitForSystemToFinish(maxTime) where maxTime is
-////        // a long value defining the maximum amount of time the benchmark
-////        // will wait for the system to terminate.
-        //taskGenContainerIds.add("system");
+        ////
+        //// // wait for the system to terminate. Note that you can also use
+        //// // the method waitForSystemToFinish(maxTime) where maxTime is
+        //// // a long value defining the maximum amount of time the benchmark
+        //// // will wait for the system to terminate.
+        // taskGenContainerIds.add("system");
 
         LOGGER.debug("Waiting for the system to finish...");
         waitForSystemToFinish();
 
         // TODO Implement evaluation
-        createEvaluationModule(EVALMODULE_IMAGE_NAME, new String[]{});
+        createEvaluationModule(EVALMODULE_IMAGE_NAME, new String[] {});
 
         waitForEvalComponentsToFinish();
 
