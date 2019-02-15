@@ -58,8 +58,7 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
                     byte[] body) throws IOException {
                 try {
-                    // FIXME add method for handling incoming broadcast from BC!!!
-                    handleCmd(body, properties.getReplyTo());
+                    handleBCMessage(body);
                 } catch (Exception e) {
                     LOGGER.error("Exception while trying to handle incoming command.", e);
                 }
@@ -116,6 +115,10 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
     @Override
     public void receiveCommand(byte command, byte[] data) {
         // TODO Auto-generated method stub
+    }
+
+    protected void handleBCMessage(byte[] body) {
+        // TODO add deserialization of graph information
     }
 
     @Override
