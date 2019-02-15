@@ -1,7 +1,9 @@
 package org.dice_research.ldcbench.nodes.http.simple;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.concurrent.Semaphore;
@@ -11,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.dice_research.ldcbench.ApiConstants;
+import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.rabbit.GraphHandler;
 import org.dice_research.ldcbench.rdf.UriHelper;
@@ -39,11 +42,13 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServerComponent.class);
 
     protected Semaphore dataGenerationFinished = new Semaphore(0);
+    protected Semaphore domainNamesReceived = new Semaphore(0);
     protected Container container;
     protected Server server;
     protected Connection connection;
     protected Channel bcBroadcastChannel;
     protected DataReceiver receiver;
+    protected String domainNames[];
 
     @Override
     public void init() throws Exception {
@@ -75,17 +80,24 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
         receiver = DataReceiverImpl.builder().dataHandler(graphHandler).queue(this.incomingDataQueueFactory, queueName)
                 .build();
 
+        // Wait for the data generation to finish
         dataGenerationFinished.acquire();
+        receiver.closeWhenFinished();
 
-        if(graphHandler.encounteredError()) {
+        if (graphHandler.encounteredError()) {
             throw new IllegalStateException("Encountered an error while receiving graphs.");
         }
         List<Graph> graphs = graphHandler.getGraphs();
         if (graphs.isEmpty()) {
             throw new IllegalStateException("Didn't received a single graph.");
         }
+        if (domainNames == null) {
+            throw new IllegalStateException("Didn't received the domain names from the benchmark controller.");
+        }
 
-        container = new CrawleableResourceContainer(new GraphBasedResource(0, new String[] { "example.org" },
+        // FIXME we need to know the ID of this node to be able to choose the correct
+        // domain name
+        container = new CrawleableResourceContainer(new GraphBasedResource(0, domainNames,
                 graphs.toArray(new Graph[graphs.size()]), (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
                         && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
                 new String[] {
@@ -125,7 +137,19 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
     }
 
     protected void handleBCMessage(byte[] body) {
-        // TODO add deserialization of graph information
+        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(body))) {
+            NodeMetadata[] nodeMetadata = (NodeMetadata[]) ois.readObject();
+            domainNames = new String[nodeMetadata.length];
+            for (int i = 0; i < nodeMetadata.length; ++i) {
+                domainNames[i] = nodeMetadata[i].getHostname();
+            }
+        } catch (Exception e) {
+            LOGGER.error("Couldn't parse node metadata received from benchmark controller.", e);
+            domainNames = null;
+        }
+        // In any case, we should release the semaphore. Otherwise, this component would
+        // get stuck and wait forever for an additional message.
+        domainNamesReceived.release();
     }
 
     @Override
