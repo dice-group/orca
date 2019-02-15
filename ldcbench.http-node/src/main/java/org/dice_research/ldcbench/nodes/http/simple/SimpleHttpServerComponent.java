@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.concurrent.Semaphore;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -17,6 +18,7 @@ import org.hobbit.core.components.AbstractCommandReceivingComponent;
 import org.hobbit.core.components.Component;
 import org.hobbit.core.rabbit.DataReceiver;
 import org.hobbit.core.rabbit.DataReceiverImpl;
+import org.hobbit.core.Commands;
 import org.hobbit.utils.EnvVariables;
 import org.simpleframework.http.core.Container;
 import org.simpleframework.http.core.ContainerServer;
@@ -36,6 +38,7 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServerComponent.class);
 
+    protected Semaphore dataGenerationFinished = new Semaphore(0);
     protected Container container;
     protected Server server;
     protected Connection connection;
@@ -65,14 +68,14 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
             }
         };
         bcBroadcastChannel.basicConsume(queueName, true, consumer);
-        
+
         // initialize graph queue
         queueName = EnvVariables.getString(ApiConstants.ENV_DATA_QUEUE_KEY);
         GraphHandler graphHandler = new GraphHandler();
         receiver = DataReceiverImpl.builder().dataHandler(graphHandler).queue(this.incomingDataQueueFactory, queueName)
                 .build();
-        
-        // FIXME make the node wait here for data to arrive.
+
+        dataGenerationFinished.acquire();
 
         if(graphHandler.encounteredError()) {
             throw new IllegalStateException("Encountered an error while receiving graphs.");
@@ -114,7 +117,11 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
 
     @Override
     public void receiveCommand(byte command, byte[] data) {
-        // TODO Auto-generated method stub
+        switch (command) {
+        case Commands.DATA_GENERATION_FINISHED:
+            LOGGER.debug("Received DATA_GENERATION_FINISHED");
+            dataGenerationFinished.release();
+        }
     }
 
     protected void handleBCMessage(byte[] body) {
