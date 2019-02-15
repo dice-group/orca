@@ -28,11 +28,11 @@ public class StringResource extends AbstractCrawleableResource implements Crawle
 
     @Override
     public boolean handleRequest(String target, String contentType, String charsetName, OutputStream out)
-            throws SimpleHTTPException {
+            throws SimpleHttpException {
         try {
             out.write(content.getBytes(charsetName));
         } catch (Exception e) {
-            new SimpleHTTPException("Error while writing content.", e, Status.INTERNAL_SERVER_ERROR);
+            new SimpleHttpException("Error while writing content.", e, Status.INTERNAL_SERVER_ERROR);
         }
         return true;
     }

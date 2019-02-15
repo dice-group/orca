@@ -48,7 +48,7 @@ public class CrawleableResourceContainer implements Container {
             } else {
                 response.setStatus(Status.OK);
             }
-        } catch (SimpleHTTPException e) {
+        } catch (SimpleHttpException e) {
             if (e.status.code < 500) {
                 LOGGER.info("Got an HTTP exception. Returning status code \"" + e.status + "\"", e);
             } else {

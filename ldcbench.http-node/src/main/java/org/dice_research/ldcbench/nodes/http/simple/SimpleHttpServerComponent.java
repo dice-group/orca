@@ -41,6 +41,8 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServerComponent.class);
 
+    private static final int DEFAULT_PORT = 80;
+
     protected Semaphore dataGenerationFinished = new Semaphore(0);
     protected Semaphore domainNamesReceived = new Semaphore(0);
     protected Container container;
@@ -53,6 +55,8 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
     @Override
     public void init() throws Exception {
         super.init();
+
+        int domainId = EnvVariables.getInt(ApiConstants.ENV_NODE_ID_KEY, LOGGER);
 
         // initialize exchange with BC
         String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);
@@ -95,21 +99,23 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
             throw new IllegalStateException("Didn't received the domain names from the benchmark controller.");
         }
 
-        // FIXME we need to know the ID of this node to be able to choose the correct
-        // domain name
-        container = new CrawleableResourceContainer(new GraphBasedResource(0, domainNames,
+        // Create the container based on the information that has been received
+        container = new CrawleableResourceContainer(new GraphBasedResource(domainId, domainNames,
                 graphs.toArray(new Graph[graphs.size()]), (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
                         && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
                 new String[] {
                 // "application/rdf+xml", "text/plain", "*/*"
                 }));
+        // Start server
         server = new ContainerServer(container);
         connection = new SocketConnection(server);
-        // TODO make port configurable
-        SocketAddress address = new InetSocketAddress(8080);
+        SocketAddress address = new InetSocketAddress(
+                EnvVariables.getInt(ApiConstants.ENV_HTTP_PORT_KEY, DEFAULT_PORT, LOGGER));
         connection.connect(address);
 
         LOGGER.info("HTTP server initialized.");
+        // Inform the BC that this node is ready
+        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
     }
 
     protected Model readModel(String modelFile, String modelLang) {

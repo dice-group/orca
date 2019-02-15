@@ -46,7 +46,7 @@ public abstract class AbstractCrawleableResource implements CrawleableResource {
         this.defaultContentType = defaultContentType;
     }
 
-    public boolean handleRequest(Request request, Response response, OutputStream out) throws SimpleHTTPException {
+    public boolean handleRequest(Request request, Response response, OutputStream out) throws SimpleHttpException {
         if (!predicate.test(request)) {
             return false;
         }
@@ -93,17 +93,17 @@ public abstract class AbstractCrawleableResource implements CrawleableResource {
             return handleRequest(request.getTarget(), acceptedContentType, acceptedCharset, out);
         } else {
             if (acceptedContentType == null) {
-                throw new SimpleHTTPException("Couldn't find a fitting content type in the list of accepted types ("
+                throw new SimpleHttpException("Couldn't find a fitting content type in the list of accepted types ("
                         + request.getValues(ACCEPT_HEADER).toString() + ").", Status.NOT_ACCEPTABLE);
             } else {
-                throw new SimpleHTTPException("Couldn't find a fitting charset in the list of accepted charsets ("
+                throw new SimpleHttpException("Couldn't find a fitting charset in the list of accepted charsets ("
                         + request.getValues(ACCEPT_CHARSET_HEADER).toString() + ").", Status.NOT_ACCEPTABLE);
             }
         }
     }
 
     public abstract boolean handleRequest(String target, String contentType, String charset, OutputStream out)
-            throws SimpleHTTPException;
+            throws SimpleHttpException;
 
     public void setDefaultCharset(String defaultCharset) {
         this.defaultCharset = defaultCharset;
