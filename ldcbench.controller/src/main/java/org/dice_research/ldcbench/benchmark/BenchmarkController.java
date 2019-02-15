@@ -84,6 +84,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         NodeMetadata[] nodeMetadata = new NodeMetadata[nodesAmount];
         IntStream.range(0, nodesAmount).forEachOrdered(i -> {
             String[] envVariables = new String[] {
+                    ApiConstants.ENV_NODE_ID_KEY + "=" + i,
                     ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                     ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
             };
