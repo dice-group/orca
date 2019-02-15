@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench.nodes.http;
+package org.dice_research.ldcbench.nodes.http.spring;
 
 import java.util.Iterator;
 
