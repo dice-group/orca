@@ -83,8 +83,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
         LOGGER.debug("Starting all cloud nodes...");
         NodeMetadata[] nodeMetadata = new NodeMetadata[nodesAmount];
         IntStream.range(0, nodesAmount).forEachOrdered(i -> {
-            String[] envVariables = new String[] { ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
-                    ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i], };
+            String[] envVariables = new String[] {
+                    ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
+                    ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
+            };
 
             String containerId = "localhost" /*createContainer("hello-world", Constants.CONTAINER_TYPE_BENCHMARK, envVariables)*/;
 
