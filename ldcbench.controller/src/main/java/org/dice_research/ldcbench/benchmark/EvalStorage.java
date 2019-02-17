@@ -15,7 +15,7 @@ import java.util.*;
  * @author Michael R&ouml;der (roeder@informatik.uni-leipzig.de)
  * https://github.com/hobbit-project/core/blob/master/src/main/java/org/hobbit/core/components/test/InMemoryEvaluationStore.java
  */
-
+@Deprecated
 public class EvalStorage extends AbstractEvaluationStorage {
     private static final Logger logger = LoggerFactory.getLogger(EvalStorage.class);
     /**
