@@ -23,10 +23,10 @@
       <groupId>org.hobbit</groupId>
       <artifactId>core</artifactId>
       <exclusions>
-          <exclusion>
-              <groupId>com.google.guava</groupId>
-              <artifactId>guava</artifactId>
-          </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->

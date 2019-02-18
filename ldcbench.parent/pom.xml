@@ -201,8 +201,8 @@
           <artifactId>maven-shade-plugin</artifactId>
           <version>2.4.3</version>
           <configuration>
-            <!-- Mark the shaded artifact instead of overwriting the original 
-              artifact. It should also neither be installed nor deployed together with 
+            <!-- Mark the shaded artifact instead of overwriting the original
+              artifact. It should also neither be installed nor deployed together with
               other artifacts. -->
             <finalName>${project.artifactId}-shaded</finalName>
             <!-- filter all the META-INF files of other artifacts -->
@@ -229,7 +229,7 @@
             </transformers>
           </configuration>
         </plugin>
-        <!-- lock down plugins versions to avoid using Maven defaults (may 
+        <!-- lock down plugins versions to avoid using Maven defaults (may
           be moved to parent pom) -->
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>

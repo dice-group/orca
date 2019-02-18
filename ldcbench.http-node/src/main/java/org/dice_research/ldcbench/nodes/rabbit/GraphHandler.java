@@ -25,15 +25,15 @@ private static final Logger LOGGER = LoggerFactory.getLogger(GraphHandler.class)
             ++errorCount;
         }
     }
-    
+
     public List<Graph> getGraphs() {
         return graphs;
     }
-    
+
     public int getErrorCount() {
         return errorCount;
     }
-    
+
     public boolean encounteredError() {
         return errorCount > 0;
     }
