@@ -19,6 +19,7 @@ import org.dice_research.ldcbench.graph.GraphMetadata;
 import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.dice_research.ldcbench.graph.serialization.DumbSerializer;
 import org.dice_research.ldcbench.graph.serialization.SerializationHelper;
+import org.dice_research.ldcbench.ApiConstants;
 import org.hobbit.core.components.AbstractDataGenerator;
 import org.hobbit.core.rabbit.SimpleFileSender;
 import org.hobbit.utils.EnvVariables;
@@ -43,6 +44,7 @@ public class DataGenerator extends AbstractDataGenerator {
         RDF_GRAPH_GENERATOR
     };
 
+    private Semaphore dataGeneratorsReady = new Semaphore(0);
     private Semaphore nodeGraphReceivedMutex = new Semaphore(0);
     private Semaphore nodeGraphProcessedMutex = new Semaphore(0);
     private Map<Integer, GraphMetadata> rdfMetadata;
@@ -176,10 +178,14 @@ public class DataGenerator extends AbstractDataGenerator {
         }
 
         LOGGER.info("DataGenerator initialized (ID: {}, type: {})", generatorId, type);
-    }
 
-    @Override
-    protected void generateData() throws Exception {
+        if (type == types.NODE_GRAPH_GENERATOR) {
+            LOGGER.debug("Waiting for all generators to be ready...");
+            dataGeneratorsReady.acquire(numberOfNodes);
+        } else {
+            sendToCmdQueue(ApiConstants.DATAGENERATOR_READY_SIGNAL);
+        }
+
         GraphGenerator generator = new RandomRDF("Graph " + generatorId);
         GraphBuilder graph = new GrphBasedGraph();
 
@@ -245,6 +251,22 @@ public class DataGenerator extends AbstractDataGenerator {
         }
 
         LOGGER.debug("Generator {}: Generation done.", generatorId);
+    }
+
+    @Override
+    protected void generateData() throws Exception {
+        LOGGER.debug("generateData()");
+    }
+
+    @Override
+    public void receiveCommand(byte command, byte[] data) {
+        switch (command) {
+        case ApiConstants.DATAGENERATOR_READY_SIGNAL:
+            LOGGER.debug("Received DATAGENERATOR_READY_SIGNAL");
+            dataGeneratorsReady.release();
+        }
+
+        super.receiveCommand(command, data);
     }
 
     @Override

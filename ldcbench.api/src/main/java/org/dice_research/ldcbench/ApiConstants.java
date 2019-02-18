@@ -8,6 +8,7 @@ public class ApiConstants {
 
     public static final String ENV_HTTP_PORT_KEY = "HTTP_PORT";
 
+    public static final byte DATAGENERATOR_READY_SIGNAL = 125;
     public static final byte NODE_READY_SIGNAL = 124;
 
 }
