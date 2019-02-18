@@ -216,8 +216,6 @@ public class DataGenerator extends AbstractDataGenerator {
                 graph.addEdge(nodeWithOutgoingLink, externalNode, 0);
             }
 
-            // TODO
-
             // Send the final graph data.
             LOGGER.info("Sending the graph data to the node...");
             dataSender.streamData(new ByteArrayInputStream(SerializationHelper.serialize(serializerClass, graph)), "");
