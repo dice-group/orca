@@ -4,6 +4,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Consumer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -59,9 +60,9 @@ public class DataGenerator extends AbstractDataGenerator {
     private double avgDegree;
     private int numberOfEdges;
 
-    private SimpleFileSender dataSender;
     private Channel dataGeneratorsChannel;
     private String dataGeneratorsExchange;
+    private String dataQueueName;
 
     private Graph nodeGraph;
     private Integer nodeId;
@@ -129,8 +130,7 @@ public class DataGenerator extends AbstractDataGenerator {
 
         // Queue for sending final graphs to BenchmarkController
         if (type == types.RDF_GRAPH_GENERATOR) {
-            String dataQueueName = EnvVariables.getString(ENV_DATA_QUEUE_KEY);
-            dataSender = SimpleFileSender.create(outgoingDataQueuefactory, dataQueueName);
+            dataQueueName = EnvVariables.getString(ENV_DATA_QUEUE_KEY);
 
             // Identify node ID for this generator.
             nodeId = getNodeId();
@@ -218,7 +218,12 @@ public class DataGenerator extends AbstractDataGenerator {
 
             // Send the final graph data.
             LOGGER.info("Sending the graph data to the node...");
-            dataSender.streamData(new ByteArrayInputStream(SerializationHelper.serialize(serializerClass, graph)), "");
+            try (
+                InputStream is = new ByteArrayInputStream(SerializationHelper.serialize(serializerClass, graph));
+                SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, dataQueueName);
+            ) {
+                dataSender.streamData(is, "graph-" + generatorId);
+            }
         }
 
         LOGGER.debug("Generator {}: Generation done.", generatorId);
