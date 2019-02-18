@@ -3,15 +3,13 @@ package org.dice_research.ldcbench.benchmark;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.concurrent.Semaphore;
-import java.util.function.IntUnaryOperator;
-import java.util.stream.IntStream;
 
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.data.NodeMetadata;
+import org.dice_research.ldcbench.generate.SeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
 
 import com.rabbitmq.client.Consumer;
-import org.hobbit.core.rabbit.DataReceiverImpl;
 import com.rabbitmq.client.Channel;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dice_research.ldcbench.vocab.LDCBench;
@@ -82,7 +80,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         LOGGER.debug("Starting all cloud nodes...");
         NodeMetadata[] nodeMetadata = new NodeMetadata[nodesAmount];
-        IntStream.range(0, nodesAmount).forEachOrdered(i -> {
+        for (int i = 0; i < nodesAmount; i++) {
             String[] envVariables = new String[] {
                     ApiConstants.ENV_NODE_ID_KEY + "=" + i,
                     ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
@@ -94,11 +92,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
             nodeMetadata[i] = new NodeMetadata();
             nodeMetadata[i].setHostname(containerId);
             // FIXME: HOBBIT SDK workaround (setting environment for "containers")
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-            }
-        });
+            Thread.sleep(2000);
+        }
 
         LOGGER.debug("Waiting for all cloud nodes to be ready...");
         nodesReadySemaphore.acquire(nodesAmount);
@@ -110,49 +105,38 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         LOGGER.debug("Creating data generators...");
 
-        IntUnaryOperator getSeed = new IntUnaryOperator() {
-            private static final int c = 2;
-
-            public int applyAsInt(int i) {
-                return seed + c * (i + 1) * (i + 1);
-            }
-        };
+        SeedGenerator seedGenerator = new SeedGenerator(seed);
 
         // Node graph generator
-        {
-            String[] envVariables = new String[] {
-                    DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.NODE_GRAPH_GENERATOR,
-                    DataGenerator.ENV_SEED_KEY + "=" + getSeed.applyAsInt(0),
-                    DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
-                    DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
-                    DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, };
-            createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
-            // FIXME: HOBBIT SDK workaround (setting environment for "containers")
-            Thread.sleep(2000);
-        }
+        String[] envVariables = new String[] {
+                DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.NODE_GRAPH_GENERATOR,
+                DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(0),
+                DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
+                DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
+                DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, };
+        createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
+        // FIXME: HOBBIT SDK workaround (setting environment for "containers")
+        Thread.sleep(2000);
 
         // RDF graph generators
-        IntStream.range(0, nodesAmount).forEachOrdered(i -> {
-            String[] envVariables = new String[] {
+        for (int i = 0; i < nodesAmount; i++) {
+            envVariables = new String[] {
                     DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.RDF_GRAPH_GENERATOR,
-                    DataGenerator.ENV_SEED_KEY + "=" + getSeed.applyAsInt(1 + i),
+                    DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(1 + i),
                     DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
                     DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,
                     DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                     DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, };
             createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
             // FIXME: HOBBIT SDK workaround (setting environment for "containers")
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-            }
-        });
+            Thread.sleep(2000);
+        }
 
         LOGGER.debug("Creating task generator...");
         createTaskGenerators(TASKGEN_IMAGE_NAME, 1, new String[] {});
 
         LOGGER.debug("Creating evaluation storage...");
-        String[] envVariables = ArrayUtils.add(DEFAULT_EVAL_STORAGE_PARAMETERS,
+        envVariables = ArrayUtils.add(DEFAULT_EVAL_STORAGE_PARAMETERS,
                 AbstractEvaluationStorage.RECEIVE_TIMESTAMP_FOR_SYSTEM_RESULTS_KEY + "=false");
         envVariables = ArrayUtils.add(envVariables, Constants.ACKNOWLEDGEMENT_FLAG_KEY + "=false");
         createEvaluationStorage(EVAL_STORAGE_IMAGE_NAME, envVariables);
