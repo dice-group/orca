@@ -24,6 +24,8 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +43,7 @@ import static org.dice_research.ldcbench.Constants.*;
  */
 
 public class BenchmarkTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkTest.class);
 
     public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
     private AbstractDockerizer rabbitMqDockerizer;
@@ -199,7 +202,13 @@ public class BenchmarkTest {
 
         rabbitMqDockerizer.stop();
 
-        Assert.assertFalse(componentsExecutor.anyExceptions());
+        if (componentsExecutor.anyExceptions()) {
+            LOGGER.error("Some components didn't execute cleanly");
+            for (Throwable e : componentsExecutor.getExceptions()) {
+                LOGGER.error("- {}", e.toString());
+            }
+            Assert.fail();
+        }
     }
 
     public static Model createBenchmarkParameters() throws IOException {
