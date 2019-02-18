@@ -205,8 +205,8 @@ public class DataGenerator extends AbstractDataGenerator {
                 // FIXME use random node
                 int nodeWithOutgoingLink = 0;
 
-                // FIXME use random node
                 // FIXME use gm.entranceNodes
+                // FIXME use random entrance node
                 int entranceInTargetGraph = 0;
 
                 int externalNode = graph.addNode();
