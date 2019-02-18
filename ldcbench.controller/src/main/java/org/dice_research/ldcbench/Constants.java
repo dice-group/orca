@@ -15,6 +15,7 @@ public class Constants {
     public static final String EVAL_STORAGE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/eval-storage";
     public static final String EVALMODULE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/eval-module";
     public static final String SYSTEM_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/system-adapter";
+    public static final String HTTPNODE_IMAGE_NAME = "simple-http-node";
 
     public static final String BENCHMARK_URI = "http://project-hobbit.eu/"+PROJECT_NAME;
     public static final String SYSTEM_URI = "http://project-hobbit.eu/"+PROJECT_NAME+"/system";

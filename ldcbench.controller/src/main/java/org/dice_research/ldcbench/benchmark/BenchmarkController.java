@@ -89,14 +89,14 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
             };
 
-            String containerId = "localhost" /*createContainer("hello-world", Constants.CONTAINER_TYPE_BENCHMARK, envVariables)*/;
+            String containerId = createContainer(HTTPNODE_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK, envVariables);
 
             nodeMetadata[i] = new NodeMetadata();
             nodeMetadata[i].setHostname(containerId);
         });
 
         LOGGER.debug("Waiting for all cloud nodes to be ready...");
-        // TODO
+        nodesReadySemaphore.acquire(nodesAmount);
 
         LOGGER.debug("Broadcasting metadata to cloud nodes...");
         ByteArrayOutputStream buf = new ByteArrayOutputStream();

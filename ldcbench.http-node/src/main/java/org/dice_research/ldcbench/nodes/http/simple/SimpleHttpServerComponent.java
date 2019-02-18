@@ -1,5 +1,6 @@
 package org.dice_research.ldcbench.nodes.http.simple;
 
+import org.hobbit.core.rabbit.SimpleFileReceiver;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -76,13 +77,18 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
 
         // initialize graph queue
         queueName = EnvVariables.getString(ApiConstants.ENV_DATA_QUEUE_KEY);
-        GraphHandler graphHandler = new GraphHandler();
-        receiver = DataReceiverImpl.builder().dataHandler(graphHandler).queue(this.incomingDataQueueFactory, queueName)
-                .build();
+        SimpleFileReceiver receiver = SimpleFileReceiver.create(this.incomingDataQueueFactory, queueName);
+        GraphHandler graphHandler = new GraphHandler(receiver);
+        Thread receiverThread = new Thread(graphHandler);
+        receiverThread.start();
+
+        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
 
         // Wait for the data generation to finish
         dataGenerationFinished.acquire();
-        receiver.closeWhenFinished();
+
+        receiver.terminate();
+        receiverThread.join();
 
         if (graphHandler.encounteredError()) {
             throw new IllegalStateException("Encountered an error while receiving graphs.");

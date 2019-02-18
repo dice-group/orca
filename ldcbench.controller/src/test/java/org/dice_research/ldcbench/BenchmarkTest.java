@@ -10,6 +10,7 @@ import org.hobbit.sdk.docker.RabbitMqDockerizer;
 import org.hobbit.sdk.docker.builders.*;
 import org.hobbit.sdk.docker.builders.hobbit.*;
 
+import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpServerComponent;
 import org.dice_research.ldcbench.benchmark.*;
 import org.dice_research.ldcbench.system.SystemAdapter;
 import org.dice_research.ldcbench.vocab.LDCBench;
@@ -52,6 +53,7 @@ public class BenchmarkTest {
     EvalStorageDockerBuilder evalStorageBuilder;
     SystemAdapterDockerBuilder systemAdapterBuilder;
     EvalModuleDockerBuilder evalModuleBuilder;
+    SimpleHttpNodeBuilder httpNodeBuilder;
 
     public void init(Boolean useCachedImage) throws Exception {
 
@@ -63,6 +65,8 @@ public class BenchmarkTest {
 
         systemAdapterBuilder = new SystemAdapterDockerBuilder(new ExampleDockersBuilder(SystemAdapter.class, SYSTEM_IMAGE_NAME).useCachedImage(useCachedImage));
         evalModuleBuilder = new EvalModuleDockerBuilder(new ExampleDockersBuilder(EvalModule.class, EVALMODULE_IMAGE_NAME).useCachedImage(useCachedImage));
+
+        httpNodeBuilder = new SimpleHttpNodeBuilder(new ExampleDockersBuilder(SimpleHttpNodeBuilder.class, HTTPNODE_IMAGE_NAME).useCachedImage(useCachedImage));
 
 //        benchmarkBuilder = new BenchmarkDockerBuilder(new PullBasedDockersBuilder(BENCHMARK_IMAGE_NAME));
 //        dataGeneratorBuilder = new DataGenDockerBuilder(new PullBasedDockersBuilder(DATAGEN_IMAGE_NAME));
@@ -84,6 +88,7 @@ public class BenchmarkTest {
         builder.addTask(evalStorageBuilder);
         builder.addTask(systemAdapterBuilder);
         builder.addTask(evalModuleBuilder);
+        builder.addTask(httpNodeBuilder);
         builder.build();
 
     }
@@ -137,6 +142,7 @@ public class BenchmarkTest {
         Component evalStorage = new EvalStorage();
         Component systemAdapter = new SystemAdapter();
         Component evalModule = new EvalModule();
+        Component httpNode = new SimpleHttpServerComponent();
 
         if(dockerized) {
 
@@ -146,6 +152,7 @@ public class BenchmarkTest {
             evalStorage = evalStorageBuilder.build();
             evalModule = evalModuleBuilder.build();
             systemAdapter = systemAdapterBuilder.build();
+            httpNode = httpNodeBuilder.build();
         }
 
         commandQueueListener = new CommandQueueListener();
@@ -162,6 +169,7 @@ public class BenchmarkTest {
                         .evalStorage(evalStorage).evalStorageImageName(evalStorageBuilder.getImageName())
                         .evalModule(evalModule).evalModuleImageName(evalModuleBuilder.getImageName())
                         .systemAdapter(systemAdapter).systemAdapterImageName(SYSTEM_IMAGE_NAME)
+                        .customContainerImage(httpNode, HTTPNODE_IMAGE_NAME)
                         //.customContainerImage(systemAdapter, DUMMY_SYSTEM_IMAGE_NAME)
                 ;
 
