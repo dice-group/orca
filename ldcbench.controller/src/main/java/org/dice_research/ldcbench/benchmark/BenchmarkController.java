@@ -93,6 +93,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
             nodeMetadata[i] = new NodeMetadata();
             nodeMetadata[i].setHostname(containerId);
+            // FIXME: HOBBIT SDK workaround (setting environment for "containers")
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+            }
         });
 
         LOGGER.debug("Waiting for all cloud nodes to be ready...");
@@ -122,7 +127,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
                     DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, };
             createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
-            Thread.sleep(1000);
+            // FIXME: HOBBIT SDK workaround (setting environment for "containers")
+            Thread.sleep(2000);
         }
 
         // RDF graph generators
@@ -135,8 +141,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                     DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, };
             createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
+            // FIXME: HOBBIT SDK workaround (setting environment for "containers")
             try {
-                Thread.sleep(1000);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
             }
         });
