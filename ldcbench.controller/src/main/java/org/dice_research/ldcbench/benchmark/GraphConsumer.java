@@ -8,7 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
-import org.dice_research.ldcbench.benchmark.DataGenerator.types;
+import org.dice_research.ldcbench.benchmark.DataGenerator.Types;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.graph.GraphMetadata;
 import org.dice_research.ldcbench.graph.serialization.SerializationHelper;
@@ -33,7 +33,7 @@ public class GraphConsumer extends DefaultConsumer {
         int senderType = buf.getInt();
         buf = buf.compact();
         if (filter(senderId, senderType)) {
-            if (senderType == types.NODE_GRAPH_GENERATOR.ordinal()) {
+            if (senderType == Types.NODE_GRAPH_GENERATOR.ordinal()) {
                 Graph g;
                 try {
                     g = SerializationHelper.deserialize(buf.array());

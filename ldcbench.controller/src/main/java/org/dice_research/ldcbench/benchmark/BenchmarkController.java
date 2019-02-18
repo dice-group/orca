@@ -109,7 +109,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         // Node graph generator
         String[] envVariables = new String[] {
-                DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.NODE_GRAPH_GENERATOR,
+                DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
                 DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(0),
                 DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
                 DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
@@ -121,7 +121,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // RDF graph generators
         for (int i = 0; i < nodesAmount; i++) {
             envVariables = new String[] {
-                    DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.types.RDF_GRAPH_GENERATOR,
+                    DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.RDF_GRAPH_GENERATOR,
                     DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(1 + i),
                     DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
                     DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,

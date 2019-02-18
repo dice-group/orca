@@ -39,7 +39,7 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
     public static final String ENV_DATAGENERATOR_EXCHANGE_KEY = "LDCBENCH_DATAGENERATOR_EXCHANGE";
 
-    public static enum types {
+    public static enum Types {
         NODE_GRAPH_GENERATOR,
         RDF_GRAPH_GENERATOR
     };
@@ -57,7 +57,7 @@ public class DataGenerator extends AbstractDataGenerator {
     private int generatorId = -1;
 
     private int seed;
-    private types type;
+    private Types type;
     private int numberOfNodes;
     private double avgDegree;
     private int numberOfEdges;
@@ -74,7 +74,7 @@ public class DataGenerator extends AbstractDataGenerator {
     }
 
     private int getNodeId(int generatorId) {
-        if (type == types.RDF_GRAPH_GENERATOR) {
+        if (type == Types.RDF_GRAPH_GENERATOR) {
             return generatorId - 1;
         }
 
@@ -156,7 +156,7 @@ public class DataGenerator extends AbstractDataGenerator {
 
         generatorId = getGeneratorId();
         seed = EnvVariables.getInt(ENV_SEED_KEY);
-        type = types.valueOf(EnvVariables.getString(ENV_TYPE_KEY));
+        type = Types.valueOf(EnvVariables.getString(ENV_TYPE_KEY));
         numberOfNodes = EnvVariables.getInt(ENV_NUMBER_OF_NODES_KEY, 0);
         avgDegree = Double.parseDouble(EnvVariables.getString(ENV_AVERAGE_DEGREE_KEY));
         numberOfEdges = EnvVariables.getInt(ENV_NUMBER_OF_EDGES_KEY, 0);
@@ -167,7 +167,7 @@ public class DataGenerator extends AbstractDataGenerator {
         dataGeneratorsExchange = EnvVariables.getString(ENV_DATAGENERATOR_EXCHANGE_KEY);
         dataGeneratorsChannel = cmdQueueFactory.getConnection().createChannel();
 
-        if (type == types.RDF_GRAPH_GENERATOR) {
+        if (type == Types.RDF_GRAPH_GENERATOR) {
             // Queue for sending final graphs to BenchmarkController
             dataQueueName = EnvVariables.getString(ENV_DATA_QUEUE_KEY);
 
@@ -179,7 +179,7 @@ public class DataGenerator extends AbstractDataGenerator {
 
         LOGGER.info("DataGenerator initialized (ID: {}, type: {})", generatorId, type);
 
-        if (type == types.NODE_GRAPH_GENERATOR) {
+        if (type == Types.NODE_GRAPH_GENERATOR) {
             LOGGER.debug("Waiting for all generators to be ready...");
             dataGeneratorsReady.acquire(numberOfNodes);
         } else {
@@ -189,7 +189,7 @@ public class DataGenerator extends AbstractDataGenerator {
         GraphGenerator generator = new RandomRDF("Graph " + generatorId);
         GraphBuilder graph = new GrphBasedGraph();
 
-        if (type == types.NODE_GRAPH_GENERATOR) {
+        if (type == Types.NODE_GRAPH_GENERATOR) {
             nodeGraph = graph;
         }
 
@@ -201,7 +201,7 @@ public class DataGenerator extends AbstractDataGenerator {
             generator.generateGraph(avgDegree, numberOfEdges, seed, graph);
         }
 
-        if (type == types.NODE_GRAPH_GENERATOR) {
+        if (type == Types.NODE_GRAPH_GENERATOR) {
             LOGGER.debug("Broadcasting the node graph...");
         } else {
             LOGGER.debug("Waiting for the node graph...");
@@ -213,7 +213,7 @@ public class DataGenerator extends AbstractDataGenerator {
         header.putInt(generatorId);
         header.putInt(type.ordinal());
 
-        if (type == types.NODE_GRAPH_GENERATOR) {
+        if (type == Types.NODE_GRAPH_GENERATOR) {
             // Broadcast our graph.
             byte[] data = SerializationHelper.serialize(serializerClass, nodeGraph);
             ByteBuffer buf = ByteBuffer.allocate(header.capacity() + data.length);
@@ -234,7 +234,7 @@ public class DataGenerator extends AbstractDataGenerator {
             dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.toByteArray());
         }
 
-        if (type == types.RDF_GRAPH_GENERATOR) {
+        if (type == Types.RDF_GRAPH_GENERATOR) {
             // Identify nodes linked from this node.
             rdfMetadata = Arrays.stream(nodeGraph.outgoingEdgeTargets(nodeId)).boxed().collect(HashMap::new, (m, v) -> m.put(v, null), HashMap::putAll);
 
