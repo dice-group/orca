@@ -13,6 +13,6 @@ import org.simpleframework.http.Response;
 public interface CrawleableResource {
 
     public boolean handleRequest(Request request, Response response,
-            OutputStream out) throws SimpleHTTPException;
+            OutputStream out) throws SimpleHttpException;
 
 }

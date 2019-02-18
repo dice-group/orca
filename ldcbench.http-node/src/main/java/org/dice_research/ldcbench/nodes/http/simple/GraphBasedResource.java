@@ -41,10 +41,10 @@ public class GraphBasedResource extends AbstractCrawleableResource {
 
     @Override
     public boolean handleRequest(String target, String contentType, String charset, OutputStream out)
-            throws SimpleHTTPException {
+            throws SimpleHttpException {
         Lang lang = RDFLanguages.contentTypeToLang(contentType);
         if ((lang == null) && (failIfContentTypeMismatch)) {
-            throw new SimpleHTTPException(
+            throw new SimpleHttpException(
                     "Couldn't transform content type \"" + contentType + "\" into a known RDF language.",
                     Status.INTERNAL_SERVER_ERROR);
         } else {
@@ -61,35 +61,35 @@ public class GraphBasedResource extends AbstractCrawleableResource {
         return true;
     }
 
-    private int[] parseIds(String target) throws SimpleHTTPException {
+    private int[] parseIds(String target) throws SimpleHttpException {
         int start = target.indexOf(UriHelper.DATASET_KEY_WORD);
         if (start < 0) {
-            throw new SimpleHTTPException("Couldn't find resource at target \"" + target + "\".", Status.NOT_FOUND);
+            throw new SimpleHttpException("Couldn't find resource at target \"" + target + "\".", Status.NOT_FOUND);
         }
         start += UriHelper.DATASET_KEY_WORD.length() + 1;
         int end = target.indexOf('/', start);
         if (end < 0) {
-            throw new SimpleHTTPException("Couldn't find resource at target \"" + target + "\".", Status.NOT_FOUND);
+            throw new SimpleHttpException("Couldn't find resource at target \"" + target + "\".", Status.NOT_FOUND);
         }
         return new int[] { parseIdAfterKeyword(target, UriHelper.DATASET_KEY_WORD, true),
                 parseIdAfterKeyword(target, UriHelper.RESOURCE_NODE_TYPE, false) };
     }
 
     private int parseIdAfterKeyword(String target, String keyword, boolean terminatedWithSlash)
-            throws SimpleHTTPException {
+            throws SimpleHttpException {
         int start = target.indexOf(keyword);
         if (start < 0) {
-            throw new SimpleHTTPException("Couldn't find resource at target \"" + target + "\".", Status.NOT_FOUND);
+            throw new SimpleHttpException("Couldn't find resource at target \"" + target + "\".", Status.NOT_FOUND);
         }
         start += keyword.length() + 1;
         int end = terminatedWithSlash ? target.indexOf('/', start) : target.length();
         if (end < 0) {
-            throw new SimpleHTTPException("Couldn't find resource at target \"" + target + "\".", Status.NOT_FOUND);
+            throw new SimpleHttpException("Couldn't find resource at target \"" + target + "\".", Status.NOT_FOUND);
         }
         try {
             return Integer.parseInt(target.substring(start, end));
         } catch (NumberFormatException e) {
-            throw new SimpleHTTPException("Couldn't find resource at target \"" + target + "\".", e, Status.NOT_FOUND);
+            throw new SimpleHttpException("Couldn't find resource at target \"" + target + "\".", e, Status.NOT_FOUND);
         }
     }
 
