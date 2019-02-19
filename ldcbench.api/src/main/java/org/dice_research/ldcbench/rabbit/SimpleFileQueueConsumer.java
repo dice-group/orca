@@ -1,0 +1,78 @@
+package org.dice_research.ldcbench.rabbit;
+
+import java.nio.file.Files;
+import java.io.File;
+import org.hobbit.core.rabbit.SimpleFileReceiver;
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Consumer;
+import com.rabbitmq.client.DefaultConsumer;
+import com.rabbitmq.client.Envelope;
+import java.io.Closeable;
+import java.io.IOException;
+import org.hobbit.core.rabbit.RabbitQueueFactory;
+
+/**
+ * This class implements receiving SimpleFile-s coming through a queue.
+ */
+public class SimpleFileQueueConsumer implements Closeable {
+    private String outputDir = getTempDir();
+    private SimpleFileReceiver receiver;
+    private Thread thread;
+
+    /**
+     * Initializes consuming of messages coming through specified queue.
+     *
+     * @param queueFactory
+     *            factory to create queues with
+     * @param queueName
+     *            name of the queue
+     */
+    public SimpleFileQueueConsumer(RabbitQueueFactory queueFactory, String queueName) throws IOException {
+        receiver = SimpleFileReceiver.create(queueFactory, queueName);
+
+        thread = new Thread(){
+            @Override
+            public void run() {
+                try {
+                    String[] files = receiver.receiveData(outputDir);
+                    handle(files);
+                } catch (IOException | InterruptedException e) {
+                    handle(null);
+                }
+            }
+        };
+        thread.start();
+    }
+
+    private static String getTempDir() throws IOException {
+        return Files.createTempDirectory("GraphQueueConsumer").toAbsolutePath().toString();
+    }
+
+    /**
+     * Terminates the receiving and waits until remaining data is processed.
+     */
+    @Override
+    public void close() {
+        if (receiver != null) {
+            try {
+                receiver.terminate();
+            } catch (Exception e) {
+            }
+        }
+        if (thread != null) {
+            try {
+                thread.join();
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    /**
+     * Abstract method which is called when receiving is terminated.
+     *
+     * @param files
+     *            array of file names received
+     */
+    public void handle(String[] files) {};
+}
