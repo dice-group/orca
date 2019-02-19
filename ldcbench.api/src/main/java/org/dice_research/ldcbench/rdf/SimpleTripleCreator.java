@@ -63,10 +63,10 @@ public class SimpleTripleCreator implements TripleCreator {
         }
         Node n;
         if (isProperty) {
-            n = ResourceFactory.createProperty(UriHelper.creatUri(domain, 0, UriHelper.PROPERTY_NODE_TYPE, externalId))
+            n = ResourceFactory.createProperty(UriHelper.createUri(domain, 0, UriHelper.PROPERTY_NODE_TYPE, externalId))
                     .asNode();
         } else {
-            n = ResourceFactory.createResource(UriHelper.creatUri(domain, 0, UriHelper.RESOURCE_NODE_TYPE, externalId))
+            n = ResourceFactory.createResource(UriHelper.createUri(domain, 0, UriHelper.RESOURCE_NODE_TYPE, externalId))
                     .asNode();
         }
         return n;

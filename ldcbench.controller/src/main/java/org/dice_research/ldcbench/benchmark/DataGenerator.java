@@ -4,6 +4,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Consumer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -18,6 +19,7 @@ import org.dice_research.ldcbench.graph.GraphMetadata;
 import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.dice_research.ldcbench.graph.serialization.DumbSerializer;
 import org.dice_research.ldcbench.graph.serialization.SerializationHelper;
+import org.dice_research.ldcbench.ApiConstants;
 import org.hobbit.core.components.AbstractDataGenerator;
 import org.hobbit.core.rabbit.SimpleFileSender;
 import org.hobbit.utils.EnvVariables;
@@ -37,11 +39,12 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
     public static final String ENV_DATAGENERATOR_EXCHANGE_KEY = "LDCBENCH_DATAGENERATOR_EXCHANGE";
 
-    public static enum types {
+    public static enum Types {
         NODE_GRAPH_GENERATOR,
         RDF_GRAPH_GENERATOR
     };
 
+    private Semaphore dataGeneratorsReady = new Semaphore(0);
     private Semaphore nodeGraphReceivedMutex = new Semaphore(0);
     private Semaphore nodeGraphProcessedMutex = new Semaphore(0);
     private Map<Integer, GraphMetadata> rdfMetadata;
@@ -54,14 +57,14 @@ public class DataGenerator extends AbstractDataGenerator {
     private int generatorId = -1;
 
     private int seed;
-    private types type;
+    private Types type;
     private int numberOfNodes;
     private double avgDegree;
     private int numberOfEdges;
 
-    private SimpleFileSender dataSender;
     private Channel dataGeneratorsChannel;
     private String dataGeneratorsExchange;
+    private String dataQueueName;
 
     private Graph nodeGraph;
     private Integer nodeId;
@@ -71,30 +74,14 @@ public class DataGenerator extends AbstractDataGenerator {
     }
 
     private int getNodeId(int generatorId) {
-        if (type == types.RDF_GRAPH_GENERATOR) {
+        if (type == Types.RDF_GRAPH_GENERATOR) {
             return generatorId - 1;
         }
 
         throw new IllegalStateException();
     }
 
-    @Override
-    public void init() throws Exception {
-        // Always init the super class first!
-        super.init();
-
-        generatorId = getGeneratorId();
-        seed = EnvVariables.getInt(ENV_SEED_KEY);
-        type = types.valueOf(EnvVariables.getString(ENV_TYPE_KEY));
-        numberOfNodes = EnvVariables.getInt(ENV_NUMBER_OF_NODES_KEY, 0);
-        avgDegree = Double.parseDouble(EnvVariables.getString(ENV_AVERAGE_DEGREE_KEY));
-        numberOfEdges = EnvVariables.getInt(ENV_NUMBER_OF_EDGES_KEY, 0);
-
-        LOGGER.info("Seed: {}", seed);
-
-        // BenchmarkController and DataGenerators communication
-        dataGeneratorsExchange = EnvVariables.getString(ENV_DATAGENERATOR_EXCHANGE_KEY);
-        dataGeneratorsChannel = cmdQueueFactory.getConnection().createChannel();
+    private void ConsumeDataGeneratorsExchange() throws IOException {
         String queueName = dataGeneratorsChannel.queueDeclare().getQueue();
         dataGeneratorsChannel.queueBind(queueName, dataGeneratorsExchange, "");
         Consumer consumer = new GraphConsumer(dataGeneratorsChannel) {
@@ -123,28 +110,86 @@ public class DataGenerator extends AbstractDataGenerator {
                 }
             }
         };
-        if (type == types.RDF_GRAPH_GENERATOR) {
-            dataGeneratorsChannel.basicConsume(queueName, true, consumer);
+
+        dataGeneratorsChannel.basicConsume(queueName, true, consumer);
+    }
+
+    private void addInterlinks(GraphBuilder g) {
+        for (Map.Entry<Integer, GraphMetadata> entry : rdfMetadata.entrySet()) {
+            int targetNodeGraph = entry.getKey();
+            GraphMetadata gm = entry.getValue();
+
+            // FIXME use random node
+            int nodeWithOutgoingLink = 0;
+
+            // FIXME use gm.entranceNodes
+            // FIXME use random entrance node
+            /*
+            if (gm.entranceNodes.length == 0) {
+                throw new IllegalStateException("Node " + nodeId + " needs to link to node " + targetNodeGraph + " but there are no entrypoints.");
+            }
+            int entranceInTargetGraph = gm.entranceNodes[0];
+            */
+            int entranceInTargetGraph = 0;
+
+            int externalNode = g.addNode();
+            g.setGraphIdOfNode(externalNode, targetNodeGraph, entranceInTargetGraph);
+
+            // FIXME don't always use edge type 0
+            g.addEdge(nodeWithOutgoingLink, externalNode, 0);
         }
+    }
 
-        // Queue for sending final graphs to BenchmarkController
-        if (type == types.RDF_GRAPH_GENERATOR) {
-            String dataQueueName = EnvVariables.getString(ENV_DATA_QUEUE_KEY);
-            dataSender = SimpleFileSender.create(outgoingDataQueuefactory, dataQueueName);
-
-            // Identify node ID for this generator.
-            nodeId = getNodeId();
+    private void sendFinalGraph(Graph g) throws Exception {
+        try (
+            InputStream is = new ByteArrayInputStream(SerializationHelper.serialize(serializerClass, g));
+            SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, dataQueueName);
+        ) {
+            dataSender.streamData(is, "graph-" + generatorId);
         }
-
-        LOGGER.info("DataGenerator initialized (ID: {}, type: {})", generatorId, type);
     }
 
     @Override
-    protected void generateData() throws Exception {
+    public void init() throws Exception {
+        // Always init the super class first!
+        super.init();
+
+        generatorId = getGeneratorId();
+        seed = EnvVariables.getInt(ENV_SEED_KEY);
+        type = Types.valueOf(EnvVariables.getString(ENV_TYPE_KEY));
+        numberOfNodes = EnvVariables.getInt(ENV_NUMBER_OF_NODES_KEY, 0);
+        avgDegree = Double.parseDouble(EnvVariables.getString(ENV_AVERAGE_DEGREE_KEY));
+        numberOfEdges = EnvVariables.getInt(ENV_NUMBER_OF_EDGES_KEY, 0);
+
+        LOGGER.info("Seed: {}", seed);
+
+        // BenchmarkController and DataGenerators communication
+        dataGeneratorsExchange = EnvVariables.getString(ENV_DATAGENERATOR_EXCHANGE_KEY);
+        dataGeneratorsChannel = cmdQueueFactory.getConnection().createChannel();
+
+        if (type == Types.RDF_GRAPH_GENERATOR) {
+            // Queue for sending final graphs to BenchmarkController
+            dataQueueName = EnvVariables.getString(ENV_DATA_QUEUE_KEY);
+
+            // Identify node ID for this generator.
+            nodeId = getNodeId();
+
+            ConsumeDataGeneratorsExchange();
+        }
+
+        LOGGER.info("DataGenerator initialized (ID: {}, type: {})", generatorId, type);
+
+        if (type == Types.NODE_GRAPH_GENERATOR) {
+            LOGGER.debug("Waiting for all generators to be ready...");
+            dataGeneratorsReady.acquire(numberOfNodes);
+        } else {
+            sendToCmdQueue(ApiConstants.DATAGENERATOR_READY_SIGNAL);
+        }
+
         GraphGenerator generator = new RandomRDF("Graph " + generatorId);
         GraphBuilder graph = new GrphBasedGraph();
 
-        if (type == types.NODE_GRAPH_GENERATOR) {
+        if (type == Types.NODE_GRAPH_GENERATOR) {
             nodeGraph = graph;
         }
 
@@ -156,7 +201,7 @@ public class DataGenerator extends AbstractDataGenerator {
             generator.generateGraph(avgDegree, numberOfEdges, seed, graph);
         }
 
-        if (type == types.NODE_GRAPH_GENERATOR) {
+        if (type == Types.NODE_GRAPH_GENERATOR) {
             LOGGER.debug("Broadcasting the node graph...");
         } else {
             LOGGER.debug("Waiting for the node graph...");
@@ -168,7 +213,7 @@ public class DataGenerator extends AbstractDataGenerator {
         header.putInt(generatorId);
         header.putInt(type.ordinal());
 
-        if (type == types.NODE_GRAPH_GENERATOR) {
+        if (type == Types.NODE_GRAPH_GENERATOR) {
             // Broadcast our graph.
             byte[] data = SerializationHelper.serialize(serializerClass, nodeGraph);
             ByteBuffer buf = ByteBuffer.allocate(header.capacity() + data.length);
@@ -185,10 +230,11 @@ public class DataGenerator extends AbstractDataGenerator {
             buf.write(header.array(), 0, header.capacity());
             ObjectOutputStream output = new ObjectOutputStream(buf);
             output.writeObject(gm);
+
             dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.toByteArray());
         }
 
-        if (type == types.RDF_GRAPH_GENERATOR) {
+        if (type == Types.RDF_GRAPH_GENERATOR) {
             // Identify nodes linked from this node.
             rdfMetadata = Arrays.stream(nodeGraph.outgoingEdgeTargets(nodeId)).boxed().collect(HashMap::new, (m, v) -> m.put(v, null), HashMap::putAll);
 
@@ -197,33 +243,30 @@ public class DataGenerator extends AbstractDataGenerator {
             targetMetadataReceivedSemaphore.acquire(rdfMetadata.size());
 
             LOGGER.info("Got all relevant rdf graphs", generatorId);
-
-            for (Map.Entry<Integer, GraphMetadata> entry : rdfMetadata.entrySet()) {
-                int targetNodeGraph = entry.getKey();
-                GraphMetadata gm = entry.getValue();
-
-                // FIXME use random node
-                int nodeWithOutgoingLink = 0;
-
-                // FIXME use random node
-                // FIXME use gm.entranceNodes
-                int entranceInTargetGraph = 0;
-
-                int externalNode = graph.addNode();
-                graph.setGraphIdOfNode(externalNode, targetNodeGraph, entranceInTargetGraph);
-
-                // FIXME don't always use edge type 0
-                graph.addEdge(nodeWithOutgoingLink, externalNode, 0);
-            }
-
-            // TODO
+            addInterlinks(graph);
 
             // Send the final graph data.
-            LOGGER.info("Sending the graph data to the node...");
-            dataSender.streamData(new ByteArrayInputStream(SerializationHelper.serialize(serializerClass, graph)), "");
+            LOGGER.info("Sending the final graph data...");
+            sendFinalGraph(graph);
         }
 
         LOGGER.debug("Generator {}: Generation done.", generatorId);
+    }
+
+    @Override
+    protected void generateData() throws Exception {
+        LOGGER.debug("generateData()");
+    }
+
+    @Override
+    public void receiveCommand(byte command, byte[] data) {
+        switch (command) {
+        case ApiConstants.DATAGENERATOR_READY_SIGNAL:
+            LOGGER.debug("Received DATAGENERATOR_READY_SIGNAL");
+            dataGeneratorsReady.release();
+        }
+
+        super.receiveCommand(command, data);
     }
 
     @Override

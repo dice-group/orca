@@ -1,12 +1,12 @@
 package org.dice_research.ldcbench.nodes.http.simple;
 
-import java.io.ByteArrayInputStream;
+import org.hobbit.core.rabbit.SimpleFileReceiver;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.concurrent.Semaphore;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -16,6 +16,7 @@ import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.rabbit.GraphHandler;
+import org.dice_research.ldcbench.rabbit.ObjectStreamFanoutExchangeConsumer;
 import org.dice_research.ldcbench.rdf.UriHelper;
 import org.hobbit.core.components.AbstractCommandReceivingComponent;
 import org.hobbit.core.components.Component;
@@ -31,12 +32,6 @@ import org.simpleframework.transport.connect.SocketConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
-
 public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent implements Component {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServerComponent.class);
@@ -48,7 +43,7 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
     protected Container container;
     protected Server server;
     protected Connection connection;
-    protected Channel bcBroadcastChannel;
+    protected ObjectStreamFanoutExchangeConsumer<NodeMetadata[]> bcBroadcastConsumer;
     protected DataReceiver receiver;
     protected String domainNames[];
 
@@ -60,15 +55,9 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
 
         // initialize exchange with BC
         String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);
-        bcBroadcastChannel = cmdQueueFactory.getConnection().createChannel();
-        String queueName = bcBroadcastChannel.queueDeclare().getQueue();
-        bcBroadcastChannel.exchangeDeclare(exchangeName, "fanout", false, true, null);
-        bcBroadcastChannel.queueBind(queueName, exchangeName, "");
-
-        Consumer consumer = new DefaultConsumer(bcBroadcastChannel) {
+        bcBroadcastConsumer = new ObjectStreamFanoutExchangeConsumer<NodeMetadata[]>(cmdQueueFactory, exchangeName) {
             @Override
-            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
-                    byte[] body) throws IOException {
+            public void handle(NodeMetadata[] body) {
                 try {
                     handleBCMessage(body);
                 } catch (Exception e) {
@@ -76,17 +65,21 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
                 }
             }
         };
-        bcBroadcastChannel.basicConsume(queueName, true, consumer);
 
         // initialize graph queue
-        queueName = EnvVariables.getString(ApiConstants.ENV_DATA_QUEUE_KEY);
-        GraphHandler graphHandler = new GraphHandler();
-        receiver = DataReceiverImpl.builder().dataHandler(graphHandler).queue(this.incomingDataQueueFactory, queueName)
-                .build();
+        String queueName = EnvVariables.getString(ApiConstants.ENV_DATA_QUEUE_KEY);
+        SimpleFileReceiver receiver = SimpleFileReceiver.create(this.incomingDataQueueFactory, queueName);
+        GraphHandler graphHandler = new GraphHandler(receiver);
+        Thread receiverThread = new Thread(graphHandler);
+        receiverThread.start();
+
+        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
 
         // Wait for the data generation to finish
         dataGenerationFinished.acquire();
-        receiver.closeWhenFinished();
+
+        receiver.terminate();
+        receiverThread.join();
 
         if (graphHandler.encounteredError()) {
             throw new IllegalStateException("Encountered an error while receiving graphs.");
@@ -142,17 +135,17 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
         }
     }
 
-    protected void handleBCMessage(byte[] body) {
-        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(body))) {
-            NodeMetadata[] nodeMetadata = (NodeMetadata[]) ois.readObject();
+    protected void handleBCMessage(NodeMetadata[] nodeMetadata) {
+        if (nodeMetadata != null) {
             domainNames = new String[nodeMetadata.length];
             for (int i = 0; i < nodeMetadata.length; ++i) {
                 domainNames[i] = nodeMetadata[i].getHostname();
             }
-        } catch (Exception e) {
-            LOGGER.error("Couldn't parse node metadata received from benchmark controller.", e);
+        } else {
+            LOGGER.error("Couldn't parse node metadata received from benchmark controller.");
             domainNames = null;
         }
+        LOGGER.debug("Got domain names: {}", Arrays.toString(domainNames));
         // In any case, we should release the semaphore. Otherwise, this component would
         // get stuck and wait forever for an additional message.
         domainNamesReceived.release();
@@ -176,11 +169,8 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
             LOGGER.error("Exception while closing server. It will be ignored.", e);
         }
         IOUtils.closeQuietly(receiver);
-        if (bcBroadcastChannel != null) {
-            try {
-                bcBroadcastChannel.close();
-            } catch (Exception e) {
-            }
+        if (bcBroadcastConsumer != null) {
+            bcBroadcastConsumer.close();
         }
         super.close();
     }

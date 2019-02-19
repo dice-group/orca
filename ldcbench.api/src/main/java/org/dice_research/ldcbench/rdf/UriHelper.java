@@ -6,7 +6,7 @@ public class UriHelper {
     public static final String PROPERTY_NODE_TYPE = "property";
     public static final String RESOURCE_NODE_TYPE = "resource";
 
-    public static String creatUri(String domain, int datasetId, String nodeType, int nodeId) {
+    public static String createUri(String domain, int datasetId, String nodeType, int nodeId) {
         StringBuilder builder = new StringBuilder();
         builder.append("http://");
         builder.append(domain);

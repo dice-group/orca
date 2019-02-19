@@ -10,6 +10,7 @@ import org.hobbit.sdk.docker.RabbitMqDockerizer;
 import org.hobbit.sdk.docker.builders.*;
 import org.hobbit.sdk.docker.builders.hobbit.*;
 
+import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpServerComponent;
 import org.dice_research.ldcbench.benchmark.*;
 import org.dice_research.ldcbench.system.SystemAdapter;
 import org.dice_research.ldcbench.vocab.LDCBench;
@@ -23,6 +24,8 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +43,7 @@ import static org.dice_research.ldcbench.Constants.*;
  */
 
 public class BenchmarkTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkTest.class);
 
     public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
     private AbstractDockerizer rabbitMqDockerizer;
@@ -49,9 +53,9 @@ public class BenchmarkTest {
     BenchmarkDockerBuilder benchmarkBuilder;
     DataGenDockerBuilder dataGeneratorBuilder;
     TaskGenDockerBuilder taskGeneratorBuilder;
-    EvalStorageDockerBuilder evalStorageBuilder;
     SystemAdapterDockerBuilder systemAdapterBuilder;
     EvalModuleDockerBuilder evalModuleBuilder;
+    SimpleHttpNodeBuilder httpNodeBuilder;
 
     public void init(Boolean useCachedImage) throws Exception {
 
@@ -59,10 +63,11 @@ public class BenchmarkTest {
         dataGeneratorBuilder = new DataGenDockerBuilder(new ExampleDockersBuilder(DataGenerator.class, DATAGEN_IMAGE_NAME).useCachedImage(useCachedImage).addFileOrFolder("data"));
         taskGeneratorBuilder = new TaskGenDockerBuilder(new ExampleDockersBuilder(TaskGenerator.class, TASKGEN_IMAGE_NAME).useCachedImage(useCachedImage));
 
-        evalStorageBuilder = new EvalStorageDockerBuilder(new ExampleDockersBuilder(EvalStorage.class, EVAL_STORAGE_IMAGE_NAME).useCachedImage(useCachedImage));
 
         systemAdapterBuilder = new SystemAdapterDockerBuilder(new ExampleDockersBuilder(SystemAdapter.class, SYSTEM_IMAGE_NAME).useCachedImage(useCachedImage));
         evalModuleBuilder = new EvalModuleDockerBuilder(new ExampleDockersBuilder(EvalModule.class, EVALMODULE_IMAGE_NAME).useCachedImage(useCachedImage));
+
+        httpNodeBuilder = new SimpleHttpNodeBuilder(new ExampleDockersBuilder(SimpleHttpNodeBuilder.class, HTTPNODE_IMAGE_NAME).useCachedImage(useCachedImage));
 
 //        benchmarkBuilder = new BenchmarkDockerBuilder(new PullBasedDockersBuilder(BENCHMARK_IMAGE_NAME));
 //        dataGeneratorBuilder = new DataGenDockerBuilder(new PullBasedDockersBuilder(DATAGEN_IMAGE_NAME));
@@ -81,9 +86,9 @@ public class BenchmarkTest {
         builder.addTask(benchmarkBuilder);
         builder.addTask(dataGeneratorBuilder);
         builder.addTask(taskGeneratorBuilder);
-        builder.addTask(evalStorageBuilder);
         builder.addTask(systemAdapterBuilder);
         builder.addTask(evalModuleBuilder);
+        builder.addTask(httpNodeBuilder);
         builder.build();
 
     }
@@ -134,18 +139,18 @@ public class BenchmarkTest {
         Component benchmarkController = new BenchmarkController();
         Component dataGen = new DataGenerator();
         Component taskGen = new TaskGenerator();
-        Component evalStorage = new EvalStorage();
         Component systemAdapter = new SystemAdapter();
         Component evalModule = new EvalModule();
+        Component httpNode = new SimpleHttpServerComponent();
 
         if(dockerized) {
 
             benchmarkController = benchmarkBuilder.build();
             dataGen = dataGeneratorBuilder.build();
             taskGen = taskGeneratorBuilder.build();
-            evalStorage = evalStorageBuilder.build();
             evalModule = evalModuleBuilder.build();
             systemAdapter = systemAdapterBuilder.build();
+            httpNode = httpNodeBuilder.build();
         }
 
         commandQueueListener = new CommandQueueListener();
@@ -159,9 +164,9 @@ public class BenchmarkTest {
                         .benchmarkController(benchmarkController).benchmarkControllerImageName(BENCHMARK_IMAGE_NAME)
                         .dataGenerator(dataGen).dataGeneratorImageName(dataGeneratorBuilder.getImageName())
                         .taskGenerator(taskGen).taskGeneratorImageName(taskGeneratorBuilder.getImageName())
-                        .evalStorage(evalStorage).evalStorageImageName(evalStorageBuilder.getImageName())
                         .evalModule(evalModule).evalModuleImageName(evalModuleBuilder.getImageName())
                         .systemAdapter(systemAdapter).systemAdapterImageName(SYSTEM_IMAGE_NAME)
+                        .customContainerImage(httpNode, HTTPNODE_IMAGE_NAME)
                         //.customContainerImage(systemAdapter, DUMMY_SYSTEM_IMAGE_NAME)
                 ;
 
@@ -191,7 +196,13 @@ public class BenchmarkTest {
 
         rabbitMqDockerizer.stop();
 
-        Assert.assertFalse(componentsExecutor.anyExceptions());
+        if (componentsExecutor.anyExceptions()) {
+            LOGGER.error("Some components didn't execute cleanly");
+            for (Throwable e : componentsExecutor.getExceptions()) {
+                LOGGER.error("- {}", e.toString());
+            }
+            Assert.fail();
+        }
     }
 
     public static Model createBenchmarkParameters() throws IOException {
