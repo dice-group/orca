@@ -7,6 +7,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
+import org.dice_research.ldcbench.benchmark.eval.EvaluationResult;
 import org.hobbit.core.Commands;
 import org.hobbit.core.Constants;
 import org.hobbit.core.components.AbstractCommandReceivingComponent;
@@ -47,7 +48,7 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         
         // TODO evaluate the results based on the data from the SPARQL storage
         // Create result model and terminate
-        Model model = summarizeEvaluation();
+        Model model = summarizeEvaluation(runEvaluation());
         LOGGER.info("The result model has " + model.size() + " triples.");
         sendResultModel(model);
     }
@@ -82,7 +83,12 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         sendToCmdQueue(Commands.EVAL_MODULE_FINISHED_SIGNAL, outputStream.toByteArray());
     }
 
-    protected Model summarizeEvaluation() throws Exception {
+    private EvaluationResult runEvaluation() {
+        
+        return null;
+    }
+
+    protected Model summarizeEvaluation(EvaluationResult result) throws Exception {
         // All tasks/responsens have been evaluated. Summarize the results,
         // write them into a Jena model and send it to the benchmark controller.
         Model model = ModelFactory.createDefaultModel();

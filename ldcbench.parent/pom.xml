@@ -102,6 +102,11 @@
         <artifactId>jena-arq</artifactId>
         <version>3.6.0</version>
       </dependency>
+      <dependency>
+        <groupId>org.aksw.jena-sparql-api</groupId>
+        <artifactId>jena-sparql-api-core</artifactId>
+        <version>3.6.0-3</version>
+      </dependency>
       <!-- Grph -->
       <dependency>
         <groupId>grph</groupId>
