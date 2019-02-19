@@ -143,20 +143,21 @@ public class DataGenerator extends AbstractDataGenerator {
 
     private void sendFinalGraph(Graph g) throws Exception {
         byte[] data = SerializationHelper.serialize(serializerClass, g);
+        String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d", nodeId);
 
         // TODO: Use RabbitMQ exchange to send the data (SimpleFileSender doesn't support that)
         try (
             InputStream is = new ByteArrayInputStream(data);
             SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, dataQueueName);
         ) {
-            dataSender.streamData(is, "graph-" + generatorId);
+            dataSender.streamData(is, name);
         }
 
         try (
             InputStream is = new ByteArrayInputStream(data);
             SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, evalDataQueueName);
         ) {
-            dataSender.streamData(is, "graph-" + generatorId);
+            dataSender.streamData(is, name);
         }
     }
 

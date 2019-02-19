@@ -3,6 +3,8 @@ package org.dice_research.ldcbench.benchmark;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.concurrent.Semaphore;
+import java.util.Arrays;
+import java.util.Set;
 
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.data.NodeMetadata;
@@ -39,6 +41,22 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     private String getRandomNameForRabbitMQ() {
         return java.util.UUID.randomUUID().toString();
+    }
+
+    private void createDataGenerator(String generatorImageName, String[] envVariables) {
+        String containerId;
+        String variables[] = envVariables != null ? Arrays.copyOf(envVariables, envVariables.length + 1)
+                : new String[1];
+
+        variables[variables.length - 1] = Constants.GENERATOR_ID_KEY + "=" + dataGenContainerIds.size();
+        containerId = createContainer(generatorImageName, variables);
+        if (containerId != null) {
+            dataGenContainerIds.add(containerId);
+        } else {
+            String errorMsg = "Couldn't create generator component. Aborting.";
+            LOGGER.error(errorMsg);
+            throw new IllegalStateException(errorMsg);
+        }
     }
 
     @Override
@@ -130,6 +148,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // RDF graph generators
         for (int i = 0; i < nodesAmount; i++) {
             envVariables = new String[] {
+                    Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
                     DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.RDF_GRAPH_GENERATOR,
                     DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(1 + i),
                     DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
@@ -137,7 +156,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                     ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
                     DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, };
-            createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
+            createDataGenerator(DATAGEN_IMAGE_NAME, envVariables);
             // FIXME: HOBBIT SDK workaround (setting environment for "containers")
             Thread.sleep(2000);
         }
