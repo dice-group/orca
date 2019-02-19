@@ -17,6 +17,7 @@ import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.rabbit.GraphHandler;
+import org.dice_research.ldcbench.rabbit.FanoutExchangeConsumer;
 import org.dice_research.ldcbench.rdf.UriHelper;
 import org.hobbit.core.components.AbstractCommandReceivingComponent;
 import org.hobbit.core.components.Component;
@@ -32,12 +33,6 @@ import org.simpleframework.transport.connect.SocketConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
-
 public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent implements Component {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServerComponent.class);
@@ -49,7 +44,7 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
     protected Container container;
     protected Server server;
     protected Connection connection;
-    protected Channel bcBroadcastChannel;
+    protected FanoutExchangeConsumer bcBroadcastConsumer;
     protected DataReceiver receiver;
     protected String domainNames[];
 
@@ -61,15 +56,9 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
 
         // initialize exchange with BC
         String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);
-        bcBroadcastChannel = cmdQueueFactory.getConnection().createChannel();
-        String queueName = bcBroadcastChannel.queueDeclare().getQueue();
-        bcBroadcastChannel.exchangeDeclare(exchangeName, "fanout", false, true, null);
-        bcBroadcastChannel.queueBind(queueName, exchangeName, "");
-
-        Consumer consumer = new DefaultConsumer(bcBroadcastChannel) {
+        bcBroadcastConsumer = new FanoutExchangeConsumer(cmdQueueFactory, exchangeName) {
             @Override
-            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
-                    byte[] body) throws IOException {
+            public void handle(byte[] body) {
                 try {
                     handleBCMessage(body);
                 } catch (Exception e) {
@@ -77,10 +66,9 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
                 }
             }
         };
-        bcBroadcastChannel.basicConsume(queueName, true, consumer);
 
         // initialize graph queue
-        queueName = EnvVariables.getString(ApiConstants.ENV_DATA_QUEUE_KEY);
+        String queueName = EnvVariables.getString(ApiConstants.ENV_DATA_QUEUE_KEY);
         SimpleFileReceiver receiver = SimpleFileReceiver.create(this.incomingDataQueueFactory, queueName);
         GraphHandler graphHandler = new GraphHandler(receiver);
         Thread receiverThread = new Thread(graphHandler);
@@ -182,11 +170,8 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
             LOGGER.error("Exception while closing server. It will be ignored.", e);
         }
         IOUtils.closeQuietly(receiver);
-        if (bcBroadcastChannel != null) {
-            try {
-                bcBroadcastChannel.close();
-            } catch (Exception e) {
-            }
+        if (bcBroadcastConsumer != null) {
+            bcBroadcastConsumer.close();
         }
         super.close();
     }
