@@ -97,14 +97,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
             Thread.sleep(2000);
         }
 
-        // FIXME: Evaluation storage is not used in this benchmark,
-        // but AbstractBenchmarkController assumes that it exists in several places.
-        LOGGER.debug("Creating evaluation storage...");
-        envVariables = ArrayUtils.add(DEFAULT_EVAL_STORAGE_PARAMETERS,
-                AbstractEvaluationStorage.RECEIVE_TIMESTAMP_FOR_SYSTEM_RESULTS_KEY + "=false");
-        envVariables = ArrayUtils.add(envVariables, Constants.ACKNOWLEDGEMENT_FLAG_KEY + "=false");
-        createEvaluationStorage(EVAL_STORAGE_IMAGE_NAME, envVariables);
-
         LOGGER.debug("Creating evaluation module...");
         createEvaluationModule(EVALMODULE_IMAGE_NAME, new String[] {});
 
