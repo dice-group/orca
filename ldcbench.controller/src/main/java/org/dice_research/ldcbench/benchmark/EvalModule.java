@@ -10,9 +10,16 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.dice_research.ldcbench.ApiConstants;
+import org.dice_research.ldcbench.benchmark.eval.CrawledDataEvaluator;
 import org.dice_research.ldcbench.benchmark.eval.EvaluationResult;
+import org.dice_research.ldcbench.benchmark.eval.FileBasedGraphSupplier;
+import org.dice_research.ldcbench.benchmark.eval.GraphSupplier;
+import org.dice_research.ldcbench.benchmark.eval.GraphValidator;
+import org.dice_research.ldcbench.benchmark.eval.SimpleCompleteEvaluator;
+import org.dice_research.ldcbench.benchmark.eval.SparqlBasedValidator;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.rabbit.ObjectStreamFanoutExchangeConsumer;
+import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.core.Commands;
 import org.hobbit.core.Constants;
 import org.hobbit.core.components.AbstractCommandReceivingComponent;
@@ -87,9 +94,8 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         // TODO wait for all the graphs to be sent
 
         // TODO wait for the crawling to finish
-
-        // TODO evaluate the results based on the data from the SPARQL storage
-        // Create result model and terminate
+        
+        // Evaluate the crawled data, create result model and terminate
         Model model = summarizeEvaluation(runEvaluation());
         LOGGER.info("The result model has " + model.size() + " triples.");
         sendResultModel(model);
@@ -129,8 +135,12 @@ public class EvalModule extends AbstractCommandReceivingComponent {
     }
 
     private EvaluationResult runEvaluation() {
-        
-        return null;
+        String graphFiles[] = null;
+        // TODO evaluate the results based on the data from the SPARQL storage
+        GraphSupplier supplier = new FileBasedGraphSupplier(graphFiles, domainNames);
+        GraphValidator validator = SparqlBasedValidator.create(sparqlEndpoint);
+        CrawledDataEvaluator evaluator = new SimpleCompleteEvaluator(supplier, validator);
+        return evaluator.evaluate();
     }
 
     protected Model summarizeEvaluation(EvaluationResult result) throws Exception {
@@ -140,7 +150,9 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         model.add(model.createResource(experimentUri), RDF.type, HOBBIT.Experiment);
         Resource experimentResource = model.getResource(experimentUri);
         model.add(experimentResource , RDF.type, HOBBIT.Experiment);
-
+        model.add(model.createLiteralStatement(experimentResource, LDCBench.triplesEvaluated, result.checkedTriples));
+        model.add(model.createLiteralStatement(experimentResource, LDCBench.truePositives, result.truePositives));
+        model.add(model.createLiteralStatement(experimentResource, LDCBench.recall, result.recall));
         return model;
     }
 }
