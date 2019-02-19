@@ -13,6 +13,7 @@ import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.benchmark.eval.EvaluationResult;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.rabbit.ObjectStreamFanoutExchangeConsumer;
+import org.dice_research.ldcbench.rabbit.SimpleFileQueueConsumer;
 import org.hobbit.core.Commands;
 import org.hobbit.core.Constants;
 import org.hobbit.core.components.AbstractCommandReceivingComponent;
@@ -31,6 +32,10 @@ public class EvalModule extends AbstractCommandReceivingComponent {
     protected String sparqlEndpoint;
 
     protected ObjectStreamFanoutExchangeConsumer<NodeMetadata[]> bcBroadcastConsumer;
+
+    protected SimpleFileQueueConsumer graphConsumer;
+
+    protected Semaphore dataGenerationFinished = new Semaphore(0);
 
     protected String domainNames[];
     protected Semaphore domainNamesReceived = new Semaphore(0);
@@ -55,7 +60,13 @@ public class EvalModule extends AbstractCommandReceivingComponent {
             }
         };
 
-        // TODO Initialize the receiving of graph data
+        String graphQueueName = EnvVariables.getString(ApiConstants.ENV_EVAL_DATA_QUEUE_KEY);
+        graphConsumer = new SimpleFileQueueConsumer(incomingDataQueueFactory, graphQueueName) {
+            @Override
+            public void handle(String[] files) {
+                LOGGER.debug("Got files: {}", Arrays.toString(files));
+            }
+        };
 
         // Signal to the BC that we are ready to receive
         sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
@@ -84,7 +95,10 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         // Let the BC now that this module is ready
         sendToCmdQueue(Commands.EVAL_MODULE_READY_SIGNAL);
 
-        // TODO wait for all the graphs to be sent
+        // Wait for all the graphs to be sent
+        dataGenerationFinished.acquire();
+        graphConsumer.close();
+        graphConsumer = null;
 
         // TODO wait for the crawling to finish
 
@@ -97,7 +111,11 @@ public class EvalModule extends AbstractCommandReceivingComponent {
 
     @Override
     public void receiveCommand(byte command, byte[] data) {
-        // TODO Auto-generated method stub
+        switch (command) {
+        case Commands.DATA_GENERATION_FINISHED:
+            LOGGER.debug("Received DATA_GENERATION_FINISHED");
+            dataGenerationFinished.release();
+        }
     }
 
     @Override
@@ -105,6 +123,9 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         // Free the resources you requested here
         if (bcBroadcastConsumer != null) {
             bcBroadcastConsumer.close();
+        }
+        if (graphConsumer != null) {
+            graphConsumer.close();
         }
         // Always close the super class after yours!
         try {

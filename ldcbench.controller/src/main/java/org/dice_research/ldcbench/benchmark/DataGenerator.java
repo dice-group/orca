@@ -65,6 +65,7 @@ public class DataGenerator extends AbstractDataGenerator {
     private Channel dataGeneratorsChannel;
     private String dataGeneratorsExchange;
     private String dataQueueName;
+    private String evalDataQueueName;
 
     private Graph nodeGraph;
     private Integer nodeId;
@@ -141,9 +142,19 @@ public class DataGenerator extends AbstractDataGenerator {
     }
 
     private void sendFinalGraph(Graph g) throws Exception {
+        byte[] data = SerializationHelper.serialize(serializerClass, g);
+
+        // TODO: Use RabbitMQ exchange to send the data (SimpleFileSender doesn't support that)
         try (
-            InputStream is = new ByteArrayInputStream(SerializationHelper.serialize(serializerClass, g));
+            InputStream is = new ByteArrayInputStream(data);
             SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, dataQueueName);
+        ) {
+            dataSender.streamData(is, "graph-" + generatorId);
+        }
+
+        try (
+            InputStream is = new ByteArrayInputStream(data);
+            SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, evalDataQueueName);
         ) {
             dataSender.streamData(is, "graph-" + generatorId);
         }
@@ -170,6 +181,7 @@ public class DataGenerator extends AbstractDataGenerator {
         if (type == Types.RDF_GRAPH_GENERATOR) {
             // Queue for sending final graphs to BenchmarkController
             dataQueueName = EnvVariables.getString(ENV_DATA_QUEUE_KEY);
+            evalDataQueueName = EnvVariables.getString(ApiConstants.ENV_EVAL_DATA_QUEUE_KEY);
 
             // Identify node ID for this generator.
             nodeId = getNodeId();

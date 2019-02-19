@@ -97,9 +97,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
             Thread.sleep(2000);
         }
 
+        String evalDataQueueName = getRandomNameForRabbitMQ();
         LOGGER.debug("Creating evaluation module...");
         createEvaluationModule(EVALMODULE_IMAGE_NAME, new String[] {
             ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
+            ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
         });
 
         LOGGER.debug("Waiting for all cloud nodes and evaluation module to be ready...");
@@ -133,6 +135,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
                     DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,
                     DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
+                    ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
                     DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, };
             createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
             // FIXME: HOBBIT SDK workaround (setting environment for "containers")
