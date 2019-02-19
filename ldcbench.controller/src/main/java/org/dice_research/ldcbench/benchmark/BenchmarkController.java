@@ -95,6 +95,17 @@ public class BenchmarkController extends AbstractBenchmarkController {
             Thread.sleep(2000);
         }
 
+        // FIXME: Evaluation storage is not used in this benchmark,
+        // but AbstractBenchmarkController assumes that it exists in several places.
+        LOGGER.debug("Creating evaluation storage...");
+        String[] envVariables = ArrayUtils.add(DEFAULT_EVAL_STORAGE_PARAMETERS,
+                AbstractEvaluationStorage.RECEIVE_TIMESTAMP_FOR_SYSTEM_RESULTS_KEY + "=false");
+        envVariables = ArrayUtils.add(envVariables, Constants.ACKNOWLEDGEMENT_FLAG_KEY + "=false");
+        createEvaluationStorage(EVAL_STORAGE_IMAGE_NAME, envVariables);
+
+        LOGGER.debug("Creating evaluation module...");
+        createEvaluationModule(EVALMODULE_IMAGE_NAME, new String[] {});
+
         LOGGER.debug("Waiting for all cloud nodes to be ready...");
         nodesReadySemaphore.acquire(nodesAmount);
 
@@ -108,7 +119,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         SeedGenerator seedGenerator = new SeedGenerator(seed);
 
         // Node graph generator
-        String[] envVariables = new String[] {
+        envVariables = new String[] {
                 DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
                 DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(0),
                 DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
@@ -134,12 +145,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         LOGGER.debug("Creating task generator...");
         createTaskGenerators(TASKGEN_IMAGE_NAME, 1, new String[] {});
-
-        LOGGER.debug("Creating evaluation storage...");
-        envVariables = ArrayUtils.add(DEFAULT_EVAL_STORAGE_PARAMETERS,
-                AbstractEvaluationStorage.RECEIVE_TIMESTAMP_FOR_SYSTEM_RESULTS_KEY + "=false");
-        envVariables = ArrayUtils.add(envVariables, Constants.ACKNOWLEDGEMENT_FLAG_KEY + "=false");
-        createEvaluationStorage(EVAL_STORAGE_IMAGE_NAME, envVariables);
 
         LOGGER.debug("Waiting for components to initialize...");
         waitForComponentsToInitialize();
@@ -173,9 +178,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         LOGGER.debug("Waiting for the system to finish...");
         waitForSystemToFinish();
-
-        // TODO Implement evaluation
-        createEvaluationModule(EVALMODULE_IMAGE_NAME, new String[] {});
 
         waitForEvalComponentsToFinish();
 
