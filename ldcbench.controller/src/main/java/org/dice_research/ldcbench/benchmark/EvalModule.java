@@ -23,16 +23,16 @@ public class EvalModule extends AbstractCommandReceivingComponent {
      */
     protected String experimentUri;
     protected String sparqlEndpoint;
-    
+
     @Override
     public void init() throws Exception {
         super.init();
 
         // Get the experiment URI
         experimentUri = EnvVariables.getString(Constants.HOBBIT_EXPERIMENT_URI_KEY, LOGGER);
-        
+
         // TODO Initialize the receiving of graph data
-        
+
         LOGGER.info("Evaluation module initialized.");
     }
 
@@ -40,11 +40,11 @@ public class EvalModule extends AbstractCommandReceivingComponent {
     public void run() throws Exception {
         // Let the BC now that this module is ready
         sendToCmdQueue(Commands.EVAL_MODULE_READY_SIGNAL);
-        
+
         // TODO wait for all the graphs to be sent
-        
+
         // TODO wait for the crawling to finish
-        
+
         // TODO evaluate the results based on the data from the SPARQL storage
         // Create result model and terminate
         Model model = summarizeEvaluation();
