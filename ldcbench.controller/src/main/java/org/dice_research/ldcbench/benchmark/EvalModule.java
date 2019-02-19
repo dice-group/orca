@@ -2,11 +2,16 @@ package org.dice_research.ldcbench.benchmark;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.concurrent.Semaphore;
+import java.util.Arrays;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
+import org.dice_research.ldcbench.ApiConstants;
+import org.dice_research.ldcbench.data.NodeMetadata;
+import org.dice_research.ldcbench.rabbit.ObjectStreamFanoutExchangeConsumer;
 import org.hobbit.core.Commands;
 import org.hobbit.core.Constants;
 import org.hobbit.core.components.AbstractCommandReceivingComponent;
@@ -24,6 +29,11 @@ public class EvalModule extends AbstractCommandReceivingComponent {
     protected String experimentUri;
     protected String sparqlEndpoint;
 
+    protected ObjectStreamFanoutExchangeConsumer<NodeMetadata[]> bcBroadcastConsumer;
+
+    protected String domainNames[];
+    protected Semaphore domainNamesReceived = new Semaphore(0);
+
     @Override
     public void init() throws Exception {
         super.init();
@@ -31,9 +41,41 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         // Get the experiment URI
         experimentUri = EnvVariables.getString(Constants.HOBBIT_EXPERIMENT_URI_KEY, LOGGER);
 
+        // initialize exchange with BC
+        String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);
+        bcBroadcastConsumer = new ObjectStreamFanoutExchangeConsumer<NodeMetadata[]>(cmdQueueFactory, exchangeName) {
+            @Override
+            public void handle(NodeMetadata[] body) {
+                try {
+                    handleBCMessage(body);
+                } catch (Exception e) {
+                    LOGGER.error("Exception while trying to handle incoming message.", e);
+                }
+            }
+        };
+
         // TODO Initialize the receiving of graph data
 
+        // Signal to the BC that we are ready to receive
+        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
+
         LOGGER.info("Evaluation module initialized.");
+    }
+
+    protected void handleBCMessage(NodeMetadata[] nodeMetadata) {
+        if (nodeMetadata != null) {
+            domainNames = new String[nodeMetadata.length];
+            for (int i = 0; i < nodeMetadata.length; ++i) {
+                domainNames[i] = nodeMetadata[i].getHostname();
+            }
+        } else {
+            LOGGER.error("Couldn't parse node metadata received from benchmark controller.");
+            domainNames = null;
+        }
+        LOGGER.debug("Got domain names: {}", Arrays.toString(domainNames));
+        // In any case, we should release the semaphore. Otherwise, this component would
+        // get stuck and wait forever for an additional message.
+        domainNamesReceived.release();
     }
 
     @Override
@@ -60,6 +102,9 @@ public class EvalModule extends AbstractCommandReceivingComponent {
     @Override
     public void close(){
         // Free the resources you requested here
+        if (bcBroadcastConsumer != null) {
+            bcBroadcastConsumer.close();
+        }
         // Always close the super class after yours!
         try {
             super.close();

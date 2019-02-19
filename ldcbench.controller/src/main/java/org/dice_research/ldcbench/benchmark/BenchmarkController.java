@@ -98,10 +98,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
         }
 
         LOGGER.debug("Creating evaluation module...");
-        createEvaluationModule(EVALMODULE_IMAGE_NAME, new String[] {});
+        createEvaluationModule(EVALMODULE_IMAGE_NAME, new String[] {
+            ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
+        });
 
-        LOGGER.debug("Waiting for all cloud nodes to be ready...");
-        nodesReadySemaphore.acquire(nodesAmount);
+        LOGGER.debug("Waiting for all cloud nodes and evaluation module to be ready...");
+        nodesReadySemaphore.acquire(nodesAmount + 1);
 
         LOGGER.debug("Broadcasting metadata to cloud nodes...");
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
