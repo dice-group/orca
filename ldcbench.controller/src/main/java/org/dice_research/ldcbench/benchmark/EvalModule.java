@@ -72,6 +72,7 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         graphConsumer = new SimpleFileQueueConsumer(incomingDataQueueFactory, graphQueueName) {
             @Override
             public void handle(String[] files) {
+                Arrays.sort(files);
                 LOGGER.debug("Got files: {}", Arrays.toString(files));
                 graphFiles = files;
             }
