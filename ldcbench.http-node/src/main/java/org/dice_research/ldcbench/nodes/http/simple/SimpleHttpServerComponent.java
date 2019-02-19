@@ -1,13 +1,12 @@
 package org.dice_research.ldcbench.nodes.http.simple;
 
 import org.hobbit.core.rabbit.SimpleFileReceiver;
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.concurrent.Semaphore;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -17,7 +16,7 @@ import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.rabbit.GraphHandler;
-import org.dice_research.ldcbench.rabbit.FanoutExchangeConsumer;
+import org.dice_research.ldcbench.rabbit.ObjectStreamFanoutExchangeConsumer;
 import org.dice_research.ldcbench.rdf.UriHelper;
 import org.hobbit.core.components.AbstractCommandReceivingComponent;
 import org.hobbit.core.components.Component;
@@ -44,7 +43,7 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
     protected Container container;
     protected Server server;
     protected Connection connection;
-    protected FanoutExchangeConsumer bcBroadcastConsumer;
+    protected ObjectStreamFanoutExchangeConsumer<NodeMetadata[]> bcBroadcastConsumer;
     protected DataReceiver receiver;
     protected String domainNames[];
 
@@ -56,9 +55,9 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
 
         // initialize exchange with BC
         String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);
-        bcBroadcastConsumer = new FanoutExchangeConsumer(cmdQueueFactory, exchangeName) {
+        bcBroadcastConsumer = new ObjectStreamFanoutExchangeConsumer<NodeMetadata[]>(cmdQueueFactory, exchangeName) {
             @Override
-            public void handle(byte[] body) {
+            public void handle(NodeMetadata[] body) {
                 try {
                     handleBCMessage(body);
                 } catch (Exception e) {
@@ -136,17 +135,17 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
         }
     }
 
-    protected void handleBCMessage(byte[] body) {
-        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(body))) {
-            NodeMetadata[] nodeMetadata = (NodeMetadata[]) ois.readObject();
+    protected void handleBCMessage(NodeMetadata[] nodeMetadata) {
+        if (nodeMetadata != null) {
             domainNames = new String[nodeMetadata.length];
             for (int i = 0; i < nodeMetadata.length; ++i) {
                 domainNames[i] = nodeMetadata[i].getHostname();
             }
-        } catch (Exception e) {
-            LOGGER.error("Couldn't parse node metadata received from benchmark controller.", e);
+        } else {
+            LOGGER.error("Couldn't parse node metadata received from benchmark controller.");
             domainNames = null;
         }
+        LOGGER.debug("Got domain names: {}", Arrays.toString(domainNames));
         // In any case, we should release the semaphore. Otherwise, this component would
         // get stuck and wait forever for an additional message.
         domainNamesReceived.release();
