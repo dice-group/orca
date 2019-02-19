@@ -6,6 +6,7 @@ import java.util.stream.IntStream;
 
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.http.QueryExecutionFactoryHttp;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryFactory;
@@ -14,14 +15,40 @@ import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.rdf.SimpleCachingTripleCreator;
 import org.dice_research.ldcbench.rdf.TripleCreator;
 
+/**
+ * Implementation of the {@link GraphValidator} interface querying the crawled
+ * graph triples from the given SPARQL endpoint.
+ * 
+ * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
+ *
+ */
 public class SparqlBasedValidator implements GraphValidator {
 
+    /**
+     * Query execution factory used for the communication with the SPARQL endpoint.
+     */
     protected final QueryExecutionFactory qef;
 
+    /**
+     * Constructor.
+     * 
+     * @param qef
+     *            Query execution factory used for the communication with the SPARQL
+     *            endpoint.
+     */
     protected SparqlBasedValidator(QueryExecutionFactory qef) {
         this.qef = qef;
     }
 
+    /**
+     * Creates a {@link SparqlBasedValidator} instance which uses the given SPARQL
+     * endpoint.
+     * 
+     * @param endpoint
+     *            the URL of the SPARQL endpoint which will be used by the created
+     *            instance.
+     * @return the created instance
+     */
     public static SparqlBasedValidator create(String endpoint) {
         QueryExecutionFactory qef = new QueryExecutionFactoryHttp(endpoint);
         return new SparqlBasedValidator(qef);
@@ -46,6 +73,20 @@ public class SparqlBasedValidator implements GraphValidator {
         return counter.getValidationResult();
     }
 
+    /**
+     * Checks whether the given edge exists by creating a {@link Triple} using the
+     * given {@link TripleCreator}.
+     * 
+     * @param creator
+     *            used for creating a {@link Triple} instance of the given edge
+     * @param graph
+     *            used to handle the special case that the target of the edge is an
+     *            external node of the graph
+     * @param edge
+     *            the edge that is expected to exist in the crawled graph and that
+     *            should be checked
+     * @return {@code true} if the edge exists, else {@code false}
+     */
     protected boolean exists(TripleCreator creator, Graph graph, int[] edge) {
         Query q = QueryFactory.create();
         q.setQueryAskType();
@@ -53,7 +94,7 @@ public class SparqlBasedValidator implements GraphValidator {
         triples.addTriple(creator.createTriple(edge[0], edge[1], edge[2], graph.getExternalNodeId(edge[2]),
                 graph.getGraphId(edge[2])));
         q.setQueryPattern(triples);
-        try(QueryExecution qe = qef.createQueryExecution(q)) {
+        try (QueryExecution qe = qef.createQueryExecution(q)) {
             return qe.execAsk();
         }
     }
