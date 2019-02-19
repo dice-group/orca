@@ -45,6 +45,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
     public void init() throws Exception {
         super.init();
 
+        String[] envVariables;
+
         // You might want to load parameters from the benchmarks parameter model
         int seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getInt();
         int nodesAmount = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfNodes).getInt();
@@ -81,7 +83,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         LOGGER.debug("Starting all cloud nodes...");
         NodeMetadata[] nodeMetadata = new NodeMetadata[nodesAmount];
         for (int i = 0; i < nodesAmount; i++) {
-            String[] envVariables = new String[] {
+            envVariables = new String[] {
                     ApiConstants.ENV_NODE_ID_KEY + "=" + i,
                     ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                     ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
@@ -98,7 +100,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // FIXME: Evaluation storage is not used in this benchmark,
         // but AbstractBenchmarkController assumes that it exists in several places.
         LOGGER.debug("Creating evaluation storage...");
-        String[] envVariables = ArrayUtils.add(DEFAULT_EVAL_STORAGE_PARAMETERS,
+        envVariables = ArrayUtils.add(DEFAULT_EVAL_STORAGE_PARAMETERS,
                 AbstractEvaluationStorage.RECEIVE_TIMESTAMP_FOR_SYSTEM_RESULTS_KEY + "=false");
         envVariables = ArrayUtils.add(envVariables, Constants.ACKNOWLEDGEMENT_FLAG_KEY + "=false");
         createEvaluationStorage(EVAL_STORAGE_IMAGE_NAME, envVariables);
