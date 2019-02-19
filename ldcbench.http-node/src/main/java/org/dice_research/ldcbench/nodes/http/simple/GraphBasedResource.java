@@ -1,14 +1,10 @@
 package org.dice_research.ldcbench.nodes.http.simple;
 
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.function.Predicate;
 
-import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.system.StreamOps;
@@ -16,6 +12,8 @@ import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.http.utils.NullValueHelper;
+import org.dice_research.ldcbench.rdf.SimpleCachingTripleCreator;
+import org.dice_research.ldcbench.rdf.TripleCreator;
 import org.dice_research.ldcbench.rdf.UriHelper;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Status;
@@ -107,8 +105,7 @@ public class GraphBasedResource extends AbstractCrawleableResource {
         protected int[] targets;
         protected int[] edgeTypes;
         protected int nextTargetId = 0;
-        protected Map<Integer, Node> resourceCache = new HashMap<Integer, Node>();
-        protected Map<Integer, Node> propertyCache = new HashMap<Integer, Node>();
+        protected TripleCreator tripleCreator;
 
         public TripleIterator(GraphBasedResource parent, int datasetId, int nodeId) {
             this.parent = parent;
@@ -116,6 +113,7 @@ public class GraphBasedResource extends AbstractCrawleableResource {
             this.nodeId = nodeId;
             targets = parent.graphs[datasetId].outgoingEdgeTargets(nodeId);
             edgeTypes = parent.graphs[datasetId].outgoingEdgeTypes(nodeId);
+            tripleCreator = new SimpleCachingTripleCreator(datasetId, domains);
         }
 
         @Override
@@ -130,39 +128,8 @@ public class GraphBasedResource extends AbstractCrawleableResource {
         }
 
         private Triple createTriple(int targetId, int propertyId) {
-            return new Triple(createNode(nodeId, false), createNode(propertyId, true), createNode(targetId, false));
+            return tripleCreator.createTriple(nodeId, propertyId, targetId,
+                    parent.graphs[datasetId].getExternalNodeId(nodeId), parent.graphs[datasetId].getGraphId(nodeId));
         }
-
-        private Node createNode(int nodeId, boolean isProperty) {
-            Map<Integer, Node> cache = isProperty ? propertyCache : resourceCache;
-            if (cache.containsKey(nodeId)) {
-                return cache.get(nodeId);
-            }
-            int externalId = parent.graphs[datasetId].getExternalNodeId(nodeId);
-            String domain;
-            int nodeDatasetId = datasetId;
-            if (externalId < 0) {
-                domain = parent.domains[domainId];
-            } else {
-                domain = parent.domains[parent.graphs[datasetId].getGraphId(nodeId)];
-                externalId = nodeId;
-                // TODO get the datasetId on the other server
-                nodeDatasetId = 0;
-            }
-            Node n;
-            if (isProperty) {
-                n = ResourceFactory
-                        .createProperty(UriHelper.creatUri(domain, nodeDatasetId, UriHelper.PROPERTY_NODE_TYPE, nodeId))
-                        .asNode();
-            } else {
-                n = ResourceFactory
-                        .createResource(UriHelper.creatUri(domain, nodeDatasetId, UriHelper.RESOURCE_NODE_TYPE, nodeId))
-                        .asNode();
-            }
-            cache.put(nodeId, n);
-            return n;
-        }
-
     }
-
 }
