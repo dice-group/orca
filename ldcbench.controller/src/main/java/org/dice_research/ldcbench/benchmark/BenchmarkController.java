@@ -65,6 +65,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         String[] envVariables;
 
+        // Start Virtuoso
+        String vos = createContainer("openlink/virtuoso-opensource-7", Constants.CONTAINER_TYPE_BENCHMARK, new String[]{
+            "DBA_PASSWORD=" + VOS_PASSWORD,
+        });
+
         // You might want to load parameters from the benchmarks parameter model
         int seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getInt();
         int nodesAmount = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfNodes).getInt();
@@ -120,6 +125,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         createEvaluationModule(EVALMODULE_IMAGE_NAME, new String[] {
             ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
             ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
+            ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=" + "http://" + vos + ":8890/sparql",
         });
 
         LOGGER.debug("Waiting for all cloud nodes and evaluation module to be ready...");

@@ -55,6 +55,9 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         // Get the experiment URI
         experimentUri = EnvVariables.getString(Constants.HOBBIT_EXPERIMENT_URI_KEY, LOGGER);
 
+        // Get the sparql endpoint
+        sparqlEndpoint = EnvVariables.getString(ApiConstants.ENV_SPARQL_ENDPOINT_KEY, LOGGER);
+
         // initialize exchange with BC
         String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);
         bcBroadcastConsumer = new ObjectStreamFanoutExchangeConsumer<NodeMetadata[]>(cmdQueueFactory, exchangeName) {
