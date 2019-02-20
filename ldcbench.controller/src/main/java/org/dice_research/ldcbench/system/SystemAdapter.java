@@ -41,6 +41,8 @@ public class SystemAdapter extends AbstractSystemAdapter {
 
     @Override
     public void receiveGeneratedData(byte[] data) {
+        String sparqlEndpoint = RabbitMQUtils.readString(data);
+        logger.info("SPARQL endpoint: {}", sparqlEndpoint);
     }
 
     @Override

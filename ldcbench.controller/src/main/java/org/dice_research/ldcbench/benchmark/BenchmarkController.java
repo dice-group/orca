@@ -37,6 +37,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkController.class);
 
+    private String sparqlEndpoint;
     private String seedURI;
 
     private Semaphore nodesReadySemaphore = new Semaphore(0);
@@ -45,7 +46,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
     Channel dataGeneratorsChannel;
 
     String dataGeneratorsExchange;
-    DataSender sender2System;
+    DataSender systemDataSender;
+    DataSender systemTaskSender;
 
     private String getRandomNameForRabbitMQ() {
         return java.util.UUID.randomUUID().toString();
@@ -77,6 +79,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         String vos = createContainer("openlink/virtuoso-opensource-7", Constants.CONTAINER_TYPE_BENCHMARK, new String[]{
             "DBA_PASSWORD=" + VOS_PASSWORD,
         });
+        sparqlEndpoint = "http://" + vos + ":8890/sparql";
 
         // You might want to load parameters from the benchmarks parameter model
         int seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getInt();
@@ -139,7 +142,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         createEvaluationModule(EVALMODULE_IMAGE_NAME, new String[] {
             ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
             ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
-            ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=" + "http://" + vos + ":8890/sparql",
+            ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=" + sparqlEndpoint,
         });
 
         LOGGER.debug("Waiting for all cloud nodes and evaluation module to be ready...");
@@ -197,12 +200,17 @@ public class BenchmarkController extends AbstractBenchmarkController {
         LOGGER.debug("Waiting for the data generators to finish...");
         waitForDataGenToFinish();
 
-        LOGGER.debug("Sending seed URI to the system...");
-        sender2System = DataSenderImpl.builder().queue(getFactoryForOutgoingDataQueues(),
+        LOGGER.debug("Sending information to the system...");
+        systemDataSender = DataSenderImpl.builder().queue(getFactoryForOutgoingDataQueues(),
+                generateSessionQueueName(Constants.DATA_GEN_2_SYSTEM_QUEUE_NAME)).build();
+        systemDataSender.sendData(RabbitMQUtils.writeString(sparqlEndpoint));
+        systemDataSender.closeWhenFinished();
+
+        systemTaskSender = DataSenderImpl.builder().queue(getFactoryForOutgoingDataQueues(),
                 generateSessionQueueName(Constants.TASK_GEN_2_SYSTEM_QUEUE_NAME)).build();
-        sender2System.sendData(
+        systemTaskSender.sendData(
                 RabbitMQUtils.writeByteArrays(new byte[][] { RabbitMQUtils.writeString("0"), RabbitMQUtils.writeString(seedURI) }));
-                sender2System.closeWhenFinished();
+        systemTaskSender.closeWhenFinished();
 
         LOGGER.debug("Waiting for the system to finish...");
         waitForSystemToFinish();
@@ -234,7 +242,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
     public void close() throws IOException {
         LOGGER.debug("BenchmarkController.close()");
         // Free the resources you requested here
-        IOUtils.closeQuietly(sender2System);
+        IOUtils.closeQuietly(systemDataSender);
+        IOUtils.closeQuietly(systemTaskSender);
 
         // Always close the super class after yours!
         super.close();
