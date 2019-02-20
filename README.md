@@ -13,3 +13,15 @@ Benchmark linked data crawlers with [the HOBBIT platform](http://project-hobbit.
 ## Triples per node
 
 # API
+
+System needs to declare that it
+[implements](http://w3id.org/hobbit/vocab#implementsAPI)
+[`ldcbench:api`](https://github.com/dice-group/ldcbench#api).
+
+If the system extends
+[`AbstractSystemAdapter`](https://github.com/hobbit-project/core/blob/master/src/main/java/org/hobbit/core/components/AbstractSystemAdapter.java),
+it should overload `receiveGeneratedData` method to receive SPARQL endpoint URI
+and `receiveGeneratedTask` method to receive seed URI.
+
+System should start crawling by retrieving provided seed URI
+and use use SPARQL endpoint to store crawled data.
