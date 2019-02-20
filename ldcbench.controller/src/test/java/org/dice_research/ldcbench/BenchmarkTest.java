@@ -52,7 +52,6 @@ public class BenchmarkTest {
 
     BenchmarkDockerBuilder benchmarkBuilder;
     DataGenDockerBuilder dataGeneratorBuilder;
-    TaskGenDockerBuilder taskGeneratorBuilder;
     SystemAdapterDockerBuilder systemAdapterBuilder;
     EvalModuleDockerBuilder evalModuleBuilder;
     SimpleHttpNodeBuilder httpNodeBuilder;
@@ -61,8 +60,6 @@ public class BenchmarkTest {
 
         benchmarkBuilder = new BenchmarkDockerBuilder(new ExampleDockersBuilder(BenchmarkController.class, BENCHMARK_IMAGE_NAME).useCachedImage(useCachedImage));
         dataGeneratorBuilder = new DataGenDockerBuilder(new ExampleDockersBuilder(DataGenerator.class, DATAGEN_IMAGE_NAME).useCachedImage(useCachedImage).addFileOrFolder("data"));
-        taskGeneratorBuilder = new TaskGenDockerBuilder(new ExampleDockersBuilder(TaskGenerator.class, TASKGEN_IMAGE_NAME).useCachedImage(useCachedImage));
-
 
         systemAdapterBuilder = new SystemAdapterDockerBuilder(new ExampleDockersBuilder(SystemAdapter.class, SYSTEM_IMAGE_NAME).useCachedImage(useCachedImage));
         evalModuleBuilder = new EvalModuleDockerBuilder(new ExampleDockersBuilder(EvalModule.class, EVALMODULE_IMAGE_NAME).useCachedImage(useCachedImage));
@@ -72,8 +69,6 @@ public class BenchmarkTest {
 
 //        benchmarkBuilder = new BenchmarkDockerBuilder(new PullBasedDockersBuilder(BENCHMARK_IMAGE_NAME));
 //        dataGeneratorBuilder = new DataGenDockerBuilder(new PullBasedDockersBuilder(DATAGEN_IMAGE_NAME));
-//        taskGeneratorBuilder = new TaskGenDockerBuilder(new PullBasedDockersBuilder(TASKGEN_IMAGE_NAME));
-//        evalStorageBuilder = new EvalStorageDockerBuilder(new PullBasedDockersBuilder(EVAL_STORAGE_IMAGE_NAME));
 //        evalModuleBuilder = new EvalModuleDockerBuilder(new PullBasedDockersBuilder(EVALMODULE_IMAGE_NAME));
 
     }
@@ -86,7 +81,6 @@ public class BenchmarkTest {
         MultiThreadedImageBuilder builder = new MultiThreadedImageBuilder(8);
         builder.addTask(benchmarkBuilder);
         builder.addTask(dataGeneratorBuilder);
-        builder.addTask(taskGeneratorBuilder);
         builder.addTask(systemAdapterBuilder);
         builder.addTask(evalModuleBuilder);
         builder.addTask(httpNodeBuilder);
@@ -139,7 +133,6 @@ public class BenchmarkTest {
 
         Component benchmarkController = new BenchmarkController();
         Component dataGen = new DataGenerator();
-        Component taskGen = new TaskGenerator();
         Component systemAdapter = new SystemAdapter();
         Component evalModule = new EvalModule();
         Component httpNode = new SimpleHttpServerComponent();
@@ -148,7 +141,6 @@ public class BenchmarkTest {
 
             benchmarkController = benchmarkBuilder.build();
             dataGen = dataGeneratorBuilder.build();
-            taskGen = taskGeneratorBuilder.build();
             evalModule = evalModuleBuilder.build();
             systemAdapter = systemAdapterBuilder.build();
             httpNode = httpNodeBuilder.build();
@@ -164,7 +156,6 @@ public class BenchmarkTest {
         CommandReactionsBuilder commandReactionsBuilder = new CommandReactionsBuilder(componentsExecutor, commandQueueListener)
                         .benchmarkController(benchmarkController).benchmarkControllerImageName(BENCHMARK_IMAGE_NAME)
                         .dataGenerator(dataGen).dataGeneratorImageName(dataGeneratorBuilder.getImageName())
-                        .taskGenerator(taskGen).taskGeneratorImageName(taskGeneratorBuilder.getImageName())
                         .evalModule(evalModule).evalModuleImageName(evalModuleBuilder.getImageName())
                         .systemAdapter(systemAdapter).systemAdapterImageName(SYSTEM_IMAGE_NAME)
                         .customContainerImage(httpNode, HTTPNODE_IMAGE_NAME)

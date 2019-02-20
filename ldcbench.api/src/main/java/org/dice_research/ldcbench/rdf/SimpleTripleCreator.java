@@ -52,7 +52,7 @@ public class SimpleTripleCreator implements TripleCreator {
      *            a flag indicating whether the node is a property
      * @return the created {@link Node} instance
      */
-    protected Node createNode(int nodeId, int externalId, int extGraphId, boolean isProperty) {
+    public Node createNode(int nodeId, int externalId, int extGraphId, boolean isProperty) {
         String domain;
         if (externalId < 0) {
             externalId = nodeId;

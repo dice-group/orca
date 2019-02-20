@@ -5,12 +5,15 @@ import java.io.ObjectOutputStream;
 import java.util.concurrent.Semaphore;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.generate.SeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
+import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 
+import org.apache.commons.io.IOUtils;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.Channel;
 import org.apache.commons.lang3.ArrayUtils;
@@ -19,6 +22,8 @@ import org.hobbit.core.Commands;
 import org.hobbit.core.Constants;
 import org.hobbit.core.components.AbstractBenchmarkController;
 import org.hobbit.core.components.AbstractEvaluationStorage;
+import org.hobbit.core.rabbit.DataSender;
+import org.hobbit.core.rabbit.DataSenderImpl;
 import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.utils.rdf.RdfHelper;
 import org.slf4j.Logger;
@@ -32,12 +37,15 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkController.class);
 
+    private String seedURI;
+
     private Semaphore nodesReadySemaphore = new Semaphore(0);
     private Semaphore nodeGraphMutex = new Semaphore(0);
 
     Channel dataGeneratorsChannel;
 
     String dataGeneratorsExchange;
+    DataSender sender2System;
 
     private String getRandomNameForRabbitMQ() {
         return java.util.UUID.randomUUID().toString();
@@ -120,6 +128,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
             Thread.sleep(2000);
         }
 
+        // FIXME use entrance node of the node graph instead of 0
+        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(0, Stream.of(nodeMetadata).map(nm -> nm.getHostname()).toArray(String[]::new));
+        // FIXME use one of entrance nodes in graph instead of 0
+        seedURI = tripleCreator.createNode(0, -1, -1, false).toString();
+        LOGGER.info("Seed URI: {}", seedURI);
+
         String evalDataQueueName = getRandomNameForRabbitMQ();
         LOGGER.debug("Creating evaluation module...");
         createEvaluationModule(EVALMODULE_IMAGE_NAME, new String[] {
@@ -167,9 +181,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
             Thread.sleep(2000);
         }
 
-        LOGGER.debug("Creating task generator...");
-        createTaskGenerators(TASKGEN_IMAGE_NAME, 1, new String[] {});
-
         LOGGER.debug("Waiting for components to initialize...");
         waitForComponentsToInitialize();
     }
@@ -187,18 +198,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
         waitForDataGenToFinish();
 
         LOGGER.debug("Sending seed URI to the system...");
-        // TODO Send seed URI to the system
-
-        // TODO Remove
-        LOGGER.debug("Waiting for the task generators to finish...");
-        waitForTaskGenToFinish();
-
-        ////
-        //// // wait for the system to terminate. Note that you can also use
-        //// // the method waitForSystemToFinish(maxTime) where maxTime is
-        //// // a long value defining the maximum amount of time the benchmark
-        //// // will wait for the system to terminate.
-        // taskGenContainerIds.add("system");
+        sender2System = DataSenderImpl.builder().queue(getFactoryForOutgoingDataQueues(),
+                generateSessionQueueName(Constants.TASK_GEN_2_SYSTEM_QUEUE_NAME)).build();
+        sender2System.sendData(
+                RabbitMQUtils.writeByteArrays(new byte[][] { RabbitMQUtils.writeString("0"), RabbitMQUtils.writeString(seedURI) }));
+                sender2System.closeWhenFinished();
 
         LOGGER.debug("Waiting for the system to finish...");
         waitForSystemToFinish();
@@ -230,6 +234,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     public void close() throws IOException {
         LOGGER.debug("BenchmarkController.close()");
         // Free the resources you requested here
+        IOUtils.closeQuietly(sender2System);
 
         // Always close the super class after yours!
         super.close();

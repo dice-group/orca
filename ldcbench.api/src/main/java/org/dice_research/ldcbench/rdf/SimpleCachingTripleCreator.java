@@ -33,7 +33,7 @@ public class SimpleCachingTripleCreator extends SimpleTripleCreator {
     }
 
     @Override
-    protected Node createNode(int nodeId, int externalId, int extGraphId, boolean isProperty) {
+    public Node createNode(int nodeId, int externalId, int extGraphId, boolean isProperty) {
         Map<Integer, Node> cache = isProperty ? propertyCache : resourceCache;
         if (cache.containsKey(nodeId)) {
             return cache.get(nodeId);

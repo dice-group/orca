@@ -5,6 +5,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.hobbit.core.components.AbstractSystemAdapter;
+import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.vocab.HOBBIT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,28 +41,13 @@ public class SystemAdapter extends AbstractSystemAdapter {
 
     @Override
     public void receiveGeneratedData(byte[] data) {
-        // handle the incoming data as described in the benchmark description
-        String dataStr = new String(data);
-        logger.trace("receiveGeneratedData("+new String(data)+"): "+dataStr);
-
-
-
     }
 
     @Override
     public void receiveGeneratedTask(String taskId, byte[] data) {
-        // handle the incoming task and create a result
-        String result = "result_"+taskId;
-        logger.trace("receiveGeneratedTask({})->{}",taskId, new String(data));
-
-        // Send the result to the evaluation storage
-        try {
-            logger.trace("sendResultToEvalStorage({})->{}", taskId, result);
-            sendResultToEvalStorage(taskId, result.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        String seedURI = RabbitMQUtils.readString(data);
+        logger.info("Seed URI: {}", seedURI);
+        terminate(null);
     }
 
     @Override
