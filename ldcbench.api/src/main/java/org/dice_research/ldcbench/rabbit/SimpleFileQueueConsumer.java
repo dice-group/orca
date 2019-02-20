@@ -36,6 +36,9 @@ public class SimpleFileQueueConsumer implements Closeable {
             public void run() {
                 try {
                     String[] files = receiver.receiveData(outputDir);
+                    for (int i = 0; i < files.length; i++) {
+                        files[i] = new File(outputDir, files[i]).getAbsolutePath();
+                    }
                     handle(files);
                 } catch (IOException | InterruptedException e) {
                     handle(null);
