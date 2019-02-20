@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.concurrent.Semaphore;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -212,8 +213,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 RabbitMQUtils.writeByteArrays(new byte[][] { RabbitMQUtils.writeString("0"), RabbitMQUtils.writeString(seedURI) }));
         systemTaskSender.closeWhenFinished();
 
+        sendToCmdQueue(ApiConstants.CRAWLING_STARTED_SIGNAL, RabbitMQUtils.writeLong(new Date().getTime()));
+
         LOGGER.debug("Waiting for the system to finish...");
         waitForSystemToFinish();
+
+        sendToCmdQueue(ApiConstants.CRAWLING_FINISHED_SIGNAL, RabbitMQUtils.writeLong(new Date().getTime()));
 
         waitForEvalComponentsToFinish();
 

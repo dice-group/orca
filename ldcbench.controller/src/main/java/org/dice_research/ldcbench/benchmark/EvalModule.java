@@ -3,6 +3,7 @@ package org.dice_research.ldcbench.benchmark;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.Semaphore;
 
 import org.apache.jena.rdf.model.Model;
@@ -24,6 +25,7 @@ import org.dice_research.ldcbench.rabbit.SimpleFileQueueConsumer;
 import org.hobbit.core.Commands;
 import org.hobbit.core.Constants;
 import org.hobbit.core.components.AbstractCommandReceivingComponent;
+import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.utils.EnvVariables;
 import org.hobbit.vocab.HOBBIT;
 import org.slf4j.Logger;
@@ -42,6 +44,7 @@ public class EvalModule extends AbstractCommandReceivingComponent {
 
     protected SimpleFileQueueConsumer graphConsumer;
 
+    protected Semaphore crawlingFinished = new Semaphore(0);
     protected Semaphore dataGenerationFinished = new Semaphore(0);
 
     protected String graphFiles[];
@@ -113,8 +116,9 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         graphConsumer.close();
         graphConsumer = null;
 
-        // TODO wait for the crawling to finish
-        
+        LOGGER.info("Waiting for the crawling to finish...");
+        crawlingFinished.acquire();
+
         // Evaluate the crawled data, create result model and terminate
         Model model = summarizeEvaluation(runEvaluation());
         LOGGER.info("The result model has " + model.size() + " triples.");
@@ -127,6 +131,13 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         case Commands.DATA_GENERATION_FINISHED:
             LOGGER.debug("Received DATA_GENERATION_FINISHED");
             dataGenerationFinished.release();
+            break;
+        case ApiConstants.CRAWLING_STARTED_SIGNAL:
+            LOGGER.debug("Crawling started at {}", new Date(RabbitMQUtils.readLong(data)));
+            break;
+        case ApiConstants.CRAWLING_FINISHED_SIGNAL:
+            LOGGER.debug("Crawling finished at {}", new Date(RabbitMQUtils.readLong(data)));
+            crawlingFinished.release();
         }
     }
 
