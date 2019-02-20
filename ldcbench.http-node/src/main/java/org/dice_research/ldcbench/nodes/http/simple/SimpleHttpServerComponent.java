@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.concurrent.Semaphore;
 import java.util.Arrays;
+import java.time.Duration;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -52,6 +53,9 @@ public class SimpleHttpServerComponent extends AbstractCommandReceivingComponent
         super.init();
 
         int domainId = EnvVariables.getInt(ApiConstants.ENV_NODE_ID_KEY, LOGGER);
+
+        Duration delay = Duration.ofMillis(Long.parseLong(EnvVariables.getString(ApiConstants.ENV_NODE_DELAY_KEY, LOGGER)));
+        LOGGER.info("Node delay: {}", delay);
 
         // initialize exchange with BC
         String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);

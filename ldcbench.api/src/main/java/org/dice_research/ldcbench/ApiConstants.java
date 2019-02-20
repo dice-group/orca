@@ -7,6 +7,7 @@ public class ApiConstants {
     public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
     public static final String ENV_EVAL_DATA_QUEUE_KEY = "LDCBENCH_EVAL_DATA_QUEUE";
     public static final String ENV_SPARQL_ENDPOINT_KEY = "LDCBENCH_SPARQL_ENDPOINT";
+    public static final String ENV_NODE_DELAY_KEY = "LDCBENCH_NODE_DELAY";
 
     public static final String ENV_HTTP_PORT_KEY = "HTTP_PORT";
 

@@ -12,6 +12,12 @@ Benchmark linked data crawlers with [the HOBBIT platform](http://project-hobbit.
 
 ## Triples per node
 
+## Average node delay
+
+## Average node graph degree
+
+## Average RDF graph degree
+
 # API
 
 System needs to declare that it

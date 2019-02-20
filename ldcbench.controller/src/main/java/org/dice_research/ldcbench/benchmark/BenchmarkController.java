@@ -2,6 +2,7 @@ package org.dice_research.ldcbench.benchmark;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
+import java.time.Duration;
 import java.util.concurrent.Semaphore;
 import java.util.Arrays;
 import java.util.Date;
@@ -86,6 +87,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
         int seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getInt();
         int nodesAmount = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfNodes).getInt();
         int triplesPerNode = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.triplesPerNode).getInt();
+        Duration averageNodeDelay = RdfHelper.getDurationValue(benchmarkParamModel, null, LDCBench.averageNodeDelay);
+        int averageNodeGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeGraphDegree).getInt();
+        int averageRdfGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageRdfGraphDegree).getInt();
 
         // Create the other components
 
@@ -122,6 +126,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     ApiConstants.ENV_NODE_ID_KEY + "=" + i,
                     ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                     ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
+                    ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay.toMillis(),
             };
 
             String containerId = createContainer(HTTPNODE_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK, envVariables);
@@ -163,7 +168,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
                 DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(0),
                 DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
-                DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
+                DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageNodeGraphDegree,
                 DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, };
         createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
         // FIXME: HOBBIT SDK workaround (setting environment for "containers")
@@ -175,7 +180,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
                     DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.RDF_GRAPH_GENERATOR,
                     DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(1 + i),
-                    DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 3,
+                    DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageRdfGraphDegree,
                     DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,
                     DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                     ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
