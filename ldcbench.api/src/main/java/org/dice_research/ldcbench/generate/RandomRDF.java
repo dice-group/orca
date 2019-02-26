@@ -105,6 +105,7 @@ protected int[] weightedSampleWithoutReplacementbs(int n, int m, int[] wt) {
 	}
 
 protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
+	/* without accumulated weights*/
 	
 	int[] Res = new int[m];
 
@@ -237,6 +238,7 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 
 		protected void getBarabasiRDFum(int N, double degree, long seed, GraphBuilder builder) {
 			/* nodes are numbered from 1 to N */
+	        /* uniform distribution for in/out typing*/
 			
 			int indexToEdgeList ;// index to edge list
 			long t0 = System.currentTimeMillis();
