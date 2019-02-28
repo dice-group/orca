@@ -5,14 +5,16 @@
 package org.dice_research.ldcbench.generate;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.TreeSet;
 import java.util.stream.IntStream;
 //import it.unimi.dsi.util.XorShift1024StarRandom;
 
 import org.dice_research.ldcbench.graph.GraphBuilder;
 
 public class RandomRDF implements GraphGenerator{
-	protected Random generator;
+ 	protected Random generator;
 //	protected XorShift1024StarRandom generator;
 	public String name;
 	
@@ -336,7 +338,9 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 			long t_gbuilder = System.currentTimeMillis();
 			System.out.println("time Barabsi =" + ((t_barabasi-t0)/1000.0) +" time formatting = " + ((t_gbuilder-t_barabasi)/1000.0) + " sec");			
 		}
+		
 //-------------------------------------------------------------------------------------------
+		
 		protected int getInitGraph(int N, double degree, long seed,int[] subj,int[]obj,int[] inDeg,int m) {
 			int indexToEdgeList = 0;
 			
@@ -381,7 +385,8 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 
 			return(indexToEdgeList);
 		}
-		//---------------------------------------------------------
+		
+//--------------------------------------------------------------------------------------------
 		protected void getBarabasiRDFumChkRep(int N, double degree, long seed, GraphBuilder builder) {
 			/* nodes are numbered from 1 to N */
 			
@@ -405,7 +410,8 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 			if (P1<=m ) P1 = m+1;			
 			System.out.println("Adding other nodes: " + (N - m) +" P1:" + P1);			
 			
-			int[] tmp=new int[2*(m+1)];
+//			HashSet<Integer> tmp=new HashSet<>(2*(m+1));
+			TreeSet<Integer> tmp=new TreeSet<Integer>();
 			double biasedCoin=((m/2.0-1)/(m-1));
 			long ts10k=0;
 			int cntE=indexToEdgeList,ki,lastNode = 0;
@@ -454,25 +460,17 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 							}
 						}
 //						if(i==20) System.out.println("i="+ i +" k="+k+" distNode="+distNode);
-						ki=0;// search in tmp
-						isRep=false;
-						while(ki < k ) {
-							if(tmp[ki]==distNode) {
-								isRep=true; 
-								totalrepeats++;
-								break;
-							}
-							ki++;
-						}
+						isRep=!tmp.add(distNode);
+						if(isRep)totalrepeats++;
 					}
-					tmp[k]=distNode;
-					if (k != vin_ix && (generator.nextDouble() > biasedCoin) ) {						
-						inDeg[tmp[k]] = inDeg[tmp[k]] + 1;
+					
+					if (k != vin_ix && (generator.nextDouble() > biasedCoin) ) {	//check if it will be in or out					
+						inDeg[distNode] = inDeg[distNode] + 1;
 						subj[indexToEdgeList] = i;
-						obj[indexToEdgeList] = tmp[k];						
+						obj[indexToEdgeList] = distNode;						
 					} else {// inverted link
 						inDeg[i] = inDeg[i] + 1;
-						subj[indexToEdgeList] = tmp[k];
+						subj[indexToEdgeList] = distNode;
 						obj[indexToEdgeList] = i;						
 					}
 					indexToEdgeList++;					
@@ -483,8 +481,7 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 				if (i % 10000 == 0) {
 					long ti1;
 					ti1= System.currentTimeMillis();
-					System.out.println(String.format("processed nodes: %d, time: %.1f, time sampling:%.2f ratio=%.1f", i,(ti1-ti0)/1000.0,ts10k/1000.0,
-							     ts10k*100.0/(ti1-ti0)));
+					System.out.println(String.format("processed nodes: %d, time: %.1f", i,(ti1-ti0)/1000.0));
 					ts10k=0;
 					ti0= System.currentTimeMillis();				
 				}
@@ -492,6 +489,7 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 					lastNode=i;
 					break;
 				}
+				tmp.clear();
 			}
 			
 			System.out.println("totalrepeats="+totalrepeats);
@@ -517,7 +515,7 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 		}
 
 //--------------------------------------------------------------------------------------------
-	@Override
+		@Override
 	public void generateGraph(int numberOfNodes, double avgDegree, long seed, GraphBuilder builder) {
 //		this.getBarabasiRDF(numberOfNodes, avgDegree, seed,builder);//String algorithm	
 		this.getBarabasiRDFumChkRep(numberOfNodes, avgDegree, seed,builder);//String algorithm	
