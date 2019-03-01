@@ -10,7 +10,7 @@
   hobbit:imageName "git.project-hobbit.eu:4567/ldcbench/ldcbench/benchmark-controller";
   hobbit:version "v1.0"@en;
   hobbit:hasParameter :seed, :numberOfNodes, :triplesPerNode, :averageNodeGraphDegree, :averageRdfGraphDegree, :averageNodeDelay;
-  hobbit:hasAPI :api .
+  hobbit:hasAPI :Api .
 
 :api a hobbit:API .
 

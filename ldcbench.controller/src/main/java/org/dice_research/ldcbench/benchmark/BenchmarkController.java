@@ -45,11 +45,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private Semaphore nodesReadySemaphore = new Semaphore(0);
     private Semaphore nodeGraphMutex = new Semaphore(0);
 
-    Channel dataGeneratorsChannel;
+    protected Channel dataGeneratorsChannel;
 
-    String dataGeneratorsExchange;
-    DataSender systemDataSender;
-    DataSender systemTaskSender;
+    protected String dataGeneratorsExchange;
+    protected DataSender systemDataSender;
+    protected DataSender systemTaskSender;
 
     private String getRandomNameForRabbitMQ() {
         return java.util.UUID.randomUUID().toString();
@@ -78,21 +78,21 @@ public class BenchmarkController extends AbstractBenchmarkController {
         String[] envVariables;
 
         // Start Virtuoso
-        String vos = createContainer("openlink/virtuoso-opensource-7", Constants.CONTAINER_TYPE_BENCHMARK, new String[]{
-            "DBA_PASSWORD=" + VOS_PASSWORD,
-        });
-        sparqlEndpoint = "http://" + vos + ":8890/sparql";
+        String vos = createContainer("openlink/virtuoso-opensource-7", Constants.CONTAINER_TYPE_BENCHMARK,
+                new String[] { "DBA_PASSWORD=" + VOS_PASSWORD, });
+        sparqlEndpoint = vos;
 
         // You might want to load parameters from the benchmarks parameter model
         int seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getInt();
         int nodesAmount = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfNodes).getInt();
         int triplesPerNode = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.triplesPerNode).getInt();
         Duration averageNodeDelay = RdfHelper.getDurationValue(benchmarkParamModel, null, LDCBench.averageNodeDelay);
-        int averageNodeGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeGraphDegree).getInt();
-        int averageRdfGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageRdfGraphDegree).getInt();
+        int averageNodeGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeGraphDegree)
+                .getInt();
+        int averageRdfGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageRdfGraphDegree)
+                .getInt();
 
         // Create the other components
-
         dataGeneratorsChannel = cmdQueueFactory.getConnection().createChannel();
         String queueName = dataGeneratorsChannel.queueDeclare().getQueue();
         String dataGeneratorsExchange = getRandomNameForRabbitMQ();
@@ -102,8 +102,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
         Consumer consumer = new GraphConsumer(dataGeneratorsChannel) {
             @Override
             public void handleNodeGraph(int senderId, Graph g) {
-                LOGGER.info("Got the node graph");
-                nodeGraphMutex.release();
+                LOGGER.info("Got the node graph #{}", senderId);
+                if (senderId == 0) {
+                    nodeGraphMutex.release();
+                }
             }
         };
         dataGeneratorsChannel.basicConsume(queueName, true, consumer);
@@ -112,7 +114,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         String benchmarkExchange = getRandomNameForRabbitMQ();
         dataGeneratorsChannel.exchangeDeclare(benchmarkExchange, "fanout", false, true, null);
 
-        // Greate queues for sending data to nodes
+        // Create queues for sending data to nodes
         String[] dataQueues = new String[nodesAmount];
         for (int i = 0; i < nodesAmount; i++) {
             dataQueues[i] = dataGeneratorsChannel.queueDeclare(getRandomNameForRabbitMQ(), false, false, true, null)
@@ -122,12 +124,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
         LOGGER.debug("Starting all cloud nodes...");
         NodeMetadata[] nodeMetadata = new NodeMetadata[nodesAmount];
         for (int i = 0; i < nodesAmount; i++) {
-            envVariables = new String[] {
-                    ApiConstants.ENV_NODE_ID_KEY + "=" + i,
+            envVariables = new String[] { ApiConstants.ENV_NODE_ID_KEY + "=" + i,
                     ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                     ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                     ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay.toMillis(),
-            };
+                    ApiConstants.ENV_HTTP_PORT_KEY + "=" + 80 };
 
             String containerId = createContainer(HTTPNODE_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK, envVariables);
 
@@ -138,18 +139,18 @@ public class BenchmarkController extends AbstractBenchmarkController {
         }
 
         // FIXME use entrance node of the node graph instead of 0
-        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(0, Stream.of(nodeMetadata).map(nm -> nm.getHostname()).toArray(String[]::new));
+        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(0,
+                Stream.of(nodeMetadata).map(nm -> nm.getHostname()).toArray(String[]::new));
         // FIXME use one of entrance nodes in graph instead of 0
         seedURI = tripleCreator.createNode(0, -1, -1, false).toString();
         LOGGER.info("Seed URI: {}", seedURI);
 
         String evalDataQueueName = getRandomNameForRabbitMQ();
         LOGGER.debug("Creating evaluation module...");
-        createEvaluationModule(EVALMODULE_IMAGE_NAME, new String[] {
-            ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
-            ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
-            ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=" + sparqlEndpoint,
-        });
+        createEvaluationModule(EVALMODULE_IMAGE_NAME,
+                new String[] { ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
+                        ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
+                        ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=http://" + sparqlEndpoint + ":8890/sparql" });
 
         LOGGER.debug("Waiting for all cloud nodes and evaluation module to be ready...");
         nodesReadySemaphore.acquire(nodesAmount + 1);
@@ -164,8 +165,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         SeedGenerator seedGenerator = new SeedGenerator(seed);
 
         // Node graph generator
-        envVariables = new String[] {
-                DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
+        envVariables = new String[] { DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
                 DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(0),
                 DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
                 DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageNodeGraphDegree,
@@ -176,8 +176,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         // RDF graph generators
         for (int i = 0; i < nodesAmount; i++) {
-            envVariables = new String[] {
-                    Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
+            envVariables = new String[] { Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
                     DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.RDF_GRAPH_GENERATOR,
                     DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(1 + i),
                     DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageRdfGraphDegree,
@@ -190,14 +189,21 @@ public class BenchmarkController extends AbstractBenchmarkController {
             Thread.sleep(2000);
         }
 
+        LOGGER.debug("Creating queues for sending data and tasks to the system...");
+        systemDataSender = DataSenderImpl.builder().queue(getFactoryForOutgoingDataQueues(),
+                generateSessionQueueName(Constants.DATA_GEN_2_SYSTEM_QUEUE_NAME)).build();
+        systemTaskSender = DataSenderImpl.builder().queue(getFactoryForOutgoingDataQueues(),
+                generateSessionQueueName(Constants.TASK_GEN_2_SYSTEM_QUEUE_NAME)).build();
+
         LOGGER.debug("Waiting for components to initialize...");
         waitForComponentsToInitialize();
     }
 
     @Override
     protected void executeBenchmark() throws Exception {
-        LOGGER.debug("BenchmarkController.executeBenchmark()");
-        sendToCmdQueue(Commands.TASK_GENERATOR_START_SIGNAL);
+        LOGGER.trace("BenchmarkController.executeBenchmark()");
+        // Send the start signal to enable our data generators to get through their run
+        // method (and terminate)
         sendToCmdQueue(Commands.DATA_GENERATOR_START_SIGNAL);
 
         LOGGER.debug("Waiting for the node graph...");
@@ -207,16 +213,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
         waitForDataGenToFinish();
 
         LOGGER.debug("Sending information to the system...");
-        systemDataSender = DataSenderImpl.builder().queue(getFactoryForOutgoingDataQueues(),
-                generateSessionQueueName(Constants.DATA_GEN_2_SYSTEM_QUEUE_NAME)).build();
         systemDataSender.sendData(RabbitMQUtils.writeString(sparqlEndpoint));
-        systemDataSender.closeWhenFinished();
 
-        systemTaskSender = DataSenderImpl.builder().queue(getFactoryForOutgoingDataQueues(),
-                generateSessionQueueName(Constants.TASK_GEN_2_SYSTEM_QUEUE_NAME)).build();
-        systemTaskSender.sendData(
-                RabbitMQUtils.writeByteArrays(new byte[][] { RabbitMQUtils.writeString("0"), RabbitMQUtils.writeString(seedURI) }));
-        systemTaskSender.closeWhenFinished();
+        systemTaskSender.sendData(RabbitMQUtils
+                .writeByteArrays(new byte[][] { RabbitMQUtils.writeString("0"), RabbitMQUtils.writeString(seedURI) }));
 
         sendToCmdQueue(ApiConstants.CRAWLING_STARTED_SIGNAL, RabbitMQUtils.writeLong(new Date().getTime()));
 
@@ -244,7 +244,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
             LOGGER.debug("Received NODE_READY_SIGNAL");
             nodesReadySemaphore.release();
         }
-
         super.receiveCommand(command, data);
     }
 

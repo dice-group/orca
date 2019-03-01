@@ -1,16 +1,17 @@
 package org.dice_research.ldcbench.benchmark;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Consumer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.concurrent.Semaphore;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
+
+import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.generate.GraphGenerator;
 import org.dice_research.ldcbench.generate.RandomRDF;
 import org.dice_research.ldcbench.graph.Graph;
@@ -19,16 +20,14 @@ import org.dice_research.ldcbench.graph.GraphMetadata;
 import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.dice_research.ldcbench.graph.serialization.DumbSerializer;
 import org.dice_research.ldcbench.graph.serialization.SerializationHelper;
-import org.dice_research.ldcbench.ApiConstants;
 import org.hobbit.core.components.AbstractDataGenerator;
 import org.hobbit.core.rabbit.SimpleFileSender;
 import org.hobbit.utils.EnvVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
-import static org.dice_research.ldcbench.Constants.*;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Consumer;
 
 public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_TYPE_KEY = "LDCBENCH_DATAGENERATOR_TYPE";
