@@ -1,29 +1,29 @@
 package org.dice_research.ldcbench.benchmark;
 
+import static org.dice_research.ldcbench.Constants.DATAGEN_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.EVALMODULE_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.HTTPNODE_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.VOS_PASSWORD;
+
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.time.Duration;
-import java.util.concurrent.Semaphore;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Set;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.IOUtils;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.generate.SeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
-
-import org.apache.commons.io.IOUtils;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.Channel;
-import org.apache.commons.lang3.ArrayUtils;
 import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.core.Commands;
 import org.hobbit.core.Constants;
 import org.hobbit.core.components.AbstractBenchmarkController;
-import org.hobbit.core.components.AbstractEvaluationStorage;
 import org.hobbit.core.rabbit.DataSender;
 import org.hobbit.core.rabbit.DataSenderImpl;
 import org.hobbit.core.rabbit.RabbitMQUtils;
@@ -31,9 +31,8 @@ import org.hobbit.utils.rdf.RdfHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
-import static org.dice_research.ldcbench.Constants.*;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Consumer;
 
 public class BenchmarkController extends AbstractBenchmarkController {
 
@@ -50,6 +49,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     protected String dataGeneratorsExchange;
     protected DataSender systemDataSender;
     protected DataSender systemTaskSender;
+    protected NodeMetadata[] nodeMetadata = null;
 
     private String getRandomNameForRabbitMQ() {
         return java.util.UUID.randomUUID().toString();
@@ -86,7 +86,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         int seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getInt();
         int nodesAmount = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfNodes).getInt();
         int triplesPerNode = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.triplesPerNode).getInt();
-        Duration averageNodeDelay = RdfHelper.getDurationValue(benchmarkParamModel, null, LDCBench.averageNodeDelay);
+        long averageNodeDelay = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeDelay).getLong();
         int averageNodeGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeGraphDegree)
                 .getInt();
         int averageRdfGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageRdfGraphDegree)
@@ -127,7 +127,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
             envVariables = new String[] { ApiConstants.ENV_NODE_ID_KEY + "=" + i,
                     ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                     ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
-                    ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay.toMillis(),
+                    ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay,
                     ApiConstants.ENV_HTTP_PORT_KEY + "=" + 80 };
 
             String containerId = createContainer(HTTPNODE_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK, envVariables);
@@ -253,6 +253,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // Free the resources you requested here
         IOUtils.closeQuietly(systemDataSender);
         IOUtils.closeQuietly(systemTaskSender);
+        if(nodeMetadata != null) {
+            for (int i = 0; i < nodeMetadata.length; ++i) {
+                stopContainer(nodeMetadata[i].getHostname());
+            }
+        }
 
         // Always close the super class after yours!
         super.close();
