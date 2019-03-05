@@ -94,8 +94,8 @@ public abstract class AbstractCrawleableResource implements CrawleableResource {
             // FIXME workaround that falls back to RDF XML if content type is not available
             Lang lang = RDFLanguages.contentTypeToLang(acceptedContentType);
             if(lang == null) {
-                lang = Lang.RDFXML;
-                acceptedContentType = Lang.RDFXML.getHeaderString();
+                lang = Lang.TURTLE;
+                acceptedContentType = Lang.TURTLE.getHeaderString();
             }
             response.setContentType(acceptedContentType + "; charset=" + acceptedCharset);
             return handleRequest(request.getTarget(), lang, acceptedCharset, out);
