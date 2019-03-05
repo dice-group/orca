@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFLanguages;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
@@ -89,8 +91,14 @@ public abstract class AbstractCrawleableResource implements CrawleableResource {
             }
         }
         if ((acceptedCharset != null) && (acceptedContentType != null)) {
+            // FIXME workaround that falls back to RDF XML if content type is not available
+            Lang lang = RDFLanguages.contentTypeToLang(acceptedContentType);
+            if(lang == null) {
+                lang = Lang.RDFXML;
+                acceptedContentType = Lang.RDFXML.getHeaderString();
+            }
             response.setContentType(acceptedContentType + "; charset=" + acceptedCharset);
-            return handleRequest(request.getTarget(), acceptedContentType, acceptedCharset, out);
+            return handleRequest(request.getTarget(), lang, acceptedCharset, out);
         } else {
             if (acceptedContentType == null) {
                 throw new SimpleHttpException("Couldn't find a fitting content type in the list of accepted types ("
@@ -102,7 +110,7 @@ public abstract class AbstractCrawleableResource implements CrawleableResource {
         }
     }
 
-    public abstract boolean handleRequest(String target, String contentType, String charset, OutputStream out)
+    public abstract boolean handleRequest(String target, Lang lang, String charset, OutputStream out)
             throws SimpleHttpException;
 
     public void setDefaultCharset(String defaultCharset) {

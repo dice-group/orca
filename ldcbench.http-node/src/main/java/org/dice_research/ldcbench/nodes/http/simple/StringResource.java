@@ -3,6 +3,7 @@ package org.dice_research.ldcbench.nodes.http.simple;
 import java.io.OutputStream;
 import java.util.function.Predicate;
 
+import org.apache.jena.riot.Lang;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Status;
 
@@ -27,7 +28,7 @@ public class StringResource extends AbstractCrawleableResource implements Crawle
     }
 
     @Override
-    public boolean handleRequest(String target, String contentType, String charsetName, OutputStream out)
+    public boolean handleRequest(String target, Lang lang, String charsetName, OutputStream out)
             throws SimpleHttpException {
         try {
             out.write(content.getBytes(charsetName));

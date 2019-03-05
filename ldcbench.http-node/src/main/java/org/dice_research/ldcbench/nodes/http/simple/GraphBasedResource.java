@@ -38,16 +38,16 @@ public class GraphBasedResource extends AbstractCrawleableResource {
     }
 
     @Override
-    public boolean handleRequest(String target, String contentType, String charset, OutputStream out)
+    public boolean handleRequest(String target, Lang lang, String charset, OutputStream out)
             throws SimpleHttpException {
-        Lang lang = RDFLanguages.contentTypeToLang(contentType);
-        if ((lang == null) && (failIfContentTypeMismatch)) {
-            throw new SimpleHttpException(
-                    "Couldn't transform content type \"" + contentType + "\" into a known RDF language.",
-                    Status.INTERNAL_SERVER_ERROR);
-        } else {
-            lang = defaultLang;
-        }
+//        Lang lang = RDFLanguages.contentTypeToLang(contentType);
+//        if ((lang == null) && (failIfContentTypeMismatch)) {
+//            throw new SimpleHttpException(
+//                    "Couldn't transform content type \"" + contentType + "\" into a known RDF language.",
+//                    Status.INTERNAL_SERVER_ERROR);
+//        } else {
+//            lang = defaultLang;
+//        }
         // parse target
         int ids[] = parseIds(target);
 
