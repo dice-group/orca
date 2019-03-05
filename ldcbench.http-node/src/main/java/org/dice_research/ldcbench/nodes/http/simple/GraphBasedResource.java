@@ -5,11 +5,14 @@ import java.util.Iterator;
 import java.util.function.Predicate;
 
 import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFLanguages;
+import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.system.StreamOps;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
+import org.apache.jena.sparql.graph.GraphFactory;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.http.utils.NullValueHelper;
 import org.dice_research.ldcbench.rdf.SimpleCachingTripleCreator;
@@ -40,23 +43,50 @@ public class GraphBasedResource extends AbstractCrawleableResource {
     @Override
     public boolean handleRequest(String target, Lang lang, String charset, OutputStream out)
             throws SimpleHttpException {
-//        Lang lang = RDFLanguages.contentTypeToLang(contentType);
-//        if ((lang == null) && (failIfContentTypeMismatch)) {
-//            throw new SimpleHttpException(
-//                    "Couldn't transform content type \"" + contentType + "\" into a known RDF language.",
-//                    Status.INTERNAL_SERVER_ERROR);
-//        } else {
-//            lang = defaultLang;
-//        }
+        // Lang lang = RDFLanguages.contentTypeToLang(contentType);
+        // if ((lang == null) && (failIfContentTypeMismatch)) {
+        // throw new SimpleHttpException(
+        // "Couldn't transform content type \"" + contentType + "\" into a known RDF
+        // language.",
+        // Status.INTERNAL_SERVER_ERROR);
+        // } else {
+        // lang = defaultLang;
+        // }
         // parse target
         int ids[] = parseIds(target);
+        TripleIterator iterator = new TripleIterator(this, ids[0], ids[1]);
 
+        try {
+            streamData(iterator, out, lang);
+        } catch (RiotException e) {
+            if (e.getMessage().contains("No serialization for language")) {
+                // Try to serialize it with a model
+                createModelAndSend(iterator, out, lang);
+            }
+        }
         // TODO add a prefix map
         StreamRDF writerStream = StreamRDFWriter.getWriterStream(out, lang);
         writerStream.start();
         StreamOps.sendTriplesToStream(new TripleIterator(this, ids[0], ids[1]), writerStream);
         writerStream.finish();
+
         return true;
+    }
+
+    private void streamData(TripleIterator iterator, OutputStream out, Lang lang) {
+        StreamRDF writerStream = StreamRDFWriter.getWriterStream(out, lang);
+        writerStream.start();
+        StreamOps.sendTriplesToStream(iterator, writerStream);
+        writerStream.finish();
+    }
+
+    private void createModelAndSend(TripleIterator iterator, OutputStream out, Lang lang) {
+        org.apache.jena.graph.Graph g = GraphFactory.createDefaultGraph();
+        while (iterator.hasNext()) {
+            g.add(iterator.next());
+        }
+        Model model = ModelFactory.createModelForGraph(g);
+        model.write(out, lang.getName());
     }
 
     private int[] parseIds(String target) throws SimpleHttpException {
