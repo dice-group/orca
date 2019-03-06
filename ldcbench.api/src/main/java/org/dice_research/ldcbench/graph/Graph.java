@@ -13,7 +13,7 @@ public interface Graph {
     /**
      * The graph ID of internal nodes.
      */
-    public static final int INTERNAL_NODE_GRAPH_ID = 0;
+    public static final int INTERNAL_NODE_GRAPH_ID = -1;
 
     /**
      * Returns an array containing the target node IDs of the edges that have the

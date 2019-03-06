@@ -24,25 +24,22 @@ public class GraphBasedResourceTest {
     private static final String[] DOMAINS = new String[] { "domain0", "domain1" };
 
     @Test
-    public void testTurtle() throws Exception {
-        executeTest(Lang.TURTLE);
+    public void testTurtle1() throws Exception {
+        executeTest1(Lang.TURTLE);
     }
 
     @Test
-    public void testRDFXML() throws Exception {
-        executeTest(Lang.RDFXML);
+    public void testRDFXML1() throws Exception {
+        executeTest1(Lang.RDFXML);
     }
 
     @Test
-    public void testJSONLD() throws Exception {
-        executeTest(Lang.JSONLD);
+    public void testJSONLD1() throws Exception {
+        executeTest1(Lang.JSONLD);
     }
 
-    public void executeTest(Lang lang) throws Exception {
-        int domainId = 0;
+    protected void executeTest1(Lang lang) throws Exception {
         GraphBuilder builder = new GrphBasedGraph();
-        Graph[] graphs = new Graph[] { builder };
-
         // build graph
         builder.addNodes(5);
         builder.setGraphIdOfNode(3, 1, 0);
@@ -52,19 +49,66 @@ public class GraphBasedResourceTest {
         builder.addEdge(0, 2, 0);
         builder.addEdge(0, 3, 0);
         builder.addEdge(0, 4, 0);
-
         // Create expected model
         Model expectedModel = ModelFactory.createDefaultModel();
-        expectedModel.add(getResource(expectedModel, 0, 0), getProperty(expectedModel, 0),
+        expectedModel.add(getResource(expectedModel, 0, 0), getProperty(expectedModel, 0, 0),
                 getResource(expectedModel, 1, 0));
-        expectedModel.add(getResource(expectedModel, 0, 0), getProperty(expectedModel, 1),
+        expectedModel.add(getResource(expectedModel, 0, 0), getProperty(expectedModel, 1, 0),
                 getResource(expectedModel, 1, 0));
-        expectedModel.add(getResource(expectedModel, 0, 0), getProperty(expectedModel, 0),
+        expectedModel.add(getResource(expectedModel, 0, 0), getProperty(expectedModel, 0, 0),
                 getResource(expectedModel, 2, 0));
-        expectedModel.add(getResource(expectedModel, 0, 0), getProperty(expectedModel, 0),
+        expectedModel.add(getResource(expectedModel, 0, 0), getProperty(expectedModel, 0, 0),
                 getResource(expectedModel, 0, 1));
-        expectedModel.add(getResource(expectedModel, 0, 0), getProperty(expectedModel, 0),
+        expectedModel.add(getResource(expectedModel, 0, 0), getProperty(expectedModel, 0, 0),
                 getResource(expectedModel, 1, 1));
+
+        executeTest(lang, builder, 0, expectedModel);
+    }
+
+    @Test
+    public void testTurtle2() throws Exception {
+        executeTest2(Lang.TURTLE);
+    }
+
+    @Test
+    public void testRDFXML2() throws Exception {
+        executeTest2(Lang.RDFXML);
+    }
+
+    @Test
+    public void testJSONLD2() throws Exception {
+        executeTest2(Lang.JSONLD);
+    }
+
+    protected void executeTest2(Lang lang) throws Exception {
+        GraphBuilder builder = new GrphBasedGraph();
+        // build graph
+        builder.addNodes(5);
+        builder.setGraphIdOfNode(3, 0, 0);
+        builder.setGraphIdOfNode(4, 0, 1);
+        builder.addEdge(0, 1, 0);
+        builder.addEdge(0, 1, 1);
+        builder.addEdge(0, 2, 0);
+        builder.addEdge(0, 3, 0);
+        builder.addEdge(0, 4, 0);
+        // Create expected model
+        Model expectedModel = ModelFactory.createDefaultModel();
+        expectedModel.add(getResource(expectedModel, 0, 1), getProperty(expectedModel, 0, 1),
+                getResource(expectedModel, 1, 1));
+        expectedModel.add(getResource(expectedModel, 0, 1), getProperty(expectedModel, 1, 1),
+                getResource(expectedModel, 1, 1));
+        expectedModel.add(getResource(expectedModel, 0, 1), getProperty(expectedModel, 0, 1),
+                getResource(expectedModel, 2, 1));
+        expectedModel.add(getResource(expectedModel, 0, 1), getProperty(expectedModel, 0, 1),
+                getResource(expectedModel, 0, 0));
+        expectedModel.add(getResource(expectedModel, 0, 1), getProperty(expectedModel, 0, 1),
+                getResource(expectedModel, 1, 0));
+
+        executeTest(lang, builder, 1, expectedModel);
+    }
+
+    protected void executeTest(Lang lang, Graph graph, int domainId, Model expectedModel) throws Exception {
+        Graph[] graphs = new Graph[] { graph };
 
         // create resource
         GraphBasedResource resource = new GraphBasedResource(domainId, DOMAINS, graphs, (r -> true), new String[0]);
@@ -83,7 +127,7 @@ public class GraphBasedResourceTest {
             System.out.println("Missing statments: ");
             System.out.println(missingStmts.toString());
         }
-        Set<Statement> wrongStmts = ModelComparisonHelper.getMissingStatements(receivedModel, expectedModel);
+        Set<Statement> wrongStmts = ModelComparisonHelper.getMissingStatements(expectedModel, receivedModel);
         if (!wrongStmts.isEmpty()) {
             System.out.println("Wrong statments: ");
             System.out.println(wrongStmts.toString());
@@ -91,8 +135,8 @@ public class GraphBasedResourceTest {
         Assert.assertTrue("There were missing or wrong statements.", missingStmts.isEmpty() && wrongStmts.isEmpty());
     }
 
-    private Property getProperty(Model model, int id) {
-        return model.getProperty(getUri("property", id, 0));
+    private Property getProperty(Model model, int id, int domainId) {
+        return model.getProperty(getUri("property", id, domainId));
     }
 
     private Resource getResource(Model model, int nodeId, int domainId) {

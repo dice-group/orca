@@ -142,7 +142,7 @@ public class GraphBasedResource extends AbstractCrawleableResource {
             this.nodeId = nodeId;
             targets = parent.graphs[datasetId].outgoingEdgeTargets(nodeId);
             edgeTypes = parent.graphs[datasetId].outgoingEdgeTypes(nodeId);
-            tripleCreator = new SimpleCachingTripleCreator(datasetId, domains);
+            tripleCreator = new SimpleCachingTripleCreator(parent.domainId, domains);
         }
 
         @Override

@@ -3,6 +3,7 @@ package org.dice_research.ldcbench.rdf;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.dice_research.ldcbench.graph.Graph;
 
 /**
  * A simple {@link TripleCreator} implementation relying on a base graph Id and
@@ -33,7 +34,8 @@ public class SimpleTripleCreator implements TripleCreator {
 
     @Override
     public Triple createTriple(int sourceId, int propertyId, int targetId, int targetExtId, int targetExtGraphId) {
-        return new Triple(createNode(sourceId, -1, -1, false), createNode(propertyId, -1, -1, true),
+        return new Triple(createNode(sourceId, -1, Graph.INTERNAL_NODE_GRAPH_ID, false),
+                createNode(propertyId, -1, Graph.INTERNAL_NODE_GRAPH_ID, true),
                 createNode(targetId, targetExtId, targetExtGraphId, false));
     }
 
@@ -54,7 +56,7 @@ public class SimpleTripleCreator implements TripleCreator {
      */
     public Node createNode(int nodeId, int externalId, int extGraphId, boolean isProperty) {
         String domain;
-        if (externalId < 0) {
+        if (extGraphId == Graph.INTERNAL_NODE_GRAPH_ID) {
             externalId = nodeId;
             domain = domains[baseGraphId];
         } else {
