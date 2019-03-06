@@ -53,6 +53,9 @@ public class GraphBasedResource extends AbstractCrawleableResource {
         // lang = defaultLang;
         // }
         // parse target
+        
+        // TODO add a prefix map
+        
         int ids[] = parseIds(target);
         TripleIterator iterator = new TripleIterator(this, ids[0], ids[1]);
 
@@ -62,14 +65,10 @@ public class GraphBasedResource extends AbstractCrawleableResource {
             if (e.getMessage().contains("No serialization for language")) {
                 // Try to serialize it with a model
                 createModelAndSend(iterator, out, lang);
+            } else {
+                throw e;
             }
         }
-        // TODO add a prefix map
-        StreamRDF writerStream = StreamRDFWriter.getWriterStream(out, lang);
-        writerStream.start();
-        StreamOps.sendTriplesToStream(new TripleIterator(this, ids[0], ids[1]), writerStream);
-        writerStream.finish();
-
         return true;
     }
 
@@ -159,7 +158,7 @@ public class GraphBasedResource extends AbstractCrawleableResource {
 
         private Triple createTriple(int targetId, int propertyId) {
             return tripleCreator.createTriple(nodeId, propertyId, targetId,
-                    parent.graphs[datasetId].getExternalNodeId(nodeId), parent.graphs[datasetId].getGraphId(nodeId));
+                    parent.graphs[datasetId].getExternalNodeId(targetId), parent.graphs[datasetId].getGraphId(targetId));
         }
     }
 }

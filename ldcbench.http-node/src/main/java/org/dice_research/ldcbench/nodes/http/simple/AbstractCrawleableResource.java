@@ -12,6 +12,7 @@ import org.apache.jena.riot.RDFLanguages;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
+import org.springframework.http.MediaType;
 
 public abstract class AbstractCrawleableResource implements CrawleableResource {
 
@@ -52,6 +53,25 @@ public abstract class AbstractCrawleableResource implements CrawleableResource {
         if (!predicate.test(request)) {
             return false;
         }
+//        List<MediaType> acceptHeaders = headers.getAcceptableMediaTypes();
+//        if (acceptHeaders == null || acceptHeaders.size() == 0) {
+//            return Response.ok(/* entity in XML format */).type(MediaType.APPLICATION_XML).build();
+//        }
+//
+//        for (MediaType mt : acceptHeaders) {
+//            String qValue = mt.getParameters().get("q");
+//            if(qValue != null && Double.valueOf(qValue).doubleValue() == 0.0) {
+//                break;
+//            }
+//            if(MediaType.APPLICATION_XML_TYPE.isCompatible(mt)) {
+//                return Response.ok(/* entity in XML format */).type(MediaType.APPLICATION_XML).build();
+//            } else if (MediaType.APPLICATION_JSON_TYPE.isCompatible(mt)) {
+//                return Response.ok(/* entity in JSON format */).type(MediaType.APPLICATION_JSON).build();
+//            }
+//        }
+//        return Response.notAcceptable(Variant.mediaTypes(MediaType.APPLICATION_JSON_TYPE,
+//                                                         MediaType.APPLICATION_XML_TYPE).add()
+//            .build()).build();
         String acceptedContentType = null;
         Iterator<String> iter = request.getValues(ACCEPT_HEADER).iterator();
         if (availableContentTypes.size() > 0) {
