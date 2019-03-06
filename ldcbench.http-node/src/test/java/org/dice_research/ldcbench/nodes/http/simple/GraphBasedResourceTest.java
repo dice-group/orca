@@ -23,14 +23,19 @@ public class GraphBasedResourceTest {
 
     private static final String[] DOMAINS = new String[] { "domain0", "domain1" };
 
-//    @Test
-//    public void testTurtle() throws Exception {
-//        executeTest(Lang.TURTLE);
-//    }
+    @Test
+    public void testTurtle() throws Exception {
+        executeTest(Lang.TURTLE);
+    }
 
     @Test
     public void testRDFXML() throws Exception {
         executeTest(Lang.RDFXML);
+    }
+
+    @Test
+    public void testJSONLD() throws Exception {
+        executeTest(Lang.JSONLD);
     }
 
     public void executeTest(Lang lang) throws Exception {
