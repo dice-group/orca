@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 import org.dice_research.ldcbench.ApiConstants;
@@ -39,8 +40,7 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_DATAGENERATOR_EXCHANGE_KEY = "LDCBENCH_DATAGENERATOR_EXCHANGE";
 
     public static enum Types {
-        NODE_GRAPH_GENERATOR,
-        RDF_GRAPH_GENERATOR
+        NODE_GRAPH_GENERATOR, RDF_GRAPH_GENERATOR
     };
 
     private Semaphore dataGeneratorsReady = new Semaphore(0);
@@ -55,7 +55,7 @@ public class DataGenerator extends AbstractDataGenerator {
 
     private int generatorId = -1;
 
-    private int seed;
+    private long seed;
     private Types type;
     private int numberOfNodes;
     private double avgDegree;
@@ -77,7 +77,6 @@ public class DataGenerator extends AbstractDataGenerator {
         if (type == Types.RDF_GRAPH_GENERATOR) {
             return generatorId - 1;
         }
-
         throw new IllegalStateException();
     }
 
@@ -89,12 +88,14 @@ public class DataGenerator extends AbstractDataGenerator {
             public boolean filter(int id, int type) {
                 return id != generatorId;
             }
+
             @Override
             public void handleNodeGraph(int senderId, Graph g) {
                 nodeGraph = g;
                 LOGGER.info("Got the node graph");
                 nodeGraphReceivedMutex.release();
             }
+
             @Override
             public void handleRdfGraph(int senderId, GraphMetadata gm) {
                 try {
@@ -115,47 +116,46 @@ public class DataGenerator extends AbstractDataGenerator {
     }
 
     private void addInterlinks(GraphBuilder g) {
+        int numberOfInternalNodes = g.getNumberOfNodes();
+        Random random = new Random(seed);
         for (Map.Entry<Integer, GraphMetadata> entry : rdfMetadata.entrySet()) {
             int targetNodeGraph = entry.getKey();
             GraphMetadata gm = entry.getValue();
 
-            // FIXME use random node
-            int nodeWithOutgoingLink = 0;
-
-            // FIXME use gm.entranceNodes
-            // FIXME use random entrance node
-            /*
-            if (gm.entranceNodes.length == 0) {
-                throw new IllegalStateException("Node " + nodeId + " needs to link to node " + targetNodeGraph + " but there are no entrypoints.");
-            }
-            int entranceInTargetGraph = gm.entranceNodes[0];
-            */
-            int entranceInTargetGraph = 0;
-
+            // use random node
+            int nodeWithOutgoingLink = random.nextInt(numberOfInternalNodes);
+//            if (gm.entranceNodes.length == 0) {
+//                throw new IllegalStateException("Node " + nodeId + " needs to link to node " + targetNodeGraph
+//                        + " but there are no entrypoints.");
+//            }
+            // get node in target graph
+            int entranceInTargetGraph = 0;// FIXME use gm.entranceNodes[random.nextInt(gm.entranceNodes.length)];
+            // add a new node
             int externalNode = g.addNode();
             g.setGraphIdOfNode(externalNode, targetNodeGraph, entranceInTargetGraph);
 
             // FIXME don't always use edge type 0
-            g.addEdge(nodeWithOutgoingLink, externalNode, 0);
+            int propertyId = 0;
+            g.addEdge(nodeWithOutgoingLink, externalNode, propertyId);
+            LOGGER.debug("Added the edge ({}, {}, {}) where the target is node {} in graph {}.", nodeWithOutgoingLink,
+                    propertyId, externalNode, entranceInTargetGraph, targetNodeGraph);
         }
     }
 
     private void sendFinalGraph(Graph g) throws Exception {
         byte[] data = SerializationHelper.serialize(serializerClass, g);
-        String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d", nodeId);
+        String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d",
+                nodeId);
 
-        // TODO: Use RabbitMQ exchange to send the data (SimpleFileSender doesn't support that)
-        try (
-            InputStream is = new ByteArrayInputStream(data);
-            SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, dataQueueName);
-        ) {
+        // TODO: Use RabbitMQ exchange to send the data (SimpleFileSender doesn't
+        // support that)
+        try (InputStream is = new ByteArrayInputStream(data);
+                SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, dataQueueName);) {
             dataSender.streamData(is, name);
         }
 
-        try (
-            InputStream is = new ByteArrayInputStream(data);
-            SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, evalDataQueueName);
-        ) {
+        try (InputStream is = new ByteArrayInputStream(data);
+                SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, evalDataQueueName);) {
             dataSender.streamData(is, name);
         }
     }
@@ -166,7 +166,7 @@ public class DataGenerator extends AbstractDataGenerator {
         super.init();
 
         generatorId = getGeneratorId();
-        seed = EnvVariables.getInt(ENV_SEED_KEY);
+        seed = EnvVariables.getLong(ENV_SEED_KEY);
         type = Types.valueOf(EnvVariables.getString(ENV_TYPE_KEY));
         numberOfNodes = EnvVariables.getInt(ENV_NUMBER_OF_NODES_KEY, 0);
         avgDegree = Double.parseDouble(EnvVariables.getString(ENV_AVERAGE_DEGREE_KEY));
@@ -248,9 +248,10 @@ public class DataGenerator extends AbstractDataGenerator {
 
         if (type == Types.RDF_GRAPH_GENERATOR) {
             // Identify nodes linked from this node.
-            rdfMetadata = Arrays.stream(nodeGraph.outgoingEdgeTargets(nodeId)).boxed().collect(HashMap::new, (m, v) -> m.put(v, null), HashMap::putAll);
+            rdfMetadata = Arrays.stream(nodeGraph.outgoingEdgeTargets(nodeId)).boxed().collect(HashMap::new,
+                    (m, v) -> m.put(v, null), HashMap::putAll);
 
-            LOGGER.info("Waiting for {} rdf graphs relevant to this node...", generatorId, rdfMetadata.size());
+            LOGGER.info("Waiting for {} rdf graphs relevant to this node... ({})", rdfMetadata.size(), rdfMetadata.keySet());
             nodeGraphProcessedMutex.release(nodeGraph.getNumberOfNodes() - 1);
             targetMetadataReceivedSemaphore.acquire(rdfMetadata.size());
 
