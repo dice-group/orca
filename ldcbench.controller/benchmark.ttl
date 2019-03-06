@@ -9,7 +9,8 @@
   rdfs:comment "Linked Data Crawler Benchmark"@en;
   hobbit:imageName "git.project-hobbit.eu:4567/ldcbench/ldcbench/benchmark-controller";
   hobbit:version "v1.0"@en;
-  hobbit:hasParameter :seed, :numberOfNodes, :triplesPerNode, :averageNodeGraphDegree, :averageRdfGraphDegree, :averageNodeDelay;
+  hobbit:hasParameter :seed, :numberOfNodes, :triplesPerNode, :averageNodeGraphDegree, :averageRdfGraphDegree, :averageNodeDelay, :triplesEvaluated;
+  hobbit:measuresKPI :truePositives, :recall;
   hobbit:hasAPI :Api .
 
 :api a hobbit:API .
@@ -55,3 +56,21 @@
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:long;
   hobbit:defaultValue "5000"^^xsd:string .
+
+:triplesEvaluated a hobbit:Parameter ;
+  rdfs:label "Triples evaluated"@en;
+  rdfs:comment "The number of triples checked during the evaluation."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:long .
+
+:truePositives a hobbit:KPI ;
+  rdfs:label "True positives"@en;
+  rdfs:comment "The number of triples that were expected to be found by the crawler and returned by the crawler."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:long .
+
+:recall a hobbit:KPI ;
+  rdfs:label "Recall"@en;
+  rdfs:comment "The number of correctly retrieved triples divided by the number of triples that were expected to be returned."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:double .
