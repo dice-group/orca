@@ -8,7 +8,6 @@ import static org.dice_research.ldcbench.Constants.VOS_PASSWORD;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.Semaphore;
@@ -39,6 +38,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkController.class);
 
     private String sparqlEndpoint;
+    private String[] sparqlCredentials;
     private String seedURI;
 
     private Semaphore nodesReadySemaphore = new Semaphore(0);
@@ -75,12 +75,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
     public void init() throws Exception {
         super.init();
 
-        String[] envVariables;
-
-        // Start Virtuoso
-        String vos = createContainer("openlink/virtuoso-opensource-7", Constants.CONTAINER_TYPE_BENCHMARK,
-                new String[] { "DBA_PASSWORD=" + VOS_PASSWORD, });
-        sparqlEndpoint = vos;
+        // Start SPARQL endpoint
+        createSparqlEndpoint();
 
         // You might want to load parameters from the benchmarks parameter model
         int seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getInt();
@@ -121,6 +117,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     .getQueue();
         }
 
+        String[] envVariables;
         LOGGER.debug("Starting all cloud nodes...");
         NodeMetadata[] nodeMetadata = new NodeMetadata[nodesAmount];
         for (int i = 0; i < nodesAmount; i++) {
@@ -199,6 +196,15 @@ public class BenchmarkController extends AbstractBenchmarkController {
         waitForComponentsToInitialize();
     }
 
+    protected void createSparqlEndpoint() {
+        sparqlEndpoint = createContainer("openlink/virtuoso-opensource-7", Constants.CONTAINER_TYPE_BENCHMARK,
+                new String[] { "DBA_PASSWORD=" + VOS_PASSWORD, });
+        if(sparqlEndpoint == null) {
+            throw new IllegalStateException("Couldn't create SPARQL endpoint. Aborting.");
+        }
+        sparqlCredentials = new String[] { "dba", VOS_PASSWORD };
+    }
+
     @Override
     protected void executeBenchmark() throws Exception {
         LOGGER.trace("BenchmarkController.executeBenchmark()");
@@ -213,7 +219,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
         waitForDataGenToFinish();
 
         LOGGER.debug("Sending information to the system...");
-        systemDataSender.sendData(RabbitMQUtils.writeString(sparqlEndpoint));
+        systemDataSender.sendData(RabbitMQUtils.writeByteArrays(new byte[][] {
+                RabbitMQUtils.writeString("http://" + sparqlEndpoint + ":8890/sparql-auth"),
+                RabbitMQUtils.writeString(sparqlCredentials[0]), RabbitMQUtils.writeString(sparqlCredentials[1]) }));
 
         systemTaskSender.sendData(RabbitMQUtils
                 .writeByteArrays(new byte[][] { RabbitMQUtils.writeString("0"), RabbitMQUtils.writeString(seedURI) }));
@@ -239,8 +247,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     @Override
     public void receiveCommand(byte command, byte[] data) {
-        switch (command) {
-        case ApiConstants.NODE_READY_SIGNAL:
+        if(command == ApiConstants.NODE_READY_SIGNAL) {
             LOGGER.debug("Received NODE_READY_SIGNAL");
             nodesReadySemaphore.release();
         }
@@ -253,7 +260,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // Free the resources you requested here
         IOUtils.closeQuietly(systemDataSender);
         IOUtils.closeQuietly(systemTaskSender);
-        if(nodeMetadata != null) {
+        if (nodeMetadata != null) {
             for (int i = 0; i < nodeMetadata.length; ++i) {
                 stopContainer(nodeMetadata[i].getHostname());
             }
