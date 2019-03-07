@@ -35,6 +35,8 @@ public class LDCBench {
     public static final Property seed = property("seed");
     public static final Property numberOfNodes = property("numberOfNodes");
     public static final Property recall = property("recall");
+    public static final Property runtime = property("runtime");
+    public static final Property tripleCountOverTime = property("tripleCountOverTime");
     public static final Property triplesEvaluated = property("triplesEvaluated");
     public static final Property triplesPerNode = property("triplesPerNode");
     public static final Property truePositives = property("truePositives");

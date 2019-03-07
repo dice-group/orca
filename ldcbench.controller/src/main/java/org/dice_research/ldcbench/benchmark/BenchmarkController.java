@@ -223,10 +223,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 RabbitMQUtils.writeString("http://" + sparqlEndpoint + ":8890/sparql-auth"),
                 RabbitMQUtils.writeString(sparqlCredentials[0]), RabbitMQUtils.writeString(sparqlCredentials[1]) }));
 
+        long startTime = System.currentTimeMillis();
         systemTaskSender.sendData(RabbitMQUtils
                 .writeByteArrays(new byte[][] { RabbitMQUtils.writeString("0"), RabbitMQUtils.writeString(seedURI) }));
 
-        sendToCmdQueue(ApiConstants.CRAWLING_STARTED_SIGNAL, RabbitMQUtils.writeLong(new Date().getTime()));
+        sendToCmdQueue(ApiConstants.CRAWLING_STARTED_SIGNAL, RabbitMQUtils.writeLong(startTime));
 
         LOGGER.debug("Waiting for the system to finish...");
         waitForSystemToFinish();

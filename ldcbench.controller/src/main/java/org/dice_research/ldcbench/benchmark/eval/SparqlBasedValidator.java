@@ -22,7 +22,7 @@ import org.dice_research.ldcbench.rdf.TripleCreator;
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
-public class SparqlBasedValidator implements GraphValidator {
+public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
 
     /**
      * Query execution factory used for the communication with the SPARQL endpoint.
@@ -97,6 +97,11 @@ public class SparqlBasedValidator implements GraphValidator {
         try (QueryExecution qe = qef.createQueryExecution(q)) {
             return qe.execAsk();
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        qef.close();
     }
 
 }

@@ -74,3 +74,15 @@
   rdfs:comment "The number of correctly retrieved triples divided by the number of triples that were expected to be returned."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:double .
+
+:runtime a hobbit:KPI ;
+  rdfs:label "Runtime (in ms)"@en;
+  rdfs:comment "The overall runtime of the crawler in milliseconds."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:long .
+
+:tripleCountOverTime a hobbit:KPI ;
+  rdfs:label "Triples over time"@en;
+  rdfs:comment "The number of triples the crawler has stored over time."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range <http://purl.org/linked-data/cube#DataSet> .

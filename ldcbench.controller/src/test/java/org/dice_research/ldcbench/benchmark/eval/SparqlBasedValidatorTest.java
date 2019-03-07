@@ -28,7 +28,6 @@ public class SparqlBasedValidatorTest implements GraphSupplier {
     @Parameters
     public static List<Object[]> testCases() {
         List<Object[]> data = new ArrayList<>();
-        ;
 
         // Graph 1: Simple graph containing a triangle of three nodes
         GraphBuilder builder1 = new GrphBasedGraph();
@@ -131,15 +130,16 @@ public class SparqlBasedValidatorTest implements GraphSupplier {
     }
 
     @Test
-    public void test() {
-        SparqlBasedValidator validator = new SparqlBasedValidator(new QueryExecutionFactoryDataset(dataset));
-        ValidationResult result;
-        for (int i = 0; i < expectedResults.length; ++i) {
-            result = validator.validate(this, i);
-            Assert.assertEquals("Got an unexpected result for graph " + i, expectedResults[i].checkedTriples,
-                    result.checkedTriples);
-            Assert.assertEquals("Got an unexpected result for graph " + i, expectedResults[i].checkedTriples,
-                    result.checkedTriples);
+    public void test() throws Exception {
+        try (SparqlBasedValidator validator = new SparqlBasedValidator(new QueryExecutionFactoryDataset(dataset))) {
+            ValidationResult result;
+            for (int i = 0; i < expectedResults.length; ++i) {
+                result = validator.validate(this, i);
+                Assert.assertEquals("Got an unexpected result for graph " + i, expectedResults[i].checkedTriples,
+                        result.checkedTriples);
+                Assert.assertEquals("Got an unexpected result for graph " + i, expectedResults[i].checkedTriples,
+                        result.checkedTriples);
+            }
         }
     }
 
