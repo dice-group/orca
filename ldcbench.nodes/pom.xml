@@ -10,7 +10,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../ldcbench.parent</relativePath>
   </parent>
-  <artifactId>ldcbench.http-node</artifactId>
+  <artifactId>ldcbench.nodes</artifactId>
   <packaging>jar</packaging>
 
   <properties>
@@ -21,10 +21,6 @@
     <dependency>
       <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.dice_research</groupId>
-      <artifactId>ldcbench.nodes</artifactId>
     </dependency>
     <!-- HOBBIT core library -->
     <dependency>

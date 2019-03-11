@@ -28,6 +28,7 @@
     <module>ldcbench.api</module>
     <module>ldcbench.controller</module>
     <module>ldcbench.parent</module>
+    <module>ldcbench.nodes</module>
     <module>ldcbench.http-node</module>
   </modules>
 </project>

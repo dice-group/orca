@@ -51,6 +51,11 @@
       </dependency>
       <dependency>
         <groupId>org.dice_research</groupId>
+        <artifactId>ldcbench.nodes</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dice_research</groupId>
         <artifactId>ldcbench.http-node</artifactId>
         <version>${project.version}</version>
       </dependency>
