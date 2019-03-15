@@ -204,7 +204,7 @@ public class BenchmarkTest {
         model.add(experimentResource, LDCBench.seed, "100");
         model.add(experimentResource, LDCBench.numberOfNodes, "3");
         model.add(experimentResource, LDCBench.triplesPerNode, "100");
-        model.add(experimentResource, LDCBench.averageNodeDelay, "PT5S");
+        model.add(experimentResource, LDCBench.averageNodeDelay, "5000");
         model.add(experimentResource, LDCBench.averageNodeGraphDegree, "3");
         model.add(experimentResource, LDCBench.averageRdfGraphDegree, "5");
         return model;
