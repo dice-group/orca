@@ -1,9 +1,6 @@
 package org.dice_research.ldcbench.benchmark;
 
-import static org.dice_research.ldcbench.Constants.DATAGEN_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.EVALMODULE_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.HTTPNODE_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.VOS_PASSWORD;
+import static org.dice_research.ldcbench.Constants.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,6 +24,7 @@ import org.hobbit.core.rabbit.DataSender;
 import org.hobbit.core.rabbit.DataSenderImpl;
 import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.utils.rdf.RdfHelper;
+import org.hobbit.utils.EnvVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +34,8 @@ import com.rabbitmq.client.Consumer;
 public class BenchmarkController extends AbstractBenchmarkController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkController.class);
+
+    private boolean dockerized;
 
     private String sparqlEndpoint;
     private String[] sparqlCredentials;
@@ -74,6 +74,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
     @Override
     public void init() throws Exception {
         super.init();
+
+        dockerized = EnvVariables.getBoolean(DOCKERIZED_KEY, true, LOGGER);
 
         // Start SPARQL endpoint
         createSparqlEndpoint();
@@ -198,9 +200,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     protected void createSparqlEndpoint() {
         sparqlEndpoint = createContainer("openlink/virtuoso-opensource-7", Constants.CONTAINER_TYPE_BENCHMARK,
-                new String[] { "DBA_PASSWORD=" + VOS_PASSWORD, });
+                new String[] { "DBA_PASSWORD=" + VOS_PASSWORD, "HOBBIT_SDK_PUBLISH_PORTS=8890" });
         if(sparqlEndpoint == null) {
             throw new IllegalStateException("Couldn't create SPARQL endpoint. Aborting.");
+        }
+        if (!dockerized) {
+            sparqlEndpoint = "localhost";
         }
         sparqlCredentials = new String[] { "dba", VOS_PASSWORD };
     }

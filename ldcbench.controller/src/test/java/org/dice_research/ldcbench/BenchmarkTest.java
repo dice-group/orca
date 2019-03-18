@@ -127,6 +127,7 @@ public class BenchmarkTest {
 
         rabbitMqDockerizer = RabbitMqDockerizer.builder().useCachedContainer().build();
 
+        environmentVariables.set(DOCKERIZED_KEY, dockerized.toString());
         environmentVariables.set(RABBIT_MQ_HOST_NAME_KEY, dockerized ? "rabbit" : "localhost");
         environmentVariables.set(HOBBIT_SESSION_ID_KEY, "session_"+String.valueOf(new Date().getTime()));
 
