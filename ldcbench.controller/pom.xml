@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.dice_research</groupId>
+    <artifactId>ldcbench.parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../ldcbench.parent</relativePath>
+  </parent>
+  <artifactId>ldcbench.controller</artifactId>
+  <packaging>jar</packaging>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.http-node</artifactId>
+      <!-- FIXME do not build httpNode image as part of this project
+      <scope>test</scope>
+      -->
+    </dependency>
+    <!-- HOBBIT core library -->
+    <dependency>
+      <groupId>org.hobbit</groupId>
+      <artifactId>core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- SPARQL api -->
+    <dependency>
+      <groupId>org.aksw.jena-sparql-api</groupId>
+      <artifactId>jena-sparql-api-core</artifactId>
+    </dependency>
+    <!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- slf4j: Logging API -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <!-- Logging - SLF4J-Log4j Binding -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    <!-- ~~~~~~~~~~~~~~~~~~~ End Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- ~~~~~~~~~~~~~~~~~~~ Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- JUnit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- System rules for setting environment variables -->
+    <dependency>
+      <groupId>com.github.stefanbirkner</groupId>
+      <artifactId>system-rules</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- snakeyaml -->
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>1.24</version>
+    </dependency>
+    <!-- HOBBIT SDK -->
+    <dependency>
+      <groupId>org.hobbit</groupId>
+      <artifactId>hobbit-java-sdk</artifactId>
+      <version>1.1.18-ldcbench-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- HOBBIT controller -->
+    <dependency>
+      <groupId>org.hobbit</groupId>
+      <artifactId>platform-controller</artifactId>
+      <version>2.0.5</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- ~~~~~~~~~~~~~~~~~~~ End Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <sdkJarFilePath>${project.build.directory}/${project.artifactId}-shaded.jar</sdkJarFilePath>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.dice_research</groupId>
+  <artifactId>ldcbench</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>LDC-Bench</name>
+  <description>Linked Data Crawler Benchmark.</description>
+
+  <!-- LICENSE -->
+  <licenses>
+    <license>
+      <name>AGPL 3.0</name>
+      <url>https://www.gnu.org/licenses/agpl-3.0</url>
+    </license>
+  </licenses>
+
+  <inceptionYear>2019</inceptionYear>
+
+
+  <!-- MODULES -->
+  <modules>
+    <module>ldcbench.api</module>
+    <module>ldcbench.controller</module>
+    <module>ldcbench.parent</module>
+    <module>ldcbench.http-node</module>
+  </modules>
+</project>
