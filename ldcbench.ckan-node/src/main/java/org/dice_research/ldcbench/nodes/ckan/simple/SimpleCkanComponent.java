@@ -3,13 +3,14 @@ package org.dice_research.ldcbench.nodes.ckan.simple;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.data.NodeMetadata;
-import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.ckan.Constants;
+import org.dice_research.ldcbench.nodes.ckan.dao.CkanDAO;
 import org.dice_research.ldcbench.nodes.rabbit.GraphHandler;
 import org.hobbit.core.Commands;
 import org.hobbit.core.components.AbstractCommandReceivingComponent;
@@ -26,6 +27,11 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+
+import eu.trentorise.opendata.jackan.CheckedCkanClient;
+import eu.trentorise.opendata.jackan.model.CkanDataset;
+import eu.trentorise.opendata.jackan.model.CkanDatasetBase;
+import eu.trentorise.opendata.jackan.model.CkanOrganization;
 
 /**
  * 
@@ -51,6 +57,28 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 	protected String redisContainer = null;
 	protected String ckanContainer = null;
 	protected String domainNames[];
+	
+	
+	private static final String ORGANIZATION = "diceupb";
+	private static final String AUTHOR = "ldcbench";
+
+	private CkanDAO ckanDao;
+	private List<CkanDataset> ckanDataSets = new ArrayList<CkanDataset>();
+	
+	
+	public static void main(String[] args) {
+		CkanDAO ckanDao = new CkanDAO(new CheckedCkanClient("http://localhost:80", Constants.TOKEN_API));
+	
+		CkanDatasetBase ds = new CkanDatasetBase();
+		ds.setName("dataset-teste");
+		ds.setTitle("dataset-teste");
+		ds.setOwnerOrg(ORGANIZATION);
+		
+		ckanDao.insertDataSource(ds);
+		ckanDao.deleteDataSource("dataset-teste");
+		
+	}
+	
 
 	@Override
 	public void init() throws Exception {
@@ -86,13 +114,7 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
         dataGenerationFinished.acquire();
         receiver.closeWhenFinished();
 
-        if (graphHandler.encounteredError()) {
-            throw new IllegalStateException("Encountered an error while receiving graphs.");
-        }
-        List<Graph> graphs = graphHandler.getGraphs();
-        if (graphs.isEmpty()) {
-            throw new IllegalStateException("Didn't received a single graph.");
-        }
+        
         if (domainNames == null) {
             throw new IllegalStateException("Didn't received the domain names from the benchmark controller.");
         }
@@ -117,9 +139,30 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 				new String[] { "CKAN_SQLALCHEMY_URL=postgresql://ckan:ckan@" + postGresContainer + ":5432/ckan" });
 
 		LOGGER.warn("-- > Ckan Containers Initialized");
+		
+		CheckedCkanClient client = 
+				new CheckedCkanClient("http://"+ckanContainer+":80", Constants.TOKEN_API);
 
-//		ckanDAO = new CkanDAO(new CheckedCkanClient("http://localhost:80", TOKEN));
+		ckanDao = new CkanDAO(client);
+		
+		CkanOrganization organization = new CkanOrganization();
+		organization.setName(ORGANIZATION);
+		ckanDao.insertOrganization(organization);
+		
+		addDataSources(domainNames);
 
+	}
+	
+	
+	private void addDataSources(String[] domainNames) {
+		for(String domain: domainNames) {
+			CkanDatasetBase dataset = new CkanDatasetBase();
+			dataset.setTitle(domain);
+			dataset.setName(domain);
+			dataset.setOwnerOrg(ORGANIZATION);
+			dataset.setAuthor(AUTHOR);
+			ckanDataSets.add(ckanDao.insertDataSource(dataset));
+		}
 	}
 	
 	
@@ -185,6 +228,12 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 			stopContainer(ckanContainer);
 		} else {
 			LOGGER.debug("There is no Ckan to stop.");
+		}
+		
+		//delete all the datasets
+		
+		for(CkanDataset dataset: ckanDataSets) {
+			ckanDao.deleteDataSource(dataset.getName());
 		}
 
 		super.close();

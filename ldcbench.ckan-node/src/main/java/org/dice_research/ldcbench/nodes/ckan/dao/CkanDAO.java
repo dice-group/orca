@@ -1,5 +1,9 @@
 package org.dice_research.ldcbench.nodes.ckan.dao;
 
+import org.dice_research.ldcbench.nodes.ckan.simple.SimpleCkanComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import eu.trentorise.opendata.jackan.CheckedCkanClient;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanDatasetBase;
@@ -14,6 +18,9 @@ import eu.trentorise.opendata.jackan.model.CkanOrganization;
  *
  */
 public class CkanDAO {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(CkanDAO.class);
+
 	
 	private CheckedCkanClient ckanClient;
 	
@@ -48,10 +55,17 @@ public class CkanDAO {
 		try {
 			CkanDataset dataSet = ckanClient.getDataset(datasetName);
 			ckanClient.deleteDataset(dataSet.getId());
+			LOGGER.warn("Dataset: " +datasetName + " deleted");
 		}catch (Exception e) {
 			return false;
 		}
 		return true;
+	}
+	
+	public void insertOrganization(CkanOrganization organization) {
+		if(!organizationExists(organization.getName())){
+			ckanClient.createOrganization(organization);
+		}
 	}
 	
 	/**
@@ -61,7 +75,7 @@ public class CkanDAO {
 	 * @param organizationName Name of the organization
 	 * @return true/false
 	 */
-	public boolean organizationExists(String organizationName) {
+	private boolean organizationExists(String organizationName) {
 		for(CkanOrganization organization : ckanClient.getOrganizationList()) {
 			if(organization.getName().equals(organizationName))
 				return true;
