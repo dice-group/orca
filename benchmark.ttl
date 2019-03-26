@@ -4,7 +4,7 @@
 
 @prefix : <https://github.com/dice-group/ldcbench#> .
 
-:benchmark a hobbit:Benchmark;
+:Benchmark a hobbit:Benchmark;
   rdfs:label "LDC-Bench"@en;
   rdfs:comment "Linked Data Crawler Benchmark"@en;
   hobbit:imageName "git.project-hobbit.eu:4567/ldcbench/ldcbench/benchmark-controller";
