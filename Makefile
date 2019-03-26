@@ -19,3 +19,6 @@ add-hobbit-remote:
 
 push-hobbit: add-hobbit-remote
 	git push --verbose hobbit master:master
+
+test-benchmark:
+	mvn -DfailIfNoTests=false -Dtest=BenchmarkTest#checkHealth test
