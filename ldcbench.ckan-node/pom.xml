@@ -87,6 +87,12 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- ~~~~~~~~~~~~~~~~~~~ End Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
+		<!-- java.lang.NoClassDefFoundError: com/fasterxml/jackson/databind/deser/std/ReferenceTypeDeserializer -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.9.8</version>
+		</dependency>
 	</dependencies>
 
 	<build>
