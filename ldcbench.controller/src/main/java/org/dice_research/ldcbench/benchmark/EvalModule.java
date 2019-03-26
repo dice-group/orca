@@ -35,7 +35,6 @@ import org.hobbit.utils.EnvVariables;
 import org.hobbit.vocab.HOBBIT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.tokens.StreamStartToken;
 
 public class EvalModule extends AbstractCommandReceivingComponent {
     private static final Logger LOGGER = LoggerFactory.getLogger(EvalModule.class);

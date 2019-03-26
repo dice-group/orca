@@ -30,5 +30,7 @@
     <module>ldcbench.parent</module>
     <module>ldcbench.nodes</module>
     <module>ldcbench.http-node</module>
+    <module>ldcbench.ckan-node</module>
+    
   </modules>
 </project>
