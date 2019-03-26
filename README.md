@@ -31,3 +31,16 @@ and `receiveGeneratedTask` method to receive seed URI.
 
 System should start crawling by retrieving provided seed URI
 and use use SPARQL endpoint to store crawled data.
+
+# Benchmark maintenance
+
+## Building and pushing images
+
+`make images`
+
+`make push-images`
+
+## Updating benchmark metadata in the HOBBIT Platform
+
+Updated files should be in the `master` branch.
+Use `make push-hobbit` to push to HOBBIT git.
