@@ -110,8 +110,8 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 //        receiver = DataReceiverImpl.builder().dataHandler(graphHandler).queue(this.incomingDataQueueFactory, queueName)
 //                .build();
 //
-//        // Wait for the data generation to finish
-//        dataGenerationFinished.acquire();
+        // Wait for the data generation to finish
+        dataGenerationFinished.acquire();
 //        receiver.closeWhenFinished();
 
         
