@@ -52,8 +52,6 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
         connection.connect(address);
 
         LOGGER.info("HTTP server initialized.");
-        // Inform the BC that this node is ready
-        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
     }
 
     protected Model readModel(String modelFile, String modelLang) {
