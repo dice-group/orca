@@ -104,15 +104,15 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 		};
 		bcBroadcastChannel.basicConsume(queueName, true, consumer);
 
-        // initialize graph queue
-        queueName = EnvVariables.getString(ApiConstants.ENV_DATA_QUEUE_KEY);
-        GraphHandler graphHandler = new GraphHandler();
-        receiver = DataReceiverImpl.builder().dataHandler(graphHandler).queue(this.incomingDataQueueFactory, queueName)
-                .build();
-
-        // Wait for the data generation to finish
-        dataGenerationFinished.acquire();
-        receiver.closeWhenFinished();
+//        // initialize graph queue
+//        queueName = EnvVariables.getString(ApiConstants.ENV_DATA_QUEUE_KEY);
+//        GraphHandler graphHandler = new GraphHandler();
+//        receiver = DataReceiverImpl.builder().dataHandler(graphHandler).queue(this.incomingDataQueueFactory, queueName)
+//                .build();
+//
+//        // Wait for the data generation to finish
+//        dataGenerationFinished.acquire();
+//        receiver.closeWhenFinished();
 
         
         if (domainNames == null) {
