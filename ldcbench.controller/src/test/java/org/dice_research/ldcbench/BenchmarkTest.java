@@ -1,5 +1,6 @@
 package org.dice_research.ldcbench;
 
+import static org.apache.jena.datatypes.xsd.XSDDatatype.*;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
@@ -209,12 +210,12 @@ public class BenchmarkTest {
         Model model = createDefaultModel();
         Resource experimentResource = model.createResource(org.hobbit.core.Constants.NEW_EXPERIMENT_URI);
         model.add(experimentResource, RDF.type, HOBBIT.Experiment);
-        model.add(experimentResource, LDCBench.seed, "100");
-        model.add(experimentResource, LDCBench.numberOfNodes, "3");
-        model.add(experimentResource, LDCBench.triplesPerNode, "100");
-        model.add(experimentResource, LDCBench.averageNodeDelay, "5000");
-        model.add(experimentResource, LDCBench.averageNodeGraphDegree, "3");
-        model.add(experimentResource, LDCBench.averageRdfGraphDegree, "5");
+        model.add(experimentResource, LDCBench.seed, "100", XSDinteger);
+        model.add(experimentResource, LDCBench.numberOfNodes, "3", XSDinteger);
+        model.add(experimentResource, LDCBench.triplesPerNode, "100", XSDinteger);
+        model.add(experimentResource, LDCBench.averageNodeDelay, "5000", XSDlong);
+        model.add(experimentResource, LDCBench.averageNodeGraphDegree, "3", XSDinteger);
+        model.add(experimentResource, LDCBench.averageRdfGraphDegree, "2", XSDinteger);
         return model;
 
     }
