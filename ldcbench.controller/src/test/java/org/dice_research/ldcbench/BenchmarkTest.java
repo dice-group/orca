@@ -7,11 +7,12 @@ import org.hobbit.core.components.Component;
 import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.sdk.docker.AbstractDockerizer;
 import org.hobbit.sdk.docker.RabbitMqDockerizer;
-import org.hobbit.sdk.docker.builders.*;
 import org.hobbit.sdk.docker.builders.hobbit.*;
 
 import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpServerComponent;
+import org.dice_research.ldcbench.nodes.ckan.simple.SimpleCkanComponent;
 import org.dice_research.ldcbench.benchmark.*;
+import org.dice_research.ldcbench.builders.*;
 import org.dice_research.ldcbench.system.SystemAdapter;
 import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.sdk.utils.CommandQueueListener;
@@ -55,6 +56,7 @@ public class BenchmarkTest {
     SystemAdapterDockerBuilder systemAdapterBuilder;
     EvalModuleDockerBuilder evalModuleBuilder;
     SimpleHttpNodeBuilder httpNodeBuilder;
+    CkanNodeBuilder ckanNodeBuilder;
 
     public void init(Boolean useCachedImage) throws Exception {
 
@@ -64,8 +66,9 @@ public class BenchmarkTest {
         systemAdapterBuilder = new SystemAdapterDockerBuilder(new ExampleDockersBuilder(SystemAdapter.class, SYSTEM_IMAGE_NAME).useCachedImage(useCachedImage));
         evalModuleBuilder = new EvalModuleDockerBuilder(new ExampleDockersBuilder(EvalModule.class, EVALMODULE_IMAGE_NAME).useCachedImage(useCachedImage));
 
-        // FIXME do not build httpNode image as part of this project
+        // FIXME do not build node images as part of this project
         httpNodeBuilder = new SimpleHttpNodeBuilder(new ExampleDockersBuilder(SimpleHttpServerComponent.class, HTTPNODE_IMAGE_NAME).useCachedImage(useCachedImage));
+        ckanNodeBuilder = new CkanNodeBuilder(new ExampleDockersBuilder(SimpleCkanComponent.class, CKANNODE_IMAGE_NAME).useCachedImage(useCachedImage));
 
 //        benchmarkBuilder = new BenchmarkDockerBuilder(new PullBasedDockersBuilder(BENCHMARK_IMAGE_NAME));
 //        dataGeneratorBuilder = new DataGenDockerBuilder(new PullBasedDockersBuilder(DATAGEN_IMAGE_NAME));
@@ -84,6 +87,7 @@ public class BenchmarkTest {
         builder.addTask(systemAdapterBuilder);
         builder.addTask(evalModuleBuilder);
         builder.addTask(httpNodeBuilder);
+        builder.addTask(ckanNodeBuilder);
         builder.build();
 
     }
@@ -137,6 +141,7 @@ public class BenchmarkTest {
         Component systemAdapter = new SystemAdapter();
         Component evalModule = new EvalModule();
         Component httpNode = new SimpleHttpServerComponent();
+        Component ckanNode = new SimpleCkanComponent();
 
         if(dockerized) {
 
@@ -145,6 +150,7 @@ public class BenchmarkTest {
             evalModule = evalModuleBuilder.build();
             systemAdapter = systemAdapterBuilder.build();
             httpNode = httpNodeBuilder.build();
+            ckanNode = ckanNodeBuilder.build();
         }
 
         commandQueueListener = new CommandQueueListener();
@@ -160,6 +166,7 @@ public class BenchmarkTest {
                         .evalModule(evalModule).evalModuleImageName(evalModuleBuilder.getImageName())
                         .systemAdapter(systemAdapter).systemAdapterImageName(SYSTEM_IMAGE_NAME)
                         .customContainerImage(httpNode, HTTPNODE_IMAGE_NAME)
+                        .customContainerImage(ckanNode, CKANNODE_IMAGE_NAME)
                         //.customContainerImage(systemAdapter, DUMMY_SYSTEM_IMAGE_NAME)
                 ;
 

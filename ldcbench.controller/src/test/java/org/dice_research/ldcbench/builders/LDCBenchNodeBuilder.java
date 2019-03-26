@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench;
+package org.dice_research.ldcbench.builders;
 
 import org.hobbit.sdk.docker.builders.AbstractDockersBuilder;
 import org.hobbit.sdk.docker.builders.BothTypesDockersBuilder;
@@ -6,12 +6,10 @@ import org.hobbit.sdk.docker.builders.BothTypesDockersBuilder;
 import static org.hobbit.core.Constants.*;
 import static org.hobbit.sdk.Constants.*;
 import static org.dice_research.ldcbench.ApiConstants.*;
-import static org.dice_research.ldcbench.Constants.*;
 
-public class SimpleHttpNodeBuilder extends BothTypesDockersBuilder {
-    private static final String name = HTTPNODE_IMAGE_NAME;
+public abstract class LDCBenchNodeBuilder extends BothTypesDockersBuilder {
 
-    public SimpleHttpNodeBuilder(AbstractDockersBuilder builder) {
+    public LDCBenchNodeBuilder(AbstractDockersBuilder builder) {
         super(builder);
     }
 
@@ -24,11 +22,6 @@ public class SimpleHttpNodeBuilder extends BothTypesDockersBuilder {
         ret.addEnvironmentVariable(ENV_NODE_ID_KEY, (String)System.getenv().get(ENV_NODE_ID_KEY));
         ret.addEnvironmentVariable(ENV_BENCHMARK_EXCHANGE_KEY, (String)System.getenv().get(ENV_BENCHMARK_EXCHANGE_KEY));
         ret.addEnvironmentVariable(ENV_DATA_QUEUE_KEY, (String)System.getenv().get(ENV_DATA_QUEUE_KEY));
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
 }

@@ -25,6 +25,13 @@
       <scope>test</scope>
       -->
     </dependency>
+    <dependency>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.ckan-node</artifactId>
+      <!-- FIXME do not build ckanNode image as part of this project
+      <scope>test</scope>
+      -->
+    </dependency>
     <!-- HOBBIT core library -->
     <dependency>
       <groupId>org.hobbit</groupId>
