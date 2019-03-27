@@ -11,7 +11,8 @@ public class RandomG2File {
 	public static void main(String[] args){
 		int N;
 		double degree;
-//		RandomRDF rg;
+/*		RandomRDF rg;
+		rg = new RandomRDF("Barabasi Random RDF");*/
 		ParallelBarabasiRDF rg;
 		GrphBasedGraph g;
     	g = new GrphBasedGraph();

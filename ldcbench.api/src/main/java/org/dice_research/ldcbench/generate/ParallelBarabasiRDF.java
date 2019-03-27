@@ -217,7 +217,7 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 
 	@Override
 public void generateGraph(int numberOfNodes, double avgDegree, long seed, GraphBuilder builder) {
-	this.getBarabasiRDFParallel(numberOfNodes, avgDegree, seed,builder,3);//String algorithm	
+	this.getBarabasiRDFParallel(numberOfNodes, avgDegree, seed,builder,3);	
 }
 
 @Override
