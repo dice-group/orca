@@ -389,6 +389,7 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 //--------------------------------------------------------------------------------------------
 		protected void getBarabasiRDFumChkRep(int N, double degree, long seed, GraphBuilder builder) {
 			/* nodes are numbered from 1 to N */
+			/* TreeSet is faster practically than HashSet */
 			
 			int indexToEdgeList ;// index to edge list
 			long t0 = System.currentTimeMillis();
@@ -518,12 +519,14 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 		@Override
 	public void generateGraph(int numberOfNodes, double avgDegree, long seed, GraphBuilder builder) {
 //		this.getBarabasiRDF(numberOfNodes, avgDegree, seed,builder);//String algorithm	
-		this.getBarabasiRDFumChkRep(numberOfNodes, avgDegree, seed,builder);//String algorithm	
+		this.getBarabasiRDFum(numberOfNodes, avgDegree, seed,builder);//use uniform distribution for degree	
+//		this.getBarabasiRDFumChkRep(numberOfNodes, avgDegree, seed,builder);//Slowest
 	}
 
 	@Override
 	public void generateGraph(double avgDegree, int numberOfEdges, long seed, GraphBuilder builder) {		
 //		this.getBarabasiRDF((int)Math.ceil(numberOfEdges/avgDegree), avgDegree, seed,builder);
-		this.getBarabasiRDFumChkRep((int)Math.ceil(numberOfEdges/avgDegree), avgDegree, seed,builder);
+		this.getBarabasiRDFum((int)Math.ceil(numberOfEdges/avgDegree), avgDegree, seed,builder);
+//		this.getBarabasiRDFumChkRep((int)Math.ceil(numberOfEdges/avgDegree), avgDegree, seed,builder);//slowest
 	}
 }
