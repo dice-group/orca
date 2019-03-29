@@ -135,9 +135,6 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 						"CKAN_RECAPTCHA_PRIVATEKEY=" + Constants.CKAN_RECAPTCHA_PRIVATEKEY,
 						"REDIS_HOSTNAME=" + redisContainer });
 
-		postGresContainer = createContainer(Constants.CKAN,
-				new String[] { "CKAN_SQLALCHEMY_URL=postgresql://ckan:ckan@" + postGresContainer + ":5432/ckan" });
-
 		LOGGER.warn("-- > Ckan Containers Initialized");
 		
 		CheckedCkanClient client = 
