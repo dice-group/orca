@@ -45,6 +45,8 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleCkanComponent.class);
 
+    private boolean dockerized;
+
 	protected Semaphore dataGenerationFinished = new Semaphore(0);
 	protected Semaphore domainNamesReceived = new Semaphore(0);
 
@@ -83,6 +85,8 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 	@Override
 	public void init() throws Exception {
 		super.init();
+
+        dockerized = EnvVariables.getBoolean(ApiConstants.ENV_DOCKERIZED_KEY, true, LOGGER);
 
 		// initialize exchange with BC
 		String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);
@@ -127,13 +131,14 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 						"CKAN_RECAPTCHA_PUBLICKEY=" + Constants.CKAN_RECAPTCHA_PUBLICKEY,
 						"CKAN_RECAPTCHA_PRIVATEKEY=" + Constants.CKAN_RECAPTCHA_PRIVATEKEY,
 						"REDIS_HOSTNAME=" + redisContainer,
+                        "HOBBIT_SDK_PUBLISH_PORTS=5000",
         });
 
 		LOGGER.warn("-- > Ckan Containers Initialized");
 
 
 		CheckedCkanClient client =
-				new CheckedCkanClient("http://"+ckanContainer+":5000", Constants.TOKEN_API);
+				new CheckedCkanClient("http://"+(dockerized ? ckanContainer : "localhost")+":5000", Constants.TOKEN_API);
 		ckanDao = new CkanDAO(client);
 		
 		CkanOrganization organization = new CkanOrganization();
