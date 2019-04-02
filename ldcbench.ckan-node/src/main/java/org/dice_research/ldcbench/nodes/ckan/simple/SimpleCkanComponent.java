@@ -110,16 +110,7 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 //        receiver = DataReceiverImpl.builder().dataHandler(graphHandler).queue(this.incomingDataQueueFactory, queueName)
 //                .build();
 //
-        // Inform the BC that this node is ready
-        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
-        // Wait for the data generation to finish
-        dataGenerationFinished.acquire();
 //        receiver.closeWhenFinished();
-
-        
-        if (domainNames == null) {
-            throw new IllegalStateException("Didn't received the domain names from the benchmark controller.");
-        }
 
 		LOGGER.warn("-- > Initializing Ckan Containers");
 
@@ -147,9 +138,13 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 		CkanOrganization organization = new CkanOrganization();
 		organization.setName(ORGANIZATION);
 		ckanDao.insertOrganization(organization);
-		
-		addDataSources(domainNames);
 
+        // Inform the BC that this node is ready
+        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
+
+        // Wait for the data generation to finish
+        domainNamesReceived.acquire();
+        dataGenerationFinished.acquire();
 	}
 	
 	
@@ -172,9 +167,11 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 	            for (int i = 0; i < nodeMetadata.length; ++i) {
 	                domainNames[i] = nodeMetadata[i].getHostname();
 	            }
+                addDataSources(domainNames);
 	        } catch (Exception e) {
 	            LOGGER.error("Couldn't parse node metadata received from benchmark controller.", e);
 	            domainNames = null;
+                throw new IllegalStateException("Didn't received the domain names from the benchmark controller.");
 	        }
 	        // In any case, we should release the semaphore. Otherwise, this component would
 	        // get stuck and wait forever for an additional message.
