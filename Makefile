@@ -6,6 +6,7 @@ images:
 	mvn -DskipTests clean package
 	mvn -DfailIfNoTests=false -Dtest=BenchmarkTest#buildImages test
 	docker build --tag $(IMAGE_BASE)simple-http-node ldcbench.http-node/
+	docker build --tag $(IMAGE_BASE)ckan-node ldcbench.ckan-node/
 
 push-images:
 	docker push $(IMAGE_BASE)benchmark-controller
@@ -13,6 +14,7 @@ push-images:
 	docker push $(IMAGE_BASE)eval-module
 	docker push $(IMAGE_BASE)system-adapter
 	docker push $(IMAGE_BASE)simple-http-node
+	docker push $(IMAGE_BASE)ckan-node
 
 add-hobbit-remote:
 	git remote |grep hobbit ||git remote --verbose add hobbit https://git.project-hobbit.eu/ldcbench/ldcbench
