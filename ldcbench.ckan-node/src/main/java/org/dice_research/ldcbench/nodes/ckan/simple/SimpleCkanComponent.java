@@ -138,10 +138,10 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 						"REDIS_HOSTNAME=" + redisContainer });
 
 		LOGGER.warn("-- > Ckan Containers Initialized");
-		
-		CheckedCkanClient client = 
-				new CheckedCkanClient("http://"+ckanContainer+":80", Constants.TOKEN_API);
 
+
+		CheckedCkanClient client =
+				new CheckedCkanClient("http://"+ckanContainer+":5000", Constants.TOKEN_API);
 		ckanDao = new CkanDAO(client);
 		
 		CkanOrganization organization = new CkanOrganization();
