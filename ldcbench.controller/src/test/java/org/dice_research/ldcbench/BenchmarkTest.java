@@ -222,6 +222,8 @@ public class BenchmarkTest {
         model.add(experimentResource, LDCBench.averageNodeDelay, "5000", XSDlong);
         model.add(experimentResource, LDCBench.averageNodeGraphDegree, "3", XSDinteger);
         model.add(experimentResource, LDCBench.averageRdfGraphDegree, "2", XSDinteger);
+        model.add(experimentResource, LDCBench.dereferencingHttpNodeWeight, "1", XSDfloat);
+        model.add(experimentResource, LDCBench.ckanNodeWeight, "0.01", XSDfloat);
         return model;
 
     }

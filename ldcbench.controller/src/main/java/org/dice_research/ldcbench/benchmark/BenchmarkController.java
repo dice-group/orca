@@ -6,12 +6,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
 import java.util.concurrent.Semaphore;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Property;
 import org.dice_research.ldcbench.ApiConstants;
+import org.dice_research.ldcbench.benchmark.cloud.*;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.generate.SeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
@@ -34,6 +39,11 @@ import com.rabbitmq.client.Consumer;
 public class BenchmarkController extends AbstractBenchmarkController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkController.class);
+
+    private Class<?>[] nodeManagerClasses = {
+        DereferencingHttpNodeManager.class,
+        CkanNodeManager.class,
+    };
 
     private boolean dockerized;
 
@@ -90,6 +100,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
         int averageRdfGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageRdfGraphDegree)
                 .getInt();
 
+        Random random = new Random(seed);
+
         // Create the other components
         dataGeneratorsChannel = cmdQueueFactory.getConnection().createChannel();
         String queueName = dataGeneratorsChannel.queueDeclare().getQueue();
@@ -121,6 +133,37 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         String[] envVariables;
         LOGGER.debug("Starting all cloud nodes...");
+        ArrayList<AbstractNodeManager> nodeManagers = new ArrayList<>();
+        float nodeWeight[] = new float[nodesAmount];
+        float totalNodeWeight = 0;
+        for (int i = 0; i < nodeManagerClasses.length; i++) {
+            Property param = (Property) nodeManagerClasses[i].getDeclaredMethod("getBenchmarkParameter").invoke(null);
+            Literal value = RdfHelper.getLiteral(benchmarkParamModel, null, param);
+            nodeWeight[i] = value != null ? value.getFloat() : 1;
+            totalNodeWeight += nodeWeight[i];
+        }
+        // create at least one node per any included node type
+        for (int i = 0; i < nodeManagerClasses.length; i++) {
+            if (nodeWeight[i] != 0) {
+                nodeManagers.add((AbstractNodeManager) nodeManagerClasses[i].newInstance());
+            }
+        }
+        // create other nodes according to the weights provided
+        for (int i = 0; i < nodeManagerClasses.length; i++) {
+            nodeWeight[i] /= totalNodeWeight;
+        }
+        for (int i = nodeManagers.size(); i < nodesAmount; i++) {
+            float sample = random.nextFloat();
+            float current = 0;
+            for (int j = 0; j < nodeManagerClasses.length; j++) {
+                current += nodeWeight[j];
+                if (sample <= current || j == nodeManagerClasses.length - 1) {
+                    nodeManagers.add((AbstractNodeManager) nodeManagerClasses[j].newInstance());
+                    break;
+                }
+            }
+        }
+
         NodeMetadata[] nodeMetadata = new NodeMetadata[nodesAmount];
         for (int i = 0; i < nodesAmount; i++) {
             envVariables = new String[] {
@@ -132,7 +175,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     ApiConstants.ENV_HTTP_PORT_KEY + "=" + 80,
             };
 
-            String containerId = createContainer(HTTPNODE_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK, envVariables);
+            String containerId = createContainer(nodeManagers.get(i).getImageName(), Constants.CONTAINER_TYPE_BENCHMARK, envVariables);
 
             nodeMetadata[i] = new NodeMetadata();
             nodeMetadata[i].setHostname(containerId);
