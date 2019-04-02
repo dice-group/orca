@@ -123,17 +123,23 @@ public class BenchmarkTest {
 
     private void checkHealth(Boolean dockerized) throws Exception {
 
-        String[] benchmarkParamsStr = new String[]{ HOBBIT_EXPERIMENT_URI_KEY+"="+NEW_EXPERIMENT_URI,  BENCHMARK_PARAMETERS_MODEL_KEY+"="+ RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(createBenchmarkParameters(), ModelsHandler.readModelFromFile("../benchmark.ttl"))) };
-        String [] systemParamsStr = new String[]{ SYSTEM_PARAMETERS_MODEL_KEY+"="+  RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(createSystemParameters(), ModelsHandler.readModelFromFile("src/test/system.ttl"))) };
-
+        String[] benchmarkParamsStr = new String[]{
+            HOBBIT_EXPERIMENT_URI_KEY+"="+NEW_EXPERIMENT_URI,
+            BENCHMARK_PARAMETERS_MODEL_KEY+"="+RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(createBenchmarkParameters(), ModelsHandler.readModelFromFile("../benchmark.ttl"))),
+            RABBIT_MQ_HOST_NAME_KEY+"="+(dockerized ? "rabbit" : "localhost"),
+        };
+        String [] systemParamsStr = new String[]{
+            SYSTEM_PARAMETERS_MODEL_KEY+"="+RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(createSystemParameters(), ModelsHandler.readModelFromFile("src/test/system.ttl"))),
+            RABBIT_MQ_HOST_NAME_KEY+"="+(dockerized ? "rabbit" : "localhost"),
+        };
 
         Boolean useCachedImages = true;
         init(useCachedImages);
 
         rabbitMqDockerizer = RabbitMqDockerizer.builder().useCachedContainer().build();
 
-        environmentVariables.set(RABBIT_MQ_HOST_NAME_KEY, dockerized ? "rabbit" : "localhost");
         environmentVariables.set(ApiConstants.ENV_DOCKERIZED_KEY, dockerized.toString());
+        environmentVariables.set(RABBIT_MQ_HOST_NAME_KEY, "localhost"); // rabbit hostname for things running on the host directly
         environmentVariables.set(HOBBIT_SESSION_ID_KEY, "session_"+String.valueOf(new Date().getTime()));
 
 
