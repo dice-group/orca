@@ -75,7 +75,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     public void init() throws Exception {
         super.init();
 
-        dockerized = EnvVariables.getBoolean(DOCKERIZED_KEY, true, LOGGER);
+        dockerized = EnvVariables.getBoolean(ApiConstants.ENV_DOCKERIZED_KEY, true, LOGGER);
 
         // Start SPARQL endpoint
         createSparqlEndpoint();

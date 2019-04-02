@@ -25,6 +25,4 @@ public class Constants {
 
     public static final String VOS_PASSWORD = "ldcbench";
 
-    public static final String DOCKERIZED_KEY = "HOBBIT_SDK_DOCKERIZED";
-
 }
