@@ -126,7 +126,8 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 						"CKAN_SITE_TITLE=CKAN NODE", "CKAN_SITE_DESCRIPTION=LDCBench Benchmark node",
 						"CKAN_RECAPTCHA_PUBLICKEY=" + Constants.CKAN_RECAPTCHA_PUBLICKEY,
 						"CKAN_RECAPTCHA_PRIVATEKEY=" + Constants.CKAN_RECAPTCHA_PRIVATEKEY,
-						"REDIS_HOSTNAME=" + redisContainer });
+						"REDIS_HOSTNAME=" + redisContainer,
+        });
 
 		LOGGER.warn("-- > Ckan Containers Initialized");
 
