@@ -1,12 +1,12 @@
 IMAGE_BASE = git.project-hobbit.eu:4567/ldcbench/ldcbench/
 
+test:
+	mvn verify
+
 publish: images push-images push-hobbit
 
 images:
-	mvn -DskipTests clean package
-	mvn -DfailIfNoTests=false -Dtest=BenchmarkTest#buildImages test
-	docker build --tag $(IMAGE_BASE)simple-http-node ldcbench.http-node/
-	docker build --tag $(IMAGE_BASE)ckan-node ldcbench.ckan-node/
+	mvn -DfailIfNoTests=false -Dtest=ImageBuilder package
 
 push-images:
 	docker push $(IMAGE_BASE)benchmark-controller

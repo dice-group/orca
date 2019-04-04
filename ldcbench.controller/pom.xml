@@ -99,15 +99,6 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <systemPropertyVariables>
-            <sdkJarFilePath>${project.build.directory}/${project.artifactId}-shaded.jar</sdkJarFilePath>
-          </systemPropertyVariables>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
@@ -115,6 +106,37 @@
             <goals>
               <goal>shade</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <sdkJarFilePath>${project.build.directory}/${project.artifactId}-shaded.jar</sdkJarFilePath>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
+          <execution>
+            <id>build-images</id>
+            <phase>package</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <test>ImageBuilder#buildImages</test>
+            </configuration>
+          </execution>
+          <execution>
+            <id>test-dockerized</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <test>BenchmarkIT</test>
+            </configuration>
           </execution>
         </executions>
       </plugin>

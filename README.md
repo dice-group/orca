@@ -34,6 +34,10 @@ and use use SPARQL endpoint to store crawled data.
 
 # Benchmark maintenance
 
+## Building and testing
+
+Use `mvn verify` to build project, docker images and run tests.
+
 ## Building and pushing images
 
 `make images`
