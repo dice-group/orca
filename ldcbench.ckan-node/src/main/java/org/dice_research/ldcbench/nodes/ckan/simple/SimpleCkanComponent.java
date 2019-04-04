@@ -141,7 +141,7 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 		
 		Thread.sleep(6000);
         
-        new PostgresCkanDAO(postGresContainer).insertData();
+        new PostgresCkanDAO(dockerized ? postGresContainer : "localhost").insertData();
 
 		LOGGER.warn("-- > Ckan Containers Initialized");
 
