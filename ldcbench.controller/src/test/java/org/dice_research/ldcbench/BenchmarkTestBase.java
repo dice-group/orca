@@ -169,23 +169,18 @@ public class BenchmarkTestBase {
         }
     }
 
-    public static Model createBenchmarkParameters() throws IOException {
+    public Model createBenchmarkParameters() throws IOException {
         Model model = createDefaultModel();
         Resource experimentResource = model.createResource(org.hobbit.core.Constants.NEW_EXPERIMENT_URI);
         model.add(experimentResource, RDF.type, HOBBIT.Experiment);
         model.add(experimentResource, LDCBench.seed, "100", XSDinteger);
-        model.add(experimentResource, LDCBench.numberOfNodes, "3", XSDinteger);
         model.add(experimentResource, LDCBench.triplesPerNode, "100", XSDinteger);
         model.add(experimentResource, LDCBench.averageNodeDelay, "5000", XSDlong);
-        model.add(experimentResource, LDCBench.averageNodeGraphDegree, "3", XSDinteger);
         model.add(experimentResource, LDCBench.averageRdfGraphDegree, "2", XSDinteger);
-        model.add(experimentResource, LDCBench.dereferencingHttpNodeWeight, "1", XSDfloat);
-        model.add(experimentResource, LDCBench.ckanNodeWeight, "0.01", XSDfloat);
         return model;
-
     }
 
-    public static Model createSystemParameters() throws IOException {
+    public Model createSystemParameters() throws IOException {
         Model model = createDefaultModel();
         Resource experimentResource = model.createResource(org.hobbit.core.Constants.NEW_EXPERIMENT_URI);
         model.add(experimentResource, RDF.type, HOBBIT.Experiment);

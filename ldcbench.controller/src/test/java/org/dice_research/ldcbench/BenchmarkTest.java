@@ -2,7 +2,11 @@ package org.dice_research.ldcbench;
 
 import org.hobbit.sdk.docker.builders.hobbit.*;
 
+import java.io.IOException;
+import static org.apache.jena.datatypes.xsd.XSDDatatype.*;
+import org.apache.jena.rdf.model.*;
 import org.dice_research.ldcbench.builders.*;
+import org.dice_research.ldcbench.vocab.LDCBench;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
@@ -48,5 +52,17 @@ public class BenchmarkTest extends BenchmarkTestBase {
     public void submitToQueue() throws Exception {
         QueueClient queueClient = new QueueClient(GIT_USERNAME);
         queueClient.submitToQueue(BENCHMARK_URI, SYSTEM_URI, createBenchmarkParameters());
+    }
+
+    @Override
+    public Model createBenchmarkParameters() throws IOException {
+        Model model = super.createBenchmarkParameters();
+        Resource experimentResource = model.getResource(org.hobbit.core.Constants.NEW_EXPERIMENT_URI);
+        // Create only one node of each type to prevent port allocation conflicts on host.
+        model.add(experimentResource, LDCBench.numberOfNodes, "2", XSDinteger);
+        model.add(experimentResource, LDCBench.averageNodeGraphDegree, "1", XSDinteger);
+        model.add(experimentResource, LDCBench.dereferencingHttpNodeWeight, "1", XSDfloat);
+        model.add(experimentResource, LDCBench.ckanNodeWeight, "1", XSDfloat);
+        return model;
     }
 }
