@@ -18,6 +18,6 @@ public class Constants {
 	public static final String CKAN_RECAPTCHA_PUBLICKEY = "";
 	public static final String CKAN_RECAPTCHA_PRIVATEKEY = "";
 
-	public static final String ADMIN_TOKEN = "8b40fc3b-2889-4341-a3bd-c8ff16661544";
+	public static final String ADMIN_TOKEN = "77564c39-4f3f-443b-96b1-29baabb93769";
 
 }

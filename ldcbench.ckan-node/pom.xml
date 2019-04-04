@@ -1,114 +1,126 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.dice_research</groupId>
-		<artifactId>ldcbench.parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
-		<relativePath>../ldcbench.parent</relativePath>
-	</parent>
-	<artifactId>ldcbench.ckan-node</artifactId>
-	<packaging>jar</packaging>
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.dice_research</groupId>
+    <artifactId>ldcbench.parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../ldcbench.parent</relativePath>
+  </parent>
+  <artifactId>ldcbench.ckan-node</artifactId>
+  <packaging>jar</packaging>
 
-	<properties>
-		<spring.version>5.1.4.RELEASE</spring.version>
-	</properties>
+  <properties>
+    <spring.version>5.1.4.RELEASE</spring.version>
+  </properties>
 
-	<dependencies>
-		<!-- JACKAN library -->
+  <dependencies>
+    <!-- JACKAN library -->
 
-		<dependency>
-			<groupId>eu.trentorise.opendata</groupId>
-			<artifactId>jackan</artifactId>
-			<version>0.4.2</version>
-		</dependency>
+    <dependency>
+      <groupId>eu.trentorise.opendata</groupId>
+      <artifactId>jackan</artifactId>
+      <version>0.4.2</version>
+    </dependency>
 
-		<dependency>
-			<groupId>org.dice_research</groupId>
-			<artifactId>ldcbench.api</artifactId>
-		</dependency>
-		
-		
-		 <dependency>
-            <groupId>org.dice-research</groupId>
-            <artifactId>squirrel.api</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
-        </dependency>
-		
-		<!-- HOBBIT core library -->
-		<dependency>
-			<groupId>org.hobbit</groupId>
-			<artifactId>core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.simpleframework</groupId>
-			<artifactId>simple</artifactId>
-		</dependency>
-		<!-- ~~~~~~~~~~~~~~~~~~~ Spring ~~~~~~~~~~~~~~~~~~~~~~ -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>${spring.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-webmvc</artifactId>
-			<version>${spring.version}</version>
-		</dependency>
-		<!-- SPRING Test <dependency> <groupId>org.springframework</groupId> <artifactId>spring-test</artifactId> 
-			<version>${spring.version}</version> <scope>test</scope> </dependency> -->
-		<!-- ~~~~~~~~~~~~~~~~~~~ End Spring ~~~~~~~~~~~~~~~~~~~~~~ -->
-		<!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
-		<!-- slf4j: Logging API -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<!-- Logging - SLF4J-Log4j Binding -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
-		<!-- ~~~~~~~~~~~~~~~~~~~ End Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
-		<!-- ~~~~~~~~~~~~~~~~~~~ Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
-		<!-- JUnit -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<!-- System rules for setting environment variables -->
-		<dependency>
-			<groupId>com.github.stefanbirkner</groupId>
-			<artifactId>system-rules</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<!-- ~~~~~~~~~~~~~~~~~~~ End Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
-		<!-- java.lang.NoClassDefFoundError: com/fasterxml/jackson/databind/deser/std/ReferenceTypeDeserializer -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.9.8</version>
-		</dependency>
-	</dependencies>
+    <dependency>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.api</artifactId>
+    </dependency>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+    <!-- https://mvnrepository.com/artifact/postgresql/postgresql -->
+    <!-- https://mvnrepository.com/artifact/postgresql/postgresql -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.2.5.jre7</version>
+      <scope>compile</scope>
+    </dependency>
+
+
+
+
+    <dependency>
+      <groupId>org.dice-research</groupId>
+      <artifactId>squirrel.api</artifactId>
+      <version>0.4.0-SNAPSHOT</version>
+    </dependency>
+
+    <!-- HOBBIT core library -->
+    <dependency>
+      <groupId>org.hobbit</groupId>
+      <artifactId>core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.simpleframework</groupId>
+      <artifactId>simple</artifactId>
+    </dependency>
+    <!-- ~~~~~~~~~~~~~~~~~~~ Spring ~~~~~~~~~~~~~~~~~~~~~~ -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <!-- SPRING Test <dependency> <groupId>org.springframework</groupId> 
+      <artifactId>spring-test</artifactId> <version>${spring.version}</version> 
+      <scope>test</scope> </dependency> -->
+    <!-- ~~~~~~~~~~~~~~~~~~~ End Spring ~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- slf4j: Logging API -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <!-- Logging - SLF4J-Log4j Binding -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    <!-- ~~~~~~~~~~~~~~~~~~~ End Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- ~~~~~~~~~~~~~~~~~~~ Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- JUnit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- System rules for setting environment variables -->
+    <dependency>
+      <groupId>com.github.stefanbirkner</groupId>
+      <artifactId>system-rules</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- ~~~~~~~~~~~~~~~~~~~ End Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- java.lang.NoClassDefFoundError: com/fasterxml/jackson/databind/deser/std/ReferenceTypeDeserializer -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.9.8</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

@@ -11,6 +11,7 @@ import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.nodes.ckan.Constants;
 import org.dice_research.ldcbench.nodes.ckan.dao.CkanDAO;
+import org.dice_research.ldcbench.nodes.ckan.dao.PostgresCkanDAO;
 import org.dice_research.ldcbench.nodes.rabbit.GraphHandler;
 import org.hobbit.core.Commands;
 import org.hobbit.core.components.AbstractCommandReceivingComponent;
@@ -72,12 +73,12 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 		CkanDAO ckanDao = new CkanDAO(new CheckedCkanClient("http://localhost:80", Constants.TOKEN_API));
 	
 		CkanDatasetBase ds = new CkanDatasetBase();
-		ds.setName("dataset-teste");
-		ds.setTitle("dataset-teste");
+		ds.setName("dataset-test");
+		ds.setTitle("dataset-test");
 		ds.setOwnerOrg(ORGANIZATION);
 		
 		ckanDao.insertDataSource(ds);
-		ckanDao.deleteDataSource("dataset-teste");
+		ckanDao.deleteDataSource("dataset-test");
 		
 	}
 	
@@ -119,7 +120,11 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 		LOGGER.warn("-- > Initializing Ckan Containers");
 
 		postGresContainer = createContainer(Constants.POSTGRES, new String[] { "POSTGRES_PASSWORD=ckan",
-				"POSTGRES_USER=ckan", "PGDATA=/var/lib/postgresql/data", "POSTGRES_DB=ckan" });
+				"POSTGRES_USER=ckan", "PGDATA=/var/lib/postgresql/data", "POSTGRES_DB=ckan",
+				"HOBBIT_SDK_PUBLISH_PORTS=5432"});
+		
+		
+				
 
 		solrContainer = createContainer(Constants.SOLR, null);
 		redisContainer = createContainer(Constants.REDIS, null);
@@ -133,12 +138,17 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 						"REDIS_HOSTNAME=" + redisContainer,
                         "HOBBIT_SDK_PUBLISH_PORTS=5000",
         });
+		
+		Thread.sleep(6000);
+        
+        new PostgresCkanDAO(postGresContainer).insertData();
 
 		LOGGER.warn("-- > Ckan Containers Initialized");
 
+		Thread.sleep(20000);
 
 		CheckedCkanClient client =
-				new CheckedCkanClient("http://"+(dockerized ? ckanContainer : "localhost")+":5000", Constants.TOKEN_API);
+				new CheckedCkanClient("http://"+(dockerized ? ckanContainer : "localhost")+":5000", Constants.ADMIN_TOKEN);
 		ckanDao = new CkanDAO(client);
 		
 		CkanOrganization organization = new CkanOrganization();

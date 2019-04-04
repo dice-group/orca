@@ -801,5 +801,240 @@ public class PostgresqlCreateQueries {
             "\n" + 
             "ALTER TABLE revision OWNER TO ckan;";
     
+    public static final String SYSTEM_INFO = "CREATE TABLE system_info (\n" + 
+            "    id integer NOT NULL,\n" + 
+            "    key character varying(100) NOT NULL,\n" + 
+            "    value text,\n" + 
+            "    revision_id text,\n" + 
+            "    state text NOT NULL\n" + 
+            ");\n" + 
+            "\n" + 
+            "\n" + 
+            "ALTER TABLE public.system_info ALTER id SET DEFAULT nextval('system_info_id_seq'::regclass);\n" + 
+            "ALTER TABLE public.system_info ALTER state SET DEFAULT 'active'::text;\n" + 
+            "\n" + 
+            "ALTER TABLE system_info ADD CONSTRAINT system_info_key_key\n" + 
+            "  UNIQUE (key);\n" + 
+            "ALTER TABLE system_info ADD CONSTRAINT system_info_pkey\n" + 
+            "  PRIMARY KEY (id);\n" + 
+            "ALTER TABLE system_info ADD CONSTRAINT system_info_revision_id_fkey\n" + 
+            "  FOREIGN KEY (revision_id) REFERENCES revision(id);\n" + 
+            "\n" + 
+            "ALTER TABLE system_info OWNER TO ckan;\n" + 
+            "";
+    
+    public static final String SYSTEM_INFO_REVISION = "CREATE TABLE system_info_revision (\n" + 
+            "    id integer NOT NULL,\n" + 
+            "    key character varying(100) NOT NULL,\n" + 
+            "    value text,\n" + 
+            "    revision_id text NOT NULL,\n" + 
+            "    continuity_id integer,\n" + 
+            "    state text NOT NULL,\n" + 
+            "    expired_id text,\n" + 
+            "    revision_timestamp timestamp without time zone,\n" + 
+            "    expired_timestamp timestamp without time zone,\n" + 
+            "    current boolean\n" + 
+            ");\n" + 
+            "\n" + 
+            "\n" + 
+            "ALTER TABLE public.system_info_revision ALTER state SET DEFAULT 'active'::text;\n" + 
+            "\n" + 
+            "ALTER TABLE system_info_revision ADD CONSTRAINT system_info_revision_pkey\n" + 
+            "  PRIMARY KEY (id, revision_id);\n" + 
+            "ALTER TABLE system_info_revision ADD CONSTRAINT system_info_revision_revision_id_fkey\n" + 
+            "  FOREIGN KEY (revision_id) REFERENCES revision(id);\n" + 
+            "ALTER TABLE system_info_revision ADD CONSTRAINT system_info_revision_continuity_id_fkey\n" + 
+            "  FOREIGN KEY (continuity_id) REFERENCES system_info(id);\n" + 
+            "\n" + 
+            "ALTER TABLE system_info_revision OWNER TO ckan;";
+    
+    public static final String TAG = "CREATE TABLE tag (\n" + 
+            "    id text NOT NULL,\n" + 
+            "    name character varying(100) NOT NULL,\n" + 
+            "    vocabulary_id character varying(100)\n" + 
+            ");\n" + 
+            "\n" + 
+            "\n" + 
+            "ALTER TABLE tag ADD CONSTRAINT tag_name_vocabulary_id_key\n" + 
+            "  UNIQUE (name, vocabulary_id);\n" + 
+            "ALTER TABLE tag ADD CONSTRAINT tag_pkey\n" + 
+            "  PRIMARY KEY (id);\n" + 
+            "ALTER TABLE tag ADD CONSTRAINT tag_vocabulary_id_fkey\n" + 
+            "  FOREIGN KEY (vocabulary_id) REFERENCES vocabulary(id);\n" + 
+            "\n" + 
+            "CREATE INDEX idx_tag_id ON tag USING btree (id);\n" + 
+            "CREATE INDEX idx_tag_name ON tag USING btree (name);\n" + 
+            "\n" + 
+            "ALTER TABLE tag OWNER TO ckan;";
+    
+    public static final String TASK_STATUS = "CREATE TABLE task_status (\n" + 
+            "    id text NOT NULL,\n" + 
+            "    entity_id text NOT NULL,\n" + 
+            "    entity_type text NOT NULL,\n" + 
+            "    task_type text NOT NULL,\n" + 
+            "    key text NOT NULL,\n" + 
+            "    value text NOT NULL,\n" + 
+            "    state text,\n" + 
+            "    error text,\n" + 
+            "    last_updated timestamp without time zone\n" + 
+            ");\n" + 
+            "\n" + 
+            "\n" + 
+            "ALTER TABLE task_status ADD CONSTRAINT task_status_entity_id_task_type_key_key\n" + 
+            "  UNIQUE (entity_id, task_type, key);\n" + 
+            "ALTER TABLE task_status ADD CONSTRAINT task_status_pkey\n" + 
+            "  PRIMARY KEY (id);\n" + 
+            "\n" + 
+            "ALTER TABLE task_status OWNER TO ckan;";
+    
+    public static final String TERM_TRANSLATION = "CREATE TABLE term_translation (\n" + 
+            "    term text NOT NULL,\n" + 
+            "    term_translation text NOT NULL,\n" + 
+            "    lang_code text NOT NULL\n" + 
+            ");\n" + 
+            "\n" + 
+            "\n" + 
+            "CREATE INDEX term ON term_translation USING btree (term);\n" + 
+            "CREATE INDEX term_lang ON term_translation USING btree (term, lang_code);\n" + 
+            "\n" + 
+            "ALTER TABLE term_translation OWNER TO ckan;";
+    
+    public static final String TRACKING_RAW = "CREATE TABLE tracking_raw (\n" + 
+            "    user_key character varying(100) NOT NULL,\n" + 
+            "    url text NOT NULL,\n" + 
+            "    tracking_type character varying(10) NOT NULL,\n" + 
+            "    access_timestamp timestamp without time zone\n" + 
+            ");\n" + 
+            "\n" + 
+            "\n" + 
+            "ALTER TABLE public.tracking_raw ALTER access_timestamp SET DEFAULT now();\n" + 
+            "\n" + 
+            "CREATE INDEX tracking_raw_access_timestamp ON tracking_raw USING btree (access_timestamp);\n" + 
+            "CREATE INDEX tracking_raw_url ON tracking_raw USING btree (url);\n" + 
+            "CREATE INDEX tracking_raw_user_key ON tracking_raw USING btree (user_key);\n" + 
+            "\n" + 
+            "ALTER TABLE tracking_raw OWNER TO ckan;";
+    
+    public static final String TRACKING_SUMMARY = "CREATE TABLE tracking_summary (\n" + 
+            "    url text NOT NULL,\n" + 
+            "    package_id text,\n" + 
+            "    tracking_type character varying(10) NOT NULL,\n" + 
+            "    count integer NOT NULL,\n" + 
+            "    running_total integer NOT NULL,\n" + 
+            "    recent_views integer NOT NULL,\n" + 
+            "    tracking_date date\n" + 
+            ");\n" + 
+            "\n" + 
+            "\n" + 
+            "ALTER TABLE public.tracking_summary ALTER running_total SET DEFAULT 0;\n" + 
+            "ALTER TABLE public.tracking_summary ALTER recent_views SET DEFAULT 0;\n" + 
+            "\n" + 
+            "CREATE INDEX tracking_summary_date ON tracking_summary USING btree (tracking_date);\n" + 
+            "CREATE INDEX tracking_summary_package_id ON tracking_summary USING btree (package_id);\n" + 
+            "CREATE INDEX tracking_summary_url ON tracking_summary USING btree (url);\n" + 
+            "\n" + 
+            "ALTER TABLE tracking_summary OWNER TO ckan;";
+    
+    public static final String USER = "CREATE TABLE \"user\" (\n" + 
+            "    id text NOT NULL,\n" + 
+            "    name text NOT NULL,\n" + 
+            "    apikey text,\n" + 
+            "    created timestamp without time zone,\n" + 
+            "    about text,\n" + 
+            "    password text,\n" + 
+            "    fullname text,\n" + 
+            "    email text,\n" + 
+            "    reset_key text,\n" + 
+            "    sysadmin boolean,\n" + 
+            "    activity_streams_email_notifications boolean,\n" + 
+            "    state text NOT NULL\n" + 
+            ");\n" + 
+            "\n" + 
+            "\n" + 
+            "ALTER TABLE public.\"user\" ALTER sysadmin SET DEFAULT false;\n" + 
+            "ALTER TABLE public.\"user\" ALTER activity_streams_email_notifications SET DEFAULT false;\n" + 
+            "ALTER TABLE public.\"user\" ALTER state SET DEFAULT 'active'::text;\n" + 
+            "\n" + 
+            "ALTER TABLE \"user\" ADD CONSTRAINT user_name_key\n" + 
+            "  UNIQUE (name);\n" + 
+            "ALTER TABLE \"user\" ADD CONSTRAINT user_pkey\n" + 
+            "  PRIMARY KEY (id);\n" + 
+            "\n" + 
+            "CREATE INDEX idx_user_id ON \"user\" USING btree (id);\n" + 
+            "CREATE INDEX idx_user_name ON \"user\" USING btree (name);\n" + 
+            "CREATE INDEX idx_user_name_index ON \"user\" USING btree ((\n" + 
+            "CASE\n" + 
+            "    WHEN ((fullname IS NULL) OR (fullname = ''::text)) THEN name\n" + 
+            "    ELSE fullname\n" + 
+            "END));\n" + 
+            "\n" + 
+            "ALTER TABLE \"user\" OWNER TO ckan;\n" + 
+            "";
+    
+    public static final String USER_FOLLOWING_DATASET= "CREATE TABLE user_following_dataset (\n" + 
+            "    follower_id text NOT NULL,\n" + 
+            "    object_id text NOT NULL,\n" + 
+            "    datetime timestamp without time zone NOT NULL\n" + 
+            ");\n" + 
+            "\n" + 
+            "\n" + 
+            "ALTER TABLE user_following_dataset ADD CONSTRAINT user_following_dataset_pkey\n" + 
+            "  PRIMARY KEY (follower_id, object_id);\n" + 
+            "ALTER TABLE user_following_dataset ADD CONSTRAINT user_following_dataset_follower_id_fkey\n" + 
+            "  FOREIGN KEY (follower_id) REFERENCES \"user\"(id) ON UPDATE CASCADE ON DELETE CASCADE;\n" + 
+            "ALTER TABLE user_following_dataset ADD CONSTRAINT user_following_dataset_object_id_fkey\n" + 
+            "  FOREIGN KEY (object_id) REFERENCES package(id) ON UPDATE CASCADE ON DELETE CASCADE;\n" + 
+            "\n" + 
+            "ALTER TABLE user_following_dataset OWNER TO ckan;\n" + 
+            "";
+    
+    public static final String USER_FOLLOWING_GROUP = "CREATE TABLE user_following_group (\n" + 
+            "    follower_id text NOT NULL,\n" + 
+            "    object_id text NOT NULL,\n" + 
+            "    datetime timestamp without time zone NOT NULL\n" + 
+            ");\n" + 
+            "\n" + 
+            "\n" + 
+            "ALTER TABLE user_following_group ADD CONSTRAINT user_following_group_pkey\n" + 
+            "  PRIMARY KEY (follower_id, object_id);\n" + 
+            "ALTER TABLE user_following_group ADD CONSTRAINT user_following_group_user_id_fkey\n" + 
+            "  FOREIGN KEY (follower_id) REFERENCES \"user\"(id) ON UPDATE CASCADE ON DELETE CASCADE;\n" + 
+            "ALTER TABLE user_following_group ADD CONSTRAINT user_following_group_group_id_fkey\n" + 
+            "  FOREIGN KEY (object_id) REFERENCES \"group\"(id) ON UPDATE CASCADE ON DELETE CASCADE;\n" + 
+            "\n" + 
+            "ALTER TABLE user_following_group OWNER TO ckan;";
+
+    
+    public static final String USER_FOLLOWING_USER = "CREATE TABLE user_following_user (\n" + 
+            "    follower_id text NOT NULL,\n" + 
+            "    object_id text NOT NULL,\n" + 
+            "    datetime timestamp without time zone NOT NULL\n" + 
+            ");\n" + 
+            "\n" + 
+            "\n" + 
+            "ALTER TABLE user_following_user ADD CONSTRAINT user_following_user_pkey\n" + 
+            "  PRIMARY KEY (follower_id, object_id);\n" + 
+            "ALTER TABLE user_following_user ADD CONSTRAINT user_following_user_follower_id_fkey\n" + 
+            "  FOREIGN KEY (follower_id) REFERENCES \"user\"(id) ON UPDATE CASCADE ON DELETE CASCADE;\n" + 
+            "ALTER TABLE user_following_user ADD CONSTRAINT user_following_user_object_id_fkey\n" + 
+            "  FOREIGN KEY (object_id) REFERENCES \"user\"(id) ON UPDATE CASCADE ON DELETE CASCADE;\n" + 
+            "\n" + 
+            "ALTER TABLE user_following_user OWNER TO ckan;";
+    
+    public static final String VOCABULARY = "CREATE TABLE vocabulary (\n" + 
+            "    id text NOT NULL,\n" + 
+            "    name character varying(100) NOT NULL\n" + 
+            ");\n" + 
+            "\n" + 
+            "\n" + 
+            "ALTER TABLE vocabulary ADD CONSTRAINT vocabulary_name_key\n" + 
+            "  UNIQUE (name);\n" + 
+            "ALTER TABLE vocabulary ADD CONSTRAINT vocabulary_pkey\n" + 
+            "  PRIMARY KEY (id);\n" + 
+            "\n" + 
+            "ALTER TABLE vocabulary OWNER TO ckan;";
+    
+    
+    
 
 }
