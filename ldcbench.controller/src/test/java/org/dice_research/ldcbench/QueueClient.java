@@ -67,8 +67,7 @@ public class QueueClient {
         cfg.systemUri = systemUri;
         cfg.userName = username;
 
-        String benchmarkInstanceId = Constants.NEW_EXPERIMENT_URI;
-        Resource benchmarkInstanceResource = model.createResource(benchmarkInstanceId);
+        Resource benchmarkInstanceResource = org.hobbit.vocab.HobbitExperiments.New;
         model.add(benchmarkInstanceResource, RDF.type, HOBBIT.Experiment);
         model.add(benchmarkInstanceResource, HOBBIT.involvesBenchmark, model.createResource(benchmarkUri));
         model.add(benchmarkInstanceResource, HOBBIT.involvesSystemInstance, model.createResource(systemUri));

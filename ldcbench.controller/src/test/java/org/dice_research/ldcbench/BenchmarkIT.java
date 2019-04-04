@@ -20,7 +20,7 @@ public class BenchmarkIT extends BenchmarkTestBase {
     @Override
     public Model createBenchmarkParameters() throws IOException {
         Model model = super.createBenchmarkParameters();
-        Resource experimentResource = model.getResource(org.hobbit.core.Constants.NEW_EXPERIMENT_URI);
+        Resource experimentResource = org.hobbit.vocab.HobbitExperiments.New;
         model.add(experimentResource, LDCBench.numberOfNodes, "3", XSDinteger);
         model.add(experimentResource, LDCBench.averageNodeGraphDegree, "3", XSDinteger);
         model.add(experimentResource, LDCBench.dereferencingHttpNodeWeight, "1", XSDfloat);

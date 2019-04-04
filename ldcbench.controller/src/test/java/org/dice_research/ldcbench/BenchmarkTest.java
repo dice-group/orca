@@ -57,7 +57,7 @@ public class BenchmarkTest extends BenchmarkTestBase {
     @Override
     public Model createBenchmarkParameters() throws IOException {
         Model model = super.createBenchmarkParameters();
-        Resource experimentResource = model.getResource(org.hobbit.core.Constants.NEW_EXPERIMENT_URI);
+        Resource experimentResource = org.hobbit.vocab.HobbitExperiments.New;
         // Create only one node of each type to prevent port allocation conflicts on host.
         model.add(experimentResource, LDCBench.numberOfNodes, "2", XSDinteger);
         model.add(experimentResource, LDCBench.averageNodeGraphDegree, "1", XSDinteger);

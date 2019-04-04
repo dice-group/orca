@@ -81,7 +81,7 @@ public class BenchmarkTestBase {
     protected void checkHealth(Boolean dockerized) throws Exception {
 
         String[] benchmarkParamsStr = new String[]{
-            HOBBIT_EXPERIMENT_URI_KEY+"="+NEW_EXPERIMENT_URI,
+            HOBBIT_EXPERIMENT_URI_KEY+"="+org.hobbit.vocab.HobbitExperiments.New.getURI(),
             BENCHMARK_PARAMETERS_MODEL_KEY+"="+RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(createBenchmarkParameters(), ModelsHandler.readModelFromFile("../benchmark.ttl"))),
             RABBIT_MQ_HOST_NAME_KEY+"="+(dockerized ? "rabbit" : "localhost"),
         };
@@ -171,7 +171,7 @@ public class BenchmarkTestBase {
 
     public Model createBenchmarkParameters() throws IOException {
         Model model = createDefaultModel();
-        Resource experimentResource = model.createResource(org.hobbit.core.Constants.NEW_EXPERIMENT_URI);
+        Resource experimentResource = org.hobbit.vocab.HobbitExperiments.New;
         model.add(experimentResource, RDF.type, HOBBIT.Experiment);
         model.add(experimentResource, LDCBench.seed, "100", XSDinteger);
         model.add(experimentResource, LDCBench.triplesPerNode, "100", XSDinteger);
@@ -182,7 +182,7 @@ public class BenchmarkTestBase {
 
     public Model createSystemParameters() throws IOException {
         Model model = createDefaultModel();
-        Resource experimentResource = model.createResource(org.hobbit.core.Constants.NEW_EXPERIMENT_URI);
+        Resource experimentResource = org.hobbit.vocab.HobbitExperiments.New;
         model.add(experimentResource, RDF.type, HOBBIT.Experiment);
         model.add(experimentResource, model.createProperty(BENCHMARK_URI+"#systemParam123"),"100");
         return model;
