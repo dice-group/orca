@@ -138,14 +138,12 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 						"REDIS_HOSTNAME=" + redisContainer,
                         "HOBBIT_SDK_PUBLISH_PORTS=5000",
         });
-		
-		Thread.sleep(6000);
-        
+
+		Thread.sleep(20000);
+
         new PostgresCkanDAO(dockerized ? postGresContainer : "localhost").insertData();
 
 		LOGGER.warn("-- > Ckan Containers Initialized");
-
-		Thread.sleep(20000);
 
 		CheckedCkanClient client =
 				new CheckedCkanClient("http://"+(dockerized ? ckanContainer : "localhost")+":5000", Constants.ADMIN_TOKEN);
