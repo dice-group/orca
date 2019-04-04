@@ -40,15 +40,6 @@
       <scope>compile</scope>
     </dependency>
 
-
-
-
-    <dependency>
-      <groupId>org.dice-research</groupId>
-      <artifactId>squirrel.api</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
-    </dependency>
-
     <!-- HOBBIT core library -->
     <dependency>
       <groupId>org.hobbit</groupId>
