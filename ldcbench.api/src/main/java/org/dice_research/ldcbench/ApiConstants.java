@@ -2,6 +2,7 @@ package org.dice_research.ldcbench;
 
 public class ApiConstants {
 
+    public static final String ENV_SDK_KEY = "HOBBIT_SDK";
     public static final String ENV_DOCKERIZED_KEY = "HOBBIT_SDK_DOCKERIZED";
 
     public static final String ENV_NODE_ID_KEY = "LDCBENCH_NODE_ID";

@@ -45,6 +45,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         CkanNodeManager.class,
     };
 
+    private boolean sdk;
     private boolean dockerized;
 
     private String sparqlEndpoint;
@@ -85,6 +86,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     public void init() throws Exception {
         super.init();
 
+        sdk = EnvVariables.getBoolean(ApiConstants.ENV_SDK_KEY, false, LOGGER);
         dockerized = EnvVariables.getBoolean(ApiConstants.ENV_DOCKERIZED_KEY, true, LOGGER);
 
         // Start SPARQL endpoint
@@ -180,7 +182,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
             nodeMetadata[i] = new NodeMetadata();
             nodeMetadata[i].setHostname(containerId);
             // FIXME: HOBBIT SDK workaround (setting environment for "containers")
-            Thread.sleep(2000);
+            if (sdk) {
+                Thread.sleep(2000);
+            }
         }
 
         // FIXME use entrance node of the node graph instead of 0
@@ -217,7 +221,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, };
         createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
         // FIXME: HOBBIT SDK workaround (setting environment for "containers")
-        Thread.sleep(2000);
+        if (sdk) {
+            Thread.sleep(2000);
+        }
 
         // RDF graph generators
         for (int i = 0; i < nodesAmount; i++) {
