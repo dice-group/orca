@@ -108,6 +108,14 @@ public class RandomRDF implements GraphGenerator{
 	 * @return the number of edges if successful and zero otherwise
 	 */
 		protected void getBarabasiRDF(int N, double degree, long seed, GraphBuilder builder) {
+			if (degree < 1) {
+				throw new IllegalArgumentException("Degree must be more than 1.");
+			}
+
+			if (degree > N) {
+				throw new IllegalArgumentException("Degree can NOT be more than the number of nodes.");
+			}
+
 			/* nodes are numbered from 1 to N */
 			int indexToEdgeList = 0;// index to edge list
 			//Random generator;
@@ -119,14 +127,6 @@ public class RandomRDF implements GraphGenerator{
 			Arrays.fill(inDeg, 1);
 			inDeg[0] = 0;// not used
 
-			if (degree < 1) {
-				throw new IllegalArgumentException("Degree must be more than 1.");
-			}
-			
-			if (degree > N) {
-				throw new IllegalArgumentException("Degree can NOT be more than the number of nodes.");
-			}
-			
 			generator = new Random(seed);// seed
 			int m = (int) Math.floor(degree);// average degree of graph
 			if(m >1 ) {
