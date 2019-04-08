@@ -13,6 +13,7 @@ import java.util.concurrent.Semaphore;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Property;
 import org.dice_research.ldcbench.ApiConstants;
@@ -227,14 +228,14 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         // RDF graph generators
         for (int i = 0; i < nodesAmount; i++) {
-            envVariables = new String[] { Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
+            envVariables = ArrayUtils.addAll(new String[] {
+                    Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
                     DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.RDF_GRAPH_GENERATOR,
                     DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(1 + i),
-                    DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageRdfGraphDegree,
-                    DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,
                     DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                     ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
-                    DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, };
+                    DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
+            }, nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree, triplesPerNode));
             createDataGenerator(DATAGEN_IMAGE_NAME, envVariables);
             // FIXME: HOBBIT SDK workaround (setting environment for "containers")
             Thread.sleep(2000);
