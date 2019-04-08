@@ -24,7 +24,7 @@ public class RandomRDFTest {
 
     @Test(expected = IllegalArgumentException.class)
 	public void ValidDegree() throws IllegalArgumentException {
-		rg.generateGraph(N,0.9,123L,g);
+		rg.generateGraph(N,-0.1,123L,g);
 	}
 
     @Test(expected = IllegalArgumentException.class)

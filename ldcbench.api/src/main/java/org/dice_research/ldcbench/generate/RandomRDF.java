@@ -108,7 +108,7 @@ public class RandomRDF implements GraphGenerator{
 	 * @return the number of edges if successful and zero otherwise
 	 */
 		protected void getBarabasiRDF(int N, double degree, long seed, GraphBuilder builder) {
-			if (degree < 1) {
+			if (degree < 0) {
 				throw new IllegalArgumentException("Degree must be more than 1.");
 			}
 
