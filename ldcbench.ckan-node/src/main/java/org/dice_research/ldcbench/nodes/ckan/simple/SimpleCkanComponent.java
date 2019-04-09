@@ -14,6 +14,7 @@ import org.dice_research.ldcbench.nodes.ckan.dao.CkanDAO;
 import org.dice_research.ldcbench.nodes.ckan.dao.PostgresCkanDAO;
 import org.dice_research.ldcbench.nodes.rabbit.GraphHandler;
 import org.hobbit.core.Commands;
+import static org.hobbit.core.Constants.CONTAINER_TYPE_BENCHMARK;
 import org.hobbit.core.components.AbstractCommandReceivingComponent;
 import org.hobbit.core.components.Component;
 import org.hobbit.core.rabbit.DataReceiver;
@@ -119,16 +120,13 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 
 		LOGGER.warn("-- > Initializing Ckan Containers");
 
-		postGresContainer = createContainer(Constants.POSTGRES, new String[] { "POSTGRES_PASSWORD=ckan",
+		postGresContainer = createContainer(Constants.POSTGRES, CONTAINER_TYPE_BENCHMARK, new String[] { "POSTGRES_PASSWORD=ckan",
 				"POSTGRES_USER=ckan", "PGDATA=/var/lib/postgresql/data", "POSTGRES_DB=ckan",
 				"HOBBIT_SDK_PUBLISH_PORTS=5432"});
-		
-		
-				
 
-		solrContainer = createContainer(Constants.SOLR, null);
-		redisContainer = createContainer(Constants.REDIS, null);
-		ckanContainer = createContainer(Constants.CKAN,
+		solrContainer = createContainer(Constants.SOLR, CONTAINER_TYPE_BENCHMARK, null);
+		redisContainer = createContainer(Constants.REDIS, CONTAINER_TYPE_BENCHMARK, null);
+		ckanContainer = createContainer(Constants.CKAN, CONTAINER_TYPE_BENCHMARK,
 				new String[] { "CKAN_SOLR_URL=http://" + solrContainer + ":8983/solr/ckan",
 						"CKAN_SQLALCHEMY_URL=postgresql://ckan:ckan@" + postGresContainer + ":5432/ckan",
 						"CKAN_REDIS_URL=redis://" + redisContainer + ":6379/0", "CKAN_SITE_URL=http://localhost",
