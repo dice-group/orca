@@ -24,3 +24,6 @@ push-hobbit: add-hobbit-remote
 
 test-benchmark:
 	mvn -DfailIfNoTests=false -Dtest=BenchmarkTest#checkHealth test
+
+test-benchmark-dockerized:
+	mvn -DfailIfNoTests=false -Dtest=ImageBuilder#buildImages verify
