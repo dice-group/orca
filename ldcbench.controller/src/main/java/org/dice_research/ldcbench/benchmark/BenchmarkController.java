@@ -167,7 +167,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
             }
         }
 
-        NodeMetadata[] nodeMetadata = new NodeMetadata[nodesAmount];
+        nodeMetadata = new NodeMetadata[nodesAmount];
         for (int i = 0; i < nodesAmount; i++) {
             envVariables = new String[] {
                     ApiConstants.ENV_DOCKERIZED_KEY + "=" + dockerized,
