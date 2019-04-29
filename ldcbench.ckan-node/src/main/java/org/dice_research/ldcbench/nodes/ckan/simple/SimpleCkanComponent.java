@@ -65,19 +65,7 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 	private CkanDAO ckanDao;
 	private List<CkanDataset> ckanDataSets = new ArrayList<CkanDataset>();
 	
-	
-	public static void main(String[] args) {
-		CkanDAO ckanDao = new CkanDAO(new CheckedCkanClient("http://localhost:80", Constants.TOKEN_API));
-	
-		CkanDatasetBase ds = new CkanDatasetBase();
-		ds.setName("dataset-teste");
-		ds.setTitle("dataset-teste");
-		ds.setOwnerOrg(ORGANIZATION);
-		
-		ckanDao.insertDataSource(ds);
-		ckanDao.deleteDataSource("dataset-teste");
-		
-	}
+
 	
 
 	@Override
