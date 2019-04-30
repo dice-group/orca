@@ -1,13 +1,11 @@
 package org.dice_research.ldcbench.nodes.sparql;
 
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
 import org.apache.jena.graph.Triple;
-import org.apache.jena.riot.Lang;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.http.simple.GraphBasedResource;
 import org.dice_research.squirrel.data.uri.CrawleableUri;
@@ -24,9 +22,9 @@ public class SparqlResource extends GraphBasedResource {
         this.sink = sink;
     }
 
-    @Override
-    public boolean handleRequest(String target, Lang lang, String charset, OutputStream out) {
-        
+
+    public void storeGraphs(List<Graph> graphs, String target) throws Exception {
+
         URI uri = null;
 
         try {
@@ -43,20 +41,6 @@ public class SparqlResource extends GraphBasedResource {
         }finally {
             sink.closeSinkForUri(new CrawleableUri(uri));
         }
-        return true;
-    }
-
-    public List<Triple> generateTripleList(String target) throws Exception {
-
-        int ids[] = parseIds(target);
-        TripleIterator iterator = new TripleIterator(this, ids[0], ids[1]);
-
-        List<Triple> listTriples = new ArrayList<Triple>();
-
-        while (iterator.hasNext()) {
-            listTriples.add(iterator.next());
-        }
-        return listTriples;
     }
 
 }

@@ -50,18 +50,15 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
 	        
 	        LOGGER.info("Sparql server initialized.");
 	        
-	        storeGraphs(graphs);
+	        SparqlResource resource = new SparqlResource(domainId, domainNames,
+	                graphs.toArray(new Graph[graphs.size()]), (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
+	                        && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)), new String[] {},sink);
+	        
+	        resource.storeGraphs(graphs,"");
         
 	        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
 	    }
 	
-	protected void storeGraphs(List<Graph> listGraphs) {
-	    SparqlResource resource = new SparqlResource(domainId, domainNames,
-	            listGraphs.toArray(new Graph[listGraphs.size()]), (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
-                        && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)), new String[] {},sink);
-	    
-	}
-
     
     @Override
     public void close() throws IOException {
