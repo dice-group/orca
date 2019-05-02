@@ -8,7 +8,12 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.stream.Stream;
 
@@ -40,6 +45,9 @@ import com.rabbitmq.client.Consumer;
 public class BenchmarkController extends AbstractBenchmarkController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkController.class);
+
+    private Set<Future<String>> dataGenContainers = new HashSet<>();
+    private List<Future<String>> nodeContainers = new ArrayList<>();
 
     private Class<?>[] nodeManagerClasses = {
         DereferencingHttpNodeManager.class,
@@ -73,13 +81,34 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 : new String[1];
 
         variables[variables.length - 1] = Constants.GENERATOR_ID_KEY + "=" + dataGenContainerIds.size();
-        containerId = createContainer(generatorImageName, variables);
-        if (containerId != null) {
-            dataGenContainerIds.add(containerId);
-        } else {
-            String errorMsg = "Couldn't create generator component. Aborting.";
-            LOGGER.error(errorMsg);
-            throw new IllegalStateException(errorMsg);
+        Future<String> container = createContainerAsync(generatorImageName, Constants.CONTAINER_TYPE_BENCHMARK, variables);
+        dataGenContainers.add(container);
+    }
+
+    private void waitForDataGenToBeCreated() throws InterruptedException, ExecutionException {
+        for (Future<String> container : dataGenContainers) {
+            String containerId = container.get();
+            if (containerId != null) {
+                dataGenContainerIds.add(containerId);
+            } else {
+                String errorMsg = "Couldn't create generator component. Aborting.";
+                LOGGER.error(errorMsg);
+                throw new IllegalStateException(errorMsg);
+            }
+        }
+    }
+
+    private void waitForNodesToBeCreated() throws InterruptedException, ExecutionException {
+        for (int i = 0; i < nodeContainers.size(); i++) {
+            String containerId = nodeContainers.get(i).get();
+            if (containerId != null) {
+                nodeMetadata[i] = new NodeMetadata();
+                nodeMetadata[i].setHostname(containerId);
+            } else {
+                String errorMsg = "Couldn't create generator component. Aborting.";
+                LOGGER.error(errorMsg);
+                throw new IllegalStateException(errorMsg);
+            }
         }
     }
 
@@ -167,7 +196,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
             }
         }
 
-        NodeMetadata[] nodeMetadata = new NodeMetadata[nodesAmount];
+        nodeMetadata = new NodeMetadata[nodesAmount];
         for (int i = 0; i < nodesAmount; i++) {
             envVariables = new String[] {
                     ApiConstants.ENV_DOCKERIZED_KEY + "=" + dockerized,
@@ -178,15 +207,15 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345),
             };
 
-            String containerId = createContainer(nodeManagers.get(i).getImageName(), Constants.CONTAINER_TYPE_BENCHMARK, envVariables);
+            nodeContainers.add(createContainerAsync(nodeManagers.get(i).getImageName(), Constants.CONTAINER_TYPE_BENCHMARK, envVariables));
 
-            nodeMetadata[i] = new NodeMetadata();
-            nodeMetadata[i].setHostname(containerId);
             // FIXME: HOBBIT SDK workaround (setting environment for "containers")
             if (sdk) {
                 Thread.sleep(2000);
             }
         }
+
+        waitForNodesToBeCreated();
 
         // FIXME use entrance node of the node graph instead of 0
         SimpleTripleCreator tripleCreator = new SimpleTripleCreator(0,
@@ -240,6 +269,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
             // FIXME: HOBBIT SDK workaround (setting environment for "containers")
             Thread.sleep(2000);
         }
+
+        waitForDataGenToBeCreated();
 
         LOGGER.debug("Creating queues for sending data and tasks to the system...");
         systemDataSender = DataSenderImpl.builder().queue(getFactoryForOutgoingDataQueues(),

@@ -128,15 +128,22 @@
               <test>ImageBuilder#buildImages</test>
             </configuration>
           </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <sdkJarFilePath>${project.build.directory}/${project.artifactId}-shaded.jar</sdkJarFilePath>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
           <execution>
-            <id>test-dockerized</id>
-            <phase>verify</phase>
             <goals>
-              <goal>test</goal>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
             </goals>
-            <configuration>
-              <test>BenchmarkIT</test>
-            </configuration>
           </execution>
         </executions>
       </plugin>
