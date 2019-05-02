@@ -54,7 +54,7 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
 	                graphs.toArray(new Graph[graphs.size()]), (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
 	                        && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)), new String[] {},sink);
 	        
-	        resource.storeGraphs(graphs,"");
+	        resource.storeGraphs(graphs,sparqlContainer);
         
 	        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
 	    }
