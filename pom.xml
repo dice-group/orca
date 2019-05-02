@@ -31,6 +31,7 @@
     <module>ldcbench.nodes</module>
     <module>ldcbench.http-node</module>
     <module>ldcbench.ckan-node</module>
+    <module>ldcbench.sparql-node</module>
     
   </modules>
 </project>
