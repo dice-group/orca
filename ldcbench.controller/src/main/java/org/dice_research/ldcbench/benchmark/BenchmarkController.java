@@ -86,6 +86,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     }
 
     private void waitForDataGenToBeCreated() throws InterruptedException, ExecutionException {
+        LOGGER.info("Waiting for {} Data Generators to be created.", dataGenContainers.size());
         for (Future<String> container : dataGenContainers) {
             String containerId = container.get();
             if (containerId != null) {
@@ -99,6 +100,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     }
 
     private void waitForNodesToBeCreated() throws InterruptedException, ExecutionException {
+        LOGGER.info("Waiting for {} nodes to be created.", nodeContainers.size());
         for (int i = 0; i < nodeContainers.size(); i++) {
             String containerId = nodeContainers.get(i).get();
             if (containerId != null) {
@@ -244,6 +246,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         SeedGenerator seedGenerator = new SeedGenerator(seed);
 
         // Node graph generator
+        LOGGER.info("Creating node graph generator...");
         envVariables = new String[] { DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
                 DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(0),
                 DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
@@ -257,6 +260,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         // RDF graph generators
         for (int i = 0; i < nodesAmount; i++) {
+            LOGGER.info("Requesting creation of {}/{} RDF graph generator...", i+1, nodesAmount);
             envVariables = ArrayUtils.addAll(new String[] {
                     Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
                     DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.RDF_GRAPH_GENERATOR,
@@ -268,7 +272,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
             createDataGenerator(DATAGEN_IMAGE_NAME, envVariables);
             // FIXME: HOBBIT SDK workaround (setting environment for "containers")
             if (sdk) {
-                LOGGER.debug("Short delay to workaround component creation issue in SDK...");
                 Thread.sleep(2000);
             }
         }
