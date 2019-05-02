@@ -267,7 +267,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
             }, nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree, triplesPerNode));
             createDataGenerator(DATAGEN_IMAGE_NAME, envVariables);
             // FIXME: HOBBIT SDK workaround (setting environment for "containers")
-            Thread.sleep(2000);
+            if (sdk) {
+                LOGGER.debug("Short delay to workaround component creation issue in SDK...");
+                Thread.sleep(2000);
+            }
         }
 
         waitForDataGenToBeCreated();
