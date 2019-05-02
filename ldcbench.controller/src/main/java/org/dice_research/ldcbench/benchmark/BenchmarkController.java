@@ -262,6 +262,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         for (int i = 0; i < nodesAmount; i++) {
             LOGGER.info("Requesting creation of {}/{} RDF graph generator...", i+1, nodesAmount);
             envVariables = ArrayUtils.addAll(new String[] {
+                    DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + 0, // HOBBIT SDK workaround
                     Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
                     DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.RDF_GRAPH_GENERATOR,
                     DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(1 + i),
