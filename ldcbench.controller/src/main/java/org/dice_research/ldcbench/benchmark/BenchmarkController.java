@@ -80,7 +80,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         String variables[] = envVariables != null ? Arrays.copyOf(envVariables, envVariables.length + 1)
                 : new String[1];
 
-        variables[variables.length - 1] = Constants.GENERATOR_ID_KEY + "=" + dataGenContainerIds.size();
+        variables[variables.length - 1] = Constants.GENERATOR_ID_KEY + "=" + (dataGenContainerIds.size() + 1);
         Future<String> container = createContainerAsync(generatorImageName, Constants.CONTAINER_TYPE_BENCHMARK, variables);
         dataGenContainers.add(container);
     }
