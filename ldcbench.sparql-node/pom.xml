@@ -63,13 +63,19 @@
     <dependency>
       <groupId>org.aksw.jena-sparql-api</groupId>
       <artifactId>jena-sparql-api-core</artifactId>
-      <version>3.1.0-2-SNAPSHOT</version><!--$NO-MVN-MAN-VER$-->
+      <version>3.1.0-2-SNAPSHOT</version><!--$NO-MVN-MAN-VER$ -->
       <exclusions>
         <exclusion>
           <groupId>org.apache.httpcomponents</groupId>
           <artifactId>httpclient</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.jena</groupId>
+          <artifactId>jena-arq</artifactId>
+        </exclusion>
       </exclusions>
+
+
     </dependency>
 
 
@@ -78,6 +84,12 @@
     <dependency>
       <groupId>org.hobbit</groupId>
       <artifactId>core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.jena</groupId>
+          <artifactId>jena-arq</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.simpleframework</groupId>
