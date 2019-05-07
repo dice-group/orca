@@ -1,15 +1,13 @@
 package org.dice_research.ldcbench.nodes.sparql;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-import org.apache.jena.graph.Triple;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.http.simple.GraphBasedResource;
-import org.dice_research.squirrel.data.uri.CrawleableUri;
-import org.dice_research.squirrel.sink.Sink;
+import org.dice_research.ldcbench.sink.Sink;
+import org.dice_research.ldcbench.util.uri.CrawleableUri;
 import org.simpleframework.http.Request;
 
 public class SparqlResource extends GraphBasedResource {

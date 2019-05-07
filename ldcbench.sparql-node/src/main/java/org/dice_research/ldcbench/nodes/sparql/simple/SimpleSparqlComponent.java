@@ -1,20 +1,15 @@
 package org.dice_research.ldcbench.nodes.sparql.simple;
 
 import java.io.IOException;
-import java.net.URI;
-import java.util.List;
 
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
-import org.dice_research.ldcbench.nodes.http.simple.GraphBasedResource;
 import org.dice_research.ldcbench.nodes.sparql.SparqlResource;
 import org.dice_research.ldcbench.rdf.UriHelper;
-import org.dice_research.squirrel.data.uri.CrawleableUri;
-import org.dice_research.squirrel.sink.Sink;
-import org.dice_research.squirrel.sink.impl.sparql.SparqlBasedSink;
+import org.dice_research.ldcbench.sink.Sink;
+import org.dice_research.ldcbench.sink.SparqlBasedSink;
 import org.hobbit.core.components.Component;
-import org.simpleframework.http.core.Container;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

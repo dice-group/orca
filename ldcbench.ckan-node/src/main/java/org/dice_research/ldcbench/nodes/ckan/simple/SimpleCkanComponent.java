@@ -71,6 +71,9 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 	
 
 	public static void main(String[] args) {
+	    
+	    new PostgresCkanDAO("localhost").insertData();
+	    
 		CkanDAO ckanDao = new CkanDAO(new CheckedCkanClient("http://localhost:80", Constants.TOKEN_API));
 	
 		CkanDatasetBase ds = new CkanDatasetBase();
