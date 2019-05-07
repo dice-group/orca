@@ -51,7 +51,7 @@ public class DataGenerator extends AbstractDataGenerator {
 
     private static final Class<DumbSerializer> serializerClass = DumbSerializer.class;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataGenerator.class);
+    private Logger LOGGER;
 
     private int generatorId = -1;
 
@@ -92,7 +92,7 @@ public class DataGenerator extends AbstractDataGenerator {
             @Override
             public void handleNodeGraph(int senderId, Graph g) {
                 nodeGraph = g;
-                LOGGER.info("Got the node graph");
+                LOGGER.info("Got the node graph.");
                 nodeGraphReceivedMutex.release();
             }
 
@@ -166,13 +166,16 @@ public class DataGenerator extends AbstractDataGenerator {
         super.init();
 
         generatorId = getGeneratorId();
-        seed = EnvVariables.getLong(ENV_SEED_KEY);
         type = Types.valueOf(EnvVariables.getString(ENV_TYPE_KEY));
+        LOGGER = LoggerFactory.getLogger(DataGenerator.class + "#" + (type == Types.NODE_GRAPH_GENERATOR ? "nodeGraph" : "rdfGraph" + generatorId));
+
+        seed = EnvVariables.getLong(ENV_SEED_KEY);
         numberOfNodes = EnvVariables.getInt(ENV_NUMBER_OF_NODES_KEY, 0);
         avgDegree = Double.parseDouble(EnvVariables.getString(ENV_AVERAGE_DEGREE_KEY));
         numberOfEdges = EnvVariables.getInt(ENV_NUMBER_OF_EDGES_KEY, 0);
 
-        LOGGER.info("Seed: {}", seed);
+        LOGGER.info("Seed: {}; number of nodes: {}, average degree: {}, number of edges: {}",
+                seed, numberOfNodes, avgDegree, numberOfEdges);
 
         // BenchmarkController and DataGenerators communication
         dataGeneratorsExchange = EnvVariables.getString(ENV_DATAGENERATOR_EXCHANGE_KEY);
@@ -189,11 +192,12 @@ public class DataGenerator extends AbstractDataGenerator {
             ConsumeDataGeneratorsExchange();
         }
 
-        LOGGER.info("DataGenerator initialized (ID: {}, type: {})", generatorId, type);
+        LOGGER.info("Initialized.");
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
-            LOGGER.debug("Waiting for all generators to be ready...");
+            LOGGER.debug("Waiting for all other generators to be ready...");
             dataGeneratorsReady.acquire(numberOfNodes);
+            LOGGER.debug("All other generators are ready.");
         } else {
             sendToCmdQueue(ApiConstants.DATAGENERATOR_READY_SIGNAL);
         }
@@ -251,19 +255,19 @@ public class DataGenerator extends AbstractDataGenerator {
             rdfMetadata = Arrays.stream(nodeGraph.outgoingEdgeTargets(nodeId)).boxed().collect(HashMap::new,
                     (m, v) -> m.put(v, null), HashMap::putAll);
 
-            LOGGER.info("Waiting for {} rdf graphs relevant to this node... ({})", rdfMetadata.size(), rdfMetadata.keySet());
+            LOGGER.info("Waiting for {} rdf graphs relevant to this node... (graphs: {})", rdfMetadata.size(), rdfMetadata.keySet());
             nodeGraphProcessedMutex.release(nodeGraph.getNumberOfNodes() - 1);
             targetMetadataReceivedSemaphore.acquire(rdfMetadata.size());
 
-            LOGGER.info("Got all relevant rdf graphs", generatorId);
+            LOGGER.info("Got all relevant rdf graphs.", generatorId);
             addInterlinks(graph);
 
             // Send the final graph data.
-            LOGGER.info("Sending the final graph data...");
+            LOGGER.info("Sending the final rdf graph data...");
             sendFinalGraph(graph);
         }
 
-        LOGGER.debug("Generator {}: Generation done.", generatorId);
+        LOGGER.debug("Generation done.", generatorId);
     }
 
     @Override

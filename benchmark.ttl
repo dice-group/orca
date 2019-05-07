@@ -71,6 +71,13 @@
   rdfs:range xsd:float;
   hobbit:defaultValue "1"^^xsd:float .
 
+:sparqlNodeWeight a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Weight of SPARQL node occurrence"@en;
+  rdfs:comment "0 would mean no such nodes. Otherwise at least one node would be created."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:float;
+  hobbit:defaultValue "1"^^xsd:float .
+
 :triplesEvaluated a hobbit:Parameter ;
   rdfs:label "Triples evaluated"@en;
   rdfs:comment "The number of triples checked during the evaluation."@en;

@@ -80,12 +80,13 @@ public class BenchmarkController extends AbstractBenchmarkController {
         String variables[] = envVariables != null ? Arrays.copyOf(envVariables, envVariables.length + 1)
                 : new String[1];
 
-        variables[variables.length - 1] = Constants.GENERATOR_ID_KEY + "=" + dataGenContainerIds.size();
+        variables[variables.length - 1] = Constants.GENERATOR_ID_KEY + "=" + (dataGenContainers.size() + 1);
         Future<String> container = createContainerAsync(generatorImageName, Constants.CONTAINER_TYPE_BENCHMARK, variables);
         dataGenContainers.add(container);
     }
 
     private void waitForDataGenToBeCreated() throws InterruptedException, ExecutionException {
+        LOGGER.info("Waiting for {} Data Generators to be created.", dataGenContainers.size());
         for (Future<String> container : dataGenContainers) {
             String containerId = container.get();
             if (containerId != null) {
@@ -99,6 +100,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     }
 
     private void waitForNodesToBeCreated() throws InterruptedException, ExecutionException {
+        LOGGER.info("Waiting for {} nodes to be created.", nodeContainers.size());
         for (int i = 0; i < nodeContainers.size(); i++) {
             String containerId = nodeContainers.get(i).get();
             if (containerId != null) {
@@ -244,6 +246,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         SeedGenerator seedGenerator = new SeedGenerator(seed);
 
         // Node graph generator
+        LOGGER.info("Creating node graph generator...");
         envVariables = new String[] { DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
                 DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(0),
                 DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
@@ -257,7 +260,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         // RDF graph generators
         for (int i = 0; i < nodesAmount; i++) {
+            LOGGER.info("Requesting creation of {}/{} RDF graph generator...", i+1, nodesAmount);
             envVariables = ArrayUtils.addAll(new String[] {
+                    DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + 0, // HOBBIT SDK workaround
                     Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
                     DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.RDF_GRAPH_GENERATOR,
                     DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(1 + i),
@@ -267,7 +272,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
             }, nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree, triplesPerNode));
             createDataGenerator(DATAGEN_IMAGE_NAME, envVariables);
             // FIXME: HOBBIT SDK workaround (setting environment for "containers")
-            Thread.sleep(2000);
+            if (sdk) {
+                Thread.sleep(2000);
+            }
         }
 
         waitForDataGenToBeCreated();
