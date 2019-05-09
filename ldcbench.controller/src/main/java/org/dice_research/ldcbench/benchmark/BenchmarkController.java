@@ -57,7 +57,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private boolean sdk;
     private boolean dockerized;
 
-    private String sparqlEndpoint;
+    private String sparqlUrl;
     private String[] sparqlCredentials;
     private String seedURI;
 
@@ -231,7 +231,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         createEvaluationModule(EVALMODULE_IMAGE_NAME,
                 new String[] { ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
-                        ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=http://" + sparqlEndpoint + ":8890/sparql" });
+                        ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=" + sparqlUrl });
 
         LOGGER.debug("Waiting for all cloud nodes and evaluation module to be ready...");
         nodesReadySemaphore.acquire(nodesAmount + 1);
@@ -290,14 +290,21 @@ public class BenchmarkController extends AbstractBenchmarkController {
     }
 
     protected void createSparqlEndpoint() {
-        sparqlEndpoint = createContainer("openlink/virtuoso-opensource-7", Constants.CONTAINER_TYPE_BENCHMARK,
-                new String[] { "DBA_PASSWORD=" + VOS_PASSWORD, "HOBBIT_SDK_PUBLISH_PORTS=8890" });
-        if(sparqlEndpoint == null) {
+        String defaultPort = "8890";
+        String exposedPort = "8889";
+        String sparqlHostname = createContainer("openlink/virtuoso-opensource-7", Constants.CONTAINER_TYPE_BENCHMARK,
+                new String[] {
+                    "DBA_PASSWORD=" + VOS_PASSWORD,
+                    "HOBBIT_SDK_PUBLISH_PORTS=" + exposedPort + ":" + defaultPort
+                });
+        if(sparqlHostname == null) {
             throw new IllegalStateException("Couldn't create SPARQL endpoint. Aborting.");
         }
+        sparqlHostname += ":" + defaultPort;
         if (!dockerized) {
-            sparqlEndpoint = "localhost";
+            sparqlHostname = "localhost:" + exposedPort;
         }
+        sparqlUrl = "http://" + sparqlHostname + "/sparql";
         sparqlCredentials = new String[] { "dba", VOS_PASSWORD };
     }
 
@@ -316,7 +323,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         LOGGER.debug("Sending information to the system...");
         systemDataSender.sendData(RabbitMQUtils.writeByteArrays(new byte[][] {
-                RabbitMQUtils.writeString("http://" + sparqlEndpoint + ":8890/sparql-auth"),
+                RabbitMQUtils.writeString(sparqlUrl),
                 RabbitMQUtils.writeString(sparqlCredentials[0]), RabbitMQUtils.writeString(sparqlCredentials[1]) }));
 
         long startTime = System.currentTimeMillis();
