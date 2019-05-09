@@ -16,6 +16,7 @@ public class Constants {
     public static final String SYSTEM_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/system-adapter";
     public static final String HTTPNODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/simple-http-node";
     public static final String CKANNODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ckan-node";
+    public static final String SPARQLNODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/sparql-node";
 
     public static final String BENCHMARK_URI = "http://project-hobbit.eu/"+PROJECT_NAME;
     public static final String SYSTEM_URI = "http://project-hobbit.eu/"+PROJECT_NAME+"/system";

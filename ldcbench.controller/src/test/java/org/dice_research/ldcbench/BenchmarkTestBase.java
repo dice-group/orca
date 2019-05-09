@@ -13,6 +13,7 @@ import org.hobbit.sdk.docker.builders.hobbit.*;
 
 import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpServerComponent;
 import org.dice_research.ldcbench.nodes.ckan.simple.SimpleCkanComponent;
+import org.dice_research.ldcbench.nodes.sparql.simple.SimpleSparqlComponent;
 import org.dice_research.ldcbench.benchmark.*;
 import org.dice_research.ldcbench.builders.*;
 import org.dice_research.ldcbench.system.SystemAdapter;
@@ -59,6 +60,7 @@ public class BenchmarkTestBase {
     EvalModuleDockerBuilder evalModuleBuilder;
     SimpleHttpNodeBuilder httpNodeBuilder;
     CkanNodeBuilder ckanNodeBuilder;
+    SparqlNodeBuilder sparqlNodeBuilder;
 
     public void init(Boolean useCachedImage) throws Exception {
 
@@ -71,6 +73,7 @@ public class BenchmarkTestBase {
         // FIXME do not build node images as part of this project
         httpNodeBuilder = new SimpleHttpNodeBuilder(new ExampleDockersBuilder(SimpleHttpServerComponent.class, HTTPNODE_IMAGE_NAME).useCachedImage(useCachedImage));
         ckanNodeBuilder = new CkanNodeBuilder(new ExampleDockersBuilder(SimpleCkanComponent.class, CKANNODE_IMAGE_NAME).useCachedImage(useCachedImage));
+        sparqlNodeBuilder = new SparqlNodeBuilder(new ExampleDockersBuilder(SimpleSparqlComponent.class, SPARQLNODE_IMAGE_NAME).useCachedImage(useCachedImage));
 
 //        benchmarkBuilder = new BenchmarkDockerBuilder(new PullBasedDockersBuilder(BENCHMARK_IMAGE_NAME));
 //        dataGeneratorBuilder = new DataGenDockerBuilder(new PullBasedDockersBuilder(DATAGEN_IMAGE_NAME));
@@ -107,6 +110,7 @@ public class BenchmarkTestBase {
         Component evalModule = new EvalModule();
         Component httpNode = new SimpleHttpServerComponent();
         Component ckanNode = new SimpleCkanComponent();
+        Component sparqlNode = new SimpleSparqlComponent();
 
         if(dockerized) {
 
@@ -116,6 +120,7 @@ public class BenchmarkTestBase {
             systemAdapter = systemAdapterBuilder.build();
             httpNode = httpNodeBuilder.build();
             ckanNode = ckanNodeBuilder.build();
+            sparqlNode = sparqlNodeBuilder.build();
         }
 
         commandQueueListener = new CommandQueueListener();
@@ -132,6 +137,7 @@ public class BenchmarkTestBase {
                         .systemAdapter(systemAdapter).systemAdapterImageName(SYSTEM_IMAGE_NAME)
                         .customContainerImage(httpNode, HTTPNODE_IMAGE_NAME)
                         .customContainerImage(ckanNode, CKANNODE_IMAGE_NAME)
+                        .customContainerImage(sparqlNode, SPARQLNODE_IMAGE_NAME)
                         //.customContainerImage(systemAdapter, DUMMY_SYSTEM_IMAGE_NAME)
                 ;
 
@@ -178,6 +184,10 @@ public class BenchmarkTestBase {
         model.add(experimentResource, LDCBench.triplesPerNode, "100", XSDinteger);
         model.add(experimentResource, LDCBench.averageNodeDelay, "5000", XSDlong);
         model.add(experimentResource, LDCBench.averageRdfGraphDegree, "2", XSDinteger);
+
+        // Does not work well with SDK.
+        model.add(experimentResource, LDCBench.sparqlNodeWeight, "0", XSDfloat);
+
         return model;
     }
 

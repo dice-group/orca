@@ -52,6 +52,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private Class<?>[] nodeManagerClasses = {
         DereferencingHttpNodeManager.class,
         CkanNodeManager.class,
+        SparqlNodeManager.class,
     };
 
     private boolean sdk;

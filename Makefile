@@ -15,6 +15,7 @@ push-images:
 	docker push $(IMAGE_BASE)system-adapter
 	docker push $(IMAGE_BASE)simple-http-node
 	docker push $(IMAGE_BASE)ckan-node
+	docker push $(IMAGE_BASE)sparql-node
 
 add-hobbit-remote:
 	git remote |grep hobbit ||git remote --verbose add hobbit https://git.project-hobbit.eu/ldcbench/ldcbench
