@@ -2,6 +2,7 @@ package org.dice_research.ldcbench.nodes.sparql.simple;
 
 import java.io.IOException;
 
+import static org.hobbit.core.Constants.CONTAINER_TYPE_BENCHMARK;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
@@ -36,9 +37,9 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
 	        // TODO Auto-generated method stub
 	        super.init();
 	        
-	        sparqlContainer = createContainer(SPARQL_IMG, new String[] { "DBA_PASSWORD="+ApiConstants.SPARQL_PASSWORD });
 	        
 	        
+	        sparqlContainer = createContainer(SPARQL_IMG, CONTAINER_TYPE_BENCHMARK, new String[] { "DBA_PASSWORD="+ApiConstants.SPARQL_PASSWORD });
 	        sink = SparqlBasedSink.create("http://"+ sparqlContainer + ":8890/sparql-auth",
 	                ApiConstants.SPARQL_USER,ApiConstants.SPARQL_PASSWORD);
 	        
