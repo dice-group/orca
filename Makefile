@@ -1,11 +1,14 @@
 IMAGE_BASE = git.project-hobbit.eu:4567/ldcbench/ldcbench/
 
-test:
+test: dockerbuild-images
 	mvn verify
 
 publish: images push-images push-hobbit
 
-images:
+dockerbuild-images:
+	docker build --tag git.project-hobbit.eu:4567/ldcbench/ldcbench/sparql-node ldcbench.sparql-node
+
+images: dockerbuild-images
 	mvn -DfailIfNoTests=false -Dtest=ImageBuilder package
 
 push-images:
@@ -26,5 +29,5 @@ push-hobbit: add-hobbit-remote
 test-benchmark:
 	mvn -DfailIfNoTests=false -Dtest=BenchmarkTest#checkHealth test
 
-test-benchmark-dockerized:
+test-benchmark-dockerized: dockerbuild-images
 	mvn -DfailIfNoTests=false -Dtest=ImageBuilder#buildImages verify

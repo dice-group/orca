@@ -19,7 +19,6 @@ public class ImageBuilder extends BenchmarkTestBase {
         builder.addTask(evalModuleBuilder);
         builder.addTask(httpNodeBuilder);
         builder.addTask(ckanNodeBuilder);
-        builder.addTask(sparqlNodeBuilder);
         builder.build();
     }
 }
