@@ -165,7 +165,9 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 	
 	
 	private void addDataSources(String[] domainNames) {
+		LOGGER.info("Adding Ckan Datasources");
 		for(String domain: domainNames) {
+			LOGGER.info(" -- Adding " + domain);
 			CkanDatasetBase dataset = new CkanDatasetBase();
 			dataset.setTitle(domain);
 			dataset.setName(domain);

@@ -110,7 +110,7 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
             resource = new SparqlResource(domainId, domainNames,
 	                graphs.toArray(new Graph[graphs.size()]), (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
 	                        && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)), new String[] {},sink);
-            resource.storeGraphs(graphs,sparqlContainer);
+            resource.storeGraphs(sparqlContainer);
 //            addDataSources(domainNames);
         } catch (Exception e) {
             LOGGER.error("Couldn't parse node metadata received from benchmark controller.", e);

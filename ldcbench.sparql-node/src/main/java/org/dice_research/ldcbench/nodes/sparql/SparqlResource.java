@@ -4,13 +4,20 @@ import java.net.URI;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.apache.jena.graph.Triple;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.http.simple.GraphBasedResource;
+import org.dice_research.ldcbench.nodes.sparql.simple.SimpleSparqlComponent;
 import org.dice_research.ldcbench.sink.Sink;
 import org.dice_research.ldcbench.util.uri.CrawleableUri;
 import org.simpleframework.http.Request;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SparqlResource extends GraphBasedResource {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(SparqlResource.class);
+
     
  private Sink sink;
 
@@ -21,7 +28,7 @@ public class SparqlResource extends GraphBasedResource {
     }
 
 
-    public void storeGraphs(List<Graph> graphs, String target) throws Exception {
+    public void storeGraphs(String target) throws Exception {
 
         URI uri = null;
 
@@ -30,8 +37,11 @@ public class SparqlResource extends GraphBasedResource {
             sink.openSinkForUri(new CrawleableUri(uri));
             int ids[] = parseIds(target);
             TripleIterator iterator = new TripleIterator(this, ids[0], ids[1]);
+        	LOGGER.info("Starting storing triples for sparqlResource");
             while (iterator.hasNext()) {
-                sink.addTriple(new CrawleableUri(uri), iterator.next());
+            	Triple t = iterator.next();
+            	LOGGER.info("Triple: " + t.toString());
+                sink.addTriple(new CrawleableUri(uri), t);
                 iterator.next();  
             }
         } catch (Exception e) {
