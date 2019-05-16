@@ -305,7 +305,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         if (!dockerized) {
             sparqlHostname = "localhost:" + exposedPort;
         }
-        sparqlUrl = "http://" + sparqlHostname + "/sparql";
+        sparqlUrl = "http://" + sparqlHostname + "/sparql-auth";
         sparqlCredentials = new String[] { "dba", VOS_PASSWORD };
     }
 
