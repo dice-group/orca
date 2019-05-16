@@ -59,6 +59,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private boolean dockerized;
 
     private String sparqlUrl;
+    private String sparqlUrlAuth;
     private String[] sparqlCredentials;
     private String seedURI;
 
@@ -305,7 +306,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
         if (!dockerized) {
             sparqlHostname = "localhost:" + exposedPort;
         }
-        sparqlUrl = "http://" + sparqlHostname + "/sparql-auth";
+        sparqlUrl = "http://" + sparqlHostname + "/sparql";
+        sparqlUrlAuth = sparqlUrl + "-auth";
         sparqlCredentials = new String[] { "dba", VOS_PASSWORD };
     }
 
@@ -324,7 +326,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         LOGGER.debug("Sending information to the system...");
         systemDataSender.sendData(RabbitMQUtils.writeByteArrays(new byte[][] {
-                RabbitMQUtils.writeString(sparqlUrl),
+                RabbitMQUtils.writeString(sparqlUrlAuth),
                 RabbitMQUtils.writeString(sparqlCredentials[0]), RabbitMQUtils.writeString(sparqlCredentials[1]) }));
 
         long startTime = System.currentTimeMillis();
