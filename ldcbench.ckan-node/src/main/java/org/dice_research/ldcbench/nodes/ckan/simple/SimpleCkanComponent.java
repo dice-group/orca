@@ -36,9 +36,9 @@ import eu.trentorise.opendata.jackan.model.CkanDatasetBase;
 import eu.trentorise.opendata.jackan.model.CkanOrganization;
 
 /**
- * 
+ *
  * Ckan Node
- * 
+ *
  * @author Geraldo de Souza Junior
  *
  */
@@ -61,32 +61,32 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 	protected String redisContainer = null;
 	protected String ckanContainer = null;
 	protected String domainNames[];
-	
-	
+
+
 	private static final String ORGANIZATION = "diceupb";
 	private static final String AUTHOR = "ldcbench";
 
 	private CkanDAO ckanDao;
 	private List<CkanDataset> ckanDataSets = new ArrayList<CkanDataset>();
-	
+
 
 	public static void main(String[] args) {
-	    
+
 	    new PostgresCkanDAO("localhost").insertData();
-	    
+
 		CkanDAO ckanDao = new CkanDAO(new CheckedCkanClient("http://localhost:80", Constants.TOKEN_API));
-	
+
 		CkanDatasetBase ds = new CkanDatasetBase();
 		ds.setName("dataset-test");
 		ds.setTitle("dataset-test");
 		ds.setOwnerOrg(ORGANIZATION);
-		
+
 		ckanDao.insertDataSource(ds);
 		ckanDao.deleteDataSource("dataset-test");
-		
+
 	}
 
-	
+
 
 	@Override
 	public void init() throws Exception {
@@ -150,7 +150,7 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 		CheckedCkanClient client =
 				new CheckedCkanClient("http://"+(dockerized ? ckanContainer : "localhost")+":5000", Constants.ADMIN_TOKEN);
 		ckanDao = new CkanDAO(client);
-		
+
 		CkanOrganization organization = new CkanOrganization();
 		organization.setName(ORGANIZATION);
 		ckanDao.insertOrganization(organization);
@@ -162,8 +162,8 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
         domainNamesReceived.acquire();
         dataGenerationFinished.acquire();
 	}
-	
-	
+
+
 	private void addDataSources(String[] domainNames) {
 		LOGGER.info("Adding Ckan Datasources");
 		for(String domain: domainNames) {
@@ -176,8 +176,8 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 			ckanDataSets.add(ckanDao.insertDataSource(dataset));
 		}
 	}
-	
-	
+
+
 	 protected void handleBCMessage(byte[] body) {
 	        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(body))) {
 	            NodeMetadata[] nodeMetadata = (NodeMetadata[]) ois.readObject();
@@ -243,9 +243,9 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 		} else {
 			LOGGER.debug("There is no Ckan to stop.");
 		}
-		
+
 		//delete all the datasets
-		
+
 		for(CkanDataset dataset: ckanDataSets) {
 			ckanDao.deleteDataSource(dataset.getName());
 		}
