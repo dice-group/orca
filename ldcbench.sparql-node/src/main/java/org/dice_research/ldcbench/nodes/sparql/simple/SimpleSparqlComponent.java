@@ -26,9 +26,9 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
 /**
- * 
+ *
  * Sparql Node
- * 
+ *
  * @author Geraldo de Souza Junior
  *
  */
@@ -36,21 +36,21 @@ import com.rabbitmq.client.Envelope;
 public class SimpleSparqlComponent extends AbstractNodeComponent implements Component {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleSparqlComponent.class);
-	
+
 	protected Channel bcBroadcastChannel;
 	protected String sparqlContainer = null;
 	protected SparqlResource resource;
 
 	private static final String SPARQL_IMG = "openlink/virtuoso-opensource-7:latest";
-	
+
 	private Sink sink;
-	
+
 	@Override
 	    public void init() throws Exception {
 	        // TODO Auto-generated method stub
 	        super.init();
-	        
-	        
+
+
 	     // initialize exchange with BC
 			String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);
 			bcBroadcastChannel = cmdQueueFactory.getConnection().createChannel();
@@ -70,16 +70,16 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
 				}
 			};
 			bcBroadcastChannel.basicConsume(queueName, true, consumer);
-	        
+
 	        sparqlContainer = createContainer(SPARQL_IMG, CONTAINER_TYPE_BENCHMARK, new String[] { "DBA_PASSWORD="+ApiConstants.SPARQL_PASSWORD });
 	        sink = SparqlBasedSink.create("http://"+ sparqlContainer + ":8890/sparql-auth",
 	                ApiConstants.SPARQL_USER,ApiConstants.SPARQL_PASSWORD);
-	        
-	        
+
+
 	        LOGGER.info("Sparql server initialized.");
-	        
-	        
-	        
+
+
+
 //	        resource.storeGraphs(graphs,sparqlContainer);
         
 	        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
@@ -87,8 +87,8 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
 	        domainNamesReceived.acquire();
 	        dataGenerationFinished.acquire();
 	    }
-	
-	
+
+
 	@Override
 	public void receiveCommand(byte command, byte[] data) {
 		switch (command) {
@@ -98,8 +98,8 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
 		}
 
 	}
-	
-	
+
+
 	protected void handleBCMessage(byte[] body) {
         try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(body))) {
             NodeMetadata[] nodeMetadata = (NodeMetadata[]) ois.readObject();
@@ -121,15 +121,15 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
         // get stuck and wait forever for an additional message.
         domainNamesReceived.release();
     }
-	
+
 	@Override
 	public void run() throws Exception {
 		synchronized (this) {
 			this.wait();
 		}
 	}
-	
-    
+
+
     @Override
     public void close() throws IOException {
         if (sparqlContainer != null) {
