@@ -63,8 +63,6 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 	protected String domainNames[];
 
 
-	private static final String ORGANIZATION = "diceupb";
-	private static final String AUTHOR = "ldcbench";
 
 	private CkanDAO ckanDao;
 	private List<CkanDataset> ckanDataSets = new ArrayList<CkanDataset>();
@@ -72,16 +70,16 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 
 	public static void main(String[] args) {
 
-	    new PostgresCkanDAO("localhost").insertData();
+//	    new PostgresCkanDAO("localhost").insertData();
 
 		CkanDAO ckanDao = new CkanDAO(new CheckedCkanClient("http://localhost:80", Constants.TOKEN_API));
 
 		CkanDatasetBase ds = new CkanDatasetBase();
 		ds.setName("dataset-test");
 		ds.setTitle("dataset-test");
-		ds.setOwnerOrg(ORGANIZATION);
+		ds.setOwnerOrg(Constants.ORGANIZATION);
 
-		ckanDao.insertDataSource(ds);
+//		ckanDao.insertDataSource(ds);
 		ckanDao.deleteDataSource("dataset-test");
 
 	}
@@ -125,8 +123,8 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 		LOGGER.warn("-- > Initializing Ckan Containers");
 
 		postGresContainer = createContainer(Constants.POSTGRES, CONTAINER_TYPE_BENCHMARK, new String[] { "POSTGRES_PASSWORD=ckan",
-				"POSTGRES_USER=ckan", "PGDATA=/var/lib/postgresql/data", "POSTGRES_DB=ckan",
-				"HOBBIT_SDK_PUBLISH_PORTS=5432"});
+				"POSTGRES_USER=ckan", "PGDATA=/var/postgresql/data", "POSTGRES_DB=ckan"
+				});
 
 		solrContainer = createContainer(Constants.SOLR, CONTAINER_TYPE_BENCHMARK, null);
 		redisContainer = createContainer(Constants.REDIS, CONTAINER_TYPE_BENCHMARK, null);
@@ -152,7 +150,7 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 		ckanDao = new CkanDAO(client);
 
 		CkanOrganization organization = new CkanOrganization();
-		organization.setName(ORGANIZATION);
+		organization.setName(Constants.ORGANIZATION);
 		ckanDao.insertOrganization(organization);
 
         // Inform the BC that this node is ready
@@ -171,8 +169,8 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 			CkanDatasetBase dataset = new CkanDatasetBase();
 			dataset.setTitle(domain);
 			dataset.setName(domain);
-			dataset.setOwnerOrg(ORGANIZATION);
-			dataset.setAuthor(AUTHOR);
+			dataset.setOwnerOrg(Constants.ORGANIZATION);
+			dataset.setAuthor(Constants.AUTHOR);
 			ckanDataSets.add(ckanDao.insertDataSource(dataset));
 		}
 	}
