@@ -149,9 +149,9 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 				new CheckedCkanClient("http://"+(dockerized ? ckanContainer : "localhost")+":5000", Constants.ADMIN_TOKEN);
 		ckanDao = new CkanDAO(client);
 
-		CkanOrganization organization = new CkanOrganization();
-		organization.setName(Constants.ORGANIZATION);
-		ckanDao.insertOrganization(organization);
+//		CkanOrganization organization = new CkanOrganization();
+//		organization.setName(Constants.ORGANIZATION);
+//		ckanDao.insertOrganization(organization);
 
         // Inform the BC that this node is ready
         sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
