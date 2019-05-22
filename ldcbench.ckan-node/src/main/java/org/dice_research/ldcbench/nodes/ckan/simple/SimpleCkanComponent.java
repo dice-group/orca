@@ -72,7 +72,7 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 
 //	    new PostgresCkanDAO("localhost").insertData();
 
-		CkanDAO ckanDao = new CkanDAO(new CheckedCkanClient("http://localhost:80", Constants.TOKEN_API));
+		CkanDAO ckanDao = new CkanDAO(new CheckedCkanClient("http://localhost:80", Constants.CKAN_CLIENT_TOKEN));
 
 		CkanDatasetBase ds = new CkanDatasetBase();
 		ds.setName("dataset-test");
@@ -146,7 +146,7 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 		LOGGER.warn("-- > Ckan Containers Initialized");
 
 		CheckedCkanClient client =
-				new CheckedCkanClient("http://"+(dockerized ? ckanContainer : "localhost")+":5000", Constants.ADMIN_TOKEN);
+				new CheckedCkanClient("http://"+(dockerized ? ckanContainer : "localhost")+":5000", Constants.CKAN_CLIENT_TOKEN);
 		ckanDao = new CkanDAO(client);
 
 //		CkanOrganization organization = new CkanOrganization();

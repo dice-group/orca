@@ -2,7 +2,6 @@ package org.dice_research.ldcbench.nodes.ckan;
 
 public class Constants {
 
-	public static final String TOKEN_API = "951f4046-7cf7-42c1-aa7e-b468f3288ead";
 	public static final String ORGANIZATION = "dice-group";
 	public static final String AUTHOR = "ldcbench";
 
@@ -19,6 +18,6 @@ public class Constants {
 	public static final String CKAN_RECAPTCHA_PUBLICKEY = "";
 	public static final String CKAN_RECAPTCHA_PRIVATEKEY = "";
 
-	public static final String ADMIN_TOKEN = "77564c39-4f3f-443b-96b1-29baabb93769";
+	public static final String CKAN_CLIENT_TOKEN = "951f4046-7cf7-42c1-aa7e-b468f3288ead";
 
 }
