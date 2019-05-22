@@ -168,7 +168,7 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 			LOGGER.info(" -- Adding " + domain);
 			CkanDatasetBase dataset = new CkanDatasetBase();
 			dataset.setTitle(domain);
-			dataset.setName(domain);
+			dataset.setName(domain.replaceAll("[^A-Za-z0-9_-]", "_"));
 			dataset.setOwnerOrg(Constants.ORGANIZATION);
 			dataset.setAuthor(Constants.AUTHOR);
 			ckanDataSets.add(ckanDao.insertDataSource(dataset));
