@@ -128,13 +128,13 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 		System.out.println("Adding other nodes: " + (N - m) +" P1:" + P1);			
 		
 		double biasedCoin=((m/2.0-1)/(m-1));
-		long ts10k=0;
+		long ts10k = 0;
 		int cntE=indexToEdgeList;
 		List<Connections> clist;
-		for (int i = m + 1; i <= N; i+=nCores) {
+		for (int i = m + 1; i <= N; i+=nCores) {//index to node
 			long ts1=System.currentTimeMillis();
 			
-			int m1= 1+ generator.nextInt(2*m);
+			int m1= 1+ generator.nextInt(2*m);// to use uniform distribution from 1 to 2m
 			if(m1 >= i) m1=i-1;
 			if(m1 > 2*m) m1=2*m;
 			int  m2=m1;
@@ -159,7 +159,7 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 				cntE=nE;
 				}
 
-				int vin_ix = generator.nextInt(m1) ;
+				int vin_ix = generator.nextInt(m1) ;//uniform distribution of(m)
 				if (vin_ix == m1)
 					vin_ix--;	
 

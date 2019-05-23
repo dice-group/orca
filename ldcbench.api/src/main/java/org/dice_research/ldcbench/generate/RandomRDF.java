@@ -237,7 +237,9 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 			long t_gbuilder = System.currentTimeMillis();
 			System.out.println("time Barabsi =" + ((t_barabasi-t0)/1000.0) +" time formatting = " + ((t_gbuilder-t_barabasi)/1000.0) + " sec");			
 		}
-
+		
+/*-----------------------------------------------------------------------*/
+		
 		protected void getBarabasiRDFum(int N, double degree, long seed, GraphBuilder builder) {
 			/* nodes are numbered from 1 to N */
 	        /* uniform distribution for in/out typing*/
@@ -390,6 +392,7 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 		protected void getBarabasiRDFumChkRep(int N, double degree, long seed, GraphBuilder builder) {
 			/* nodes are numbered from 1 to N */
 			/* TreeSet is faster practically than HashSet */
+			/* overall performance worse than using sampling*/
 			
 			int indexToEdgeList ;// index to edge list
 			long t0 = System.currentTimeMillis();
