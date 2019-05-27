@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import static org.hobbit.core.Constants.CONTAINER_TYPE_BENCHMARK;
 import org.dice_research.ldcbench.ApiConstants;
-import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
 import org.dice_research.ldcbench.nodes.sparql.SparqlResource;
