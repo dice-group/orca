@@ -57,6 +57,8 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
         } catch (Exception e) {
             LOGGER.error("Couldn't handle node metadata received from benchmark controller.", e);
         }
+
+        graphs = null;
     }
 
     @Override
