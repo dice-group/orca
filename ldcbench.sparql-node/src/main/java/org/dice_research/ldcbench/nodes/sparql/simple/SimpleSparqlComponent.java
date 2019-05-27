@@ -36,10 +36,7 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
     private Sink sink;
 
     @Override
-    public void init() throws Exception {
-        // TODO Auto-generated method stub
-        super.init();
-
+    public void initBeforeDataGeneration() throws Exception {
         sparqlContainer = createContainer(SPARQL_IMG, CONTAINER_TYPE_BENCHMARK,
                 new String[] { "DBA_PASSWORD=" + ApiConstants.SPARQL_PASSWORD });
         sink = SparqlBasedSink.create("http://" + sparqlContainer + ":8890/sparql-auth", ApiConstants.SPARQL_USER,
@@ -48,9 +45,7 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
     }
 
     @Override
-    protected void handleBCMessage(NodeMetadata[] nodeMetadata) {
-        super.handleBCMessage(nodeMetadata);
-
+    public void initAfterDataGeneration() throws Exception {
         try {
             resource = new SparqlResource(domainId, domainNames, graphs.toArray(new Graph[graphs.size()]),
                 (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)

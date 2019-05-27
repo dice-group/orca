@@ -19,7 +19,7 @@ import org.hobbit.utils.EnvVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AbstractNodeComponent extends AbstractCommandReceivingComponent {
+abstract public class AbstractNodeComponent extends AbstractCommandReceivingComponent {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractNodeComponent.class);
 
@@ -57,6 +57,8 @@ public class AbstractNodeComponent extends AbstractCommandReceivingComponent {
         Thread receiverThread = new Thread(graphHandler);
         receiverThread.start();
 
+        initBeforeDataGeneration();
+
         sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
 
         // Wait for the data generation to finish
@@ -75,7 +77,13 @@ public class AbstractNodeComponent extends AbstractCommandReceivingComponent {
         if (domainNames == null) {
             throw new IllegalStateException("Didn't received the domain names from the benchmark controller.");
         }
+
+        initAfterDataGeneration();
     }
+
+    abstract public void initBeforeDataGeneration() throws Exception;
+
+    abstract public void initAfterDataGeneration() throws Exception;
 
     @Override
     public void receiveCommand(byte command, byte[] data) {

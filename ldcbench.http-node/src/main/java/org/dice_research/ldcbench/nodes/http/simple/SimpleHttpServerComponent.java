@@ -33,9 +33,10 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
     protected Connection connection;
 
     @Override
-    public void init() throws Exception {
-        super.init();
+    public void initBeforeDataGeneration() throws Exception {}
 
+    @Override
+    public void initAfterDataGeneration() throws Exception {
         // Create the container based on the information that has been received
         container = new CrawleableResourceContainer(new GraphBasedResource(domainId, domainNames,
                 graphs.toArray(new Graph[graphs.size()]), (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
