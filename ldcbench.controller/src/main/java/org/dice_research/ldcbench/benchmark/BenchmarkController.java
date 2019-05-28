@@ -297,6 +297,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         String sparqlHostname = createContainer("openlink/virtuoso-opensource-7", Constants.CONTAINER_TYPE_BENCHMARK,
                 new String[] {
                     "DBA_PASSWORD=" + VOS_PASSWORD,
+                    "HOBBIT_SDK_CONTAINER_NAME=benchmark-sparql",
                     "HOBBIT_SDK_PUBLISH_PORTS=" + exposedPort + ":" + defaultPort
                 });
         if(sparqlHostname == null) {
