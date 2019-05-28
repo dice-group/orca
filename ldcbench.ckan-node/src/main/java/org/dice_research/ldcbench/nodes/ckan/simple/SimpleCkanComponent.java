@@ -126,6 +126,10 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 				"POSTGRES_USER=ckan", "PGDATA=/var/postgresql/data", "POSTGRES_DB=ckan"
 				});
 
+        // FIXME
+        LOGGER.info("Waiting to allow Postgres to initialize...");
+        Thread.sleep(60000);
+
 		solrContainer = createContainer(Constants.SOLR, CONTAINER_TYPE_BENCHMARK, null);
 		redisContainer = createContainer(Constants.REDIS, CONTAINER_TYPE_BENCHMARK, null);
 		ckanContainer = createContainer(Constants.CKAN, CONTAINER_TYPE_BENCHMARK,
@@ -139,7 +143,9 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
                         "HOBBIT_SDK_PUBLISH_PORTS=5000",
         });
 
-		Thread.sleep(20000);
+        // FIXME
+        LOGGER.info("Waiting to allow CKAN to initialize...");
+        Thread.sleep(60000);
 
         new PostgresCkanDAO(dockerized ? postGresContainer : "localhost").insertData();
 
