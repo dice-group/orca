@@ -170,7 +170,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         String[] envVariables;
         LOGGER.debug("Starting all cloud nodes...");
         ArrayList<AbstractNodeManager> nodeManagers = new ArrayList<>();
-        float nodeWeight[] = new float[nodesAmount];
+        float nodeWeight[] = new float[nodeManagerClasses.length];
         float totalNodeWeight = 0;
         for (int i = 0; i < nodeManagerClasses.length; i++) {
             Property param = (Property) nodeManagerClasses[i].getDeclaredMethod("getBenchmarkParameter").invoke(null);
