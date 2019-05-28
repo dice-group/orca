@@ -24,7 +24,6 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractNodeComponent.class);
 
     protected Semaphore dataGenerationFinished = new Semaphore(0);
-    protected Semaphore domainNamesReceived = new Semaphore(0);
     protected int domainId;
     protected DataReceiver receiver;
     protected ObjectStreamFanoutExchangeConsumer<NodeMetadata[]> bcBroadcastConsumer;
@@ -105,9 +104,6 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
             domainNames = null;
         }
         LOGGER.debug("Got domain names: {}", Arrays.toString(domainNames));
-        // In any case, we should release the semaphore. Otherwise, this component would
-        // get stuck and wait forever for an additional message.
-        domainNamesReceived.release();
     }
 
     @Override

@@ -50,7 +50,6 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
     private boolean dockerized;
 
 	protected Semaphore dataGenerationFinished = new Semaphore(0);
-	protected Semaphore domainNamesReceived = new Semaphore(0);
 
 	protected Channel bcBroadcastChannel;
     protected DataReceiver receiver;
@@ -163,7 +162,6 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
         sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
 
         // Wait for the data generation to finish
-        domainNamesReceived.acquire();
         dataGenerationFinished.acquire();
 	}
 
@@ -195,9 +193,6 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 	            domainNames = null;
                 throw new IllegalStateException("Didn't received the domain names from the benchmark controller.");
 	        }
-	        // In any case, we should release the semaphore. Otherwise, this component would
-	        // get stuck and wait forever for an additional message.
-	        domainNamesReceived.release();
 	    }
 
 	@Override

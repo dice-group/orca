@@ -56,7 +56,6 @@ public class EvalModule extends AbstractCommandReceivingComponent {
 
     protected String graphFiles[];
     protected String domainNames[];
-    protected Semaphore domainNamesReceived = new Semaphore(0);
     protected long startTimeStamp;
     protected long endTimeStamp;
     protected Timer timer = null;
@@ -112,9 +111,6 @@ public class EvalModule extends AbstractCommandReceivingComponent {
             domainNames = null;
         }
         LOGGER.debug("Got domain names: {}", Arrays.toString(domainNames));
-        // In any case, we should release the semaphore. Otherwise, this component would
-        // get stuck and wait forever for an additional message.
-        domainNamesReceived.release();
     }
 
     @Override
