@@ -95,7 +95,7 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         };
 
         // Signal to the BC that we are ready to receive
-        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
+        sendToCmdQueue(ApiConstants.NODE_INIT_SIGNAL);
 
         LOGGER.info("Evaluation module initialized.");
     }

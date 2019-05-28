@@ -58,7 +58,8 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
 
         initBeforeDataGeneration();
 
-        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
+        LOGGER.debug("{} initialized.", this);
+        sendToCmdQueue(ApiConstants.NODE_INIT_SIGNAL);
 
         // Wait for the data generation to finish
         dataGenerationFinished.acquire();
@@ -78,6 +79,9 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
         }
 
         initAfterDataGeneration();
+
+        LOGGER.debug("{} is ready.", this);
+        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
     }
 
     abstract public void initBeforeDataGeneration() throws Exception;
@@ -120,5 +124,10 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
         synchronized (this) {
             this.wait();
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Node " + cloudNodeId + " (" + getClass().getName() + ")";
     }
 }

@@ -57,12 +57,14 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     private boolean sdk;
     private boolean dockerized;
+    private int nodesAmount;
 
     private String sparqlUrl;
     private String sparqlUrlAuth;
     private String[] sparqlCredentials;
     private String seedURI;
 
+    private Semaphore nodesInitSemaphore = new Semaphore(0);
     private Semaphore nodesReadySemaphore = new Semaphore(0);
     private Semaphore nodeGraphMutex = new Semaphore(0);
 
@@ -128,7 +130,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         // You might want to load parameters from the benchmarks parameter model
         int seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getInt();
-        int nodesAmount = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfNodes).getInt();
+        nodesAmount = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfNodes).getInt();
         int triplesPerNode = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.triplesPerNode).getInt();
         long averageNodeDelay = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeDelay).getLong();
         int averageNodeGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeGraphDegree)
@@ -221,13 +223,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         waitForNodesToBeCreated();
 
-        // FIXME use entrance node of the node graph instead of 0
-        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(0,
-                Stream.of(nodeMetadata).map(nm -> nm.getHostname()).toArray(String[]::new));
-        // FIXME use one of entrance nodes in graph instead of 0
-        seedURI = tripleCreator.createNode(0, -1, -1, false).toString();
-        LOGGER.info("Seed URI: {}", seedURI);
-
         String evalDataQueueName = getRandomNameForRabbitMQ();
         LOGGER.debug("Creating evaluation module...");
         createEvaluationModule(EVALMODULE_IMAGE_NAME,
@@ -235,8 +230,16 @@ public class BenchmarkController extends AbstractBenchmarkController {
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
                         ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=" + sparqlUrl });
 
-        LOGGER.debug("Waiting for all cloud nodes and evaluation module to be ready...");
-        nodesReadySemaphore.acquire(nodesAmount + 1);
+        LOGGER.debug("Waiting for all cloud nodes and evaluation module to initialize...");
+        nodesInitSemaphore.acquire(nodesAmount + 1);
+        nodesInitSemaphore = null;
+
+        // FIXME use entrance node of the node graph instead of 0
+        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(0,
+                Stream.of(nodeMetadata).map(nm -> nm.getUriTemplate()).toArray(String[]::new));
+        // FIXME use one of entrance nodes in graph instead of 0
+        seedURI = tripleCreator.createNode(0, -1, -1, false).toString();
+        LOGGER.info("Seed URI: {}", seedURI);
 
         LOGGER.debug("Broadcasting metadata to cloud nodes...");
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
@@ -325,6 +328,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
         LOGGER.debug("Waiting for the data generators to finish...");
         waitForDataGenToFinish();
 
+        LOGGER.debug("Waiting for nodes to be ready...");
+        nodesReadySemaphore.acquire(nodesAmount);
+        nodesReadySemaphore = null;
+
         LOGGER.debug("Sending information to the system...");
         systemDataSender.sendData(RabbitMQUtils.writeByteArrays(new byte[][] {
                 RabbitMQUtils.writeString(sparqlUrlAuth),
@@ -355,9 +362,25 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     @Override
     public void receiveCommand(byte command, byte[] data) {
-        if(command == ApiConstants.NODE_READY_SIGNAL) {
-            LOGGER.debug("Received NODE_READY_SIGNAL");
-            nodesReadySemaphore.release();
+        switch (command) {
+            case ApiConstants.NODE_INIT_SIGNAL: {
+                if (nodesInitSemaphore != null) {
+                    LOGGER.debug("Received NODE_INIT_SIGNAL");
+                    nodesInitSemaphore.release();
+                } else {
+                    throw new IllegalStateException("Received unexpected NODE_INIT_SIGNAL");
+                }
+                break;
+            }
+            case ApiConstants.NODE_READY_SIGNAL: {
+                if (nodesReadySemaphore != null) {
+                    LOGGER.debug("Received NODE_READY_SIGNAL");
+                    nodesReadySemaphore.release();
+                } else {
+                    throw new IllegalStateException("Received unexpected NODE_READY_SIGNAL");
+                }
+                break;
+            }
         }
         super.receiveCommand(command, data);
     }

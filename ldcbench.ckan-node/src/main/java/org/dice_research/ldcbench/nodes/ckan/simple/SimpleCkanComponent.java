@@ -159,10 +159,12 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 //		ckanDao.insertOrganization(organization);
 
         // Inform the BC that this node is ready
-        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
+        sendToCmdQueue(ApiConstants.NODE_INIT_SIGNAL);
 
         // Wait for the data generation to finish
         dataGenerationFinished.acquire();
+
+        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
 	}
 
 
