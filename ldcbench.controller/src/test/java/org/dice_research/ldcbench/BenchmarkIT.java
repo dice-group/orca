@@ -21,10 +21,8 @@ public class BenchmarkIT extends BenchmarkTestBase {
     public Model createBenchmarkParameters() throws IOException {
         Model model = super.createBenchmarkParameters();
         Resource experimentResource = org.hobbit.vocab.HobbitExperiments.New;
-        model.add(experimentResource, LDCBench.numberOfNodes, "3", XSDinteger);
+        model.add(experimentResource, LDCBench.numberOfNodes, "4", XSDinteger);
         model.add(experimentResource, LDCBench.averageNodeGraphDegree, "3", XSDinteger);
-        model.add(experimentResource, LDCBench.dereferencingHttpNodeWeight, "1", XSDfloat);
-        model.add(experimentResource, LDCBench.ckanNodeWeight, "0.01", XSDfloat);
         return model;
     }
 }

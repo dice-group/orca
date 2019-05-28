@@ -60,9 +60,18 @@ public class BenchmarkTest extends BenchmarkTestBase {
         Resource experimentResource = org.hobbit.vocab.HobbitExperiments.New;
         // Create only one node of each type to prevent port allocation conflicts on host.
         model.add(experimentResource, LDCBench.numberOfNodes, "2", XSDinteger);
-        model.add(experimentResource, LDCBench.averageNodeGraphDegree, "1", XSDinteger);
-        model.add(experimentResource, LDCBench.dereferencingHttpNodeWeight, "1", XSDfloat);
-        model.add(experimentResource, LDCBench.ckanNodeWeight, "1", XSDfloat);
+        model.add(experimentResource, LDCBench.averageNodeGraphDegree, "2", XSDinteger);
+
+        /*
+        FIXME if using SPARQL node:
+
+        ERROR [org.hobbit.sdk.utils.ComponentsExecutor] - <Error while running component SimpleSparqlComponent:>
+        java.lang.NoClassDefFoundError: org/apache/jena/atlas/web/auth/HttpAuthenticator
+                at org.dice_research.ldcbench.nodes.sparql.simple.SimpleSparqlComponent.initBeforeDataGeneration(SimpleSparqlComponent.java:43)
+        Caused by: java.lang.ClassNotFoundException: org.apache.jena.atlas.web.auth.HttpAuthenticator
+                at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:583)
+                */
+        model.add(experimentResource, LDCBench.sparqlNodeWeight, "0", XSDfloat);
         return model;
     }
 }

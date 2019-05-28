@@ -184,9 +184,9 @@ public class BenchmarkTestBase {
         model.add(experimentResource, LDCBench.triplesPerNode, "100", XSDinteger);
         model.add(experimentResource, LDCBench.averageNodeDelay, "5000", XSDlong);
         model.add(experimentResource, LDCBench.averageRdfGraphDegree, "2", XSDinteger);
-
-        // Does not work well with SDK.
-        model.add(experimentResource, LDCBench.sparqlNodeWeight, "0", XSDfloat);
+        model.add(experimentResource, LDCBench.dereferencingHttpNodeWeight, "1", XSDfloat);
+        model.add(experimentResource, LDCBench.ckanNodeWeight, "0.01", XSDfloat);
+        model.add(experimentResource, LDCBench.sparqlNodeWeight, "0.01", XSDfloat);
 
         return model;
     }
