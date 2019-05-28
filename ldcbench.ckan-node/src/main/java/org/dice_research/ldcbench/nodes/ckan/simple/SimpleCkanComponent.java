@@ -19,6 +19,7 @@ import org.hobbit.core.components.AbstractCommandReceivingComponent;
 import org.hobbit.core.components.Component;
 import org.hobbit.core.rabbit.DataReceiver;
 import org.hobbit.core.rabbit.DataReceiverImpl;
+import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.utils.EnvVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,8 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleCkanComponent.class);
 
     private boolean dockerized;
+    protected int cloudNodeId;
+    protected String uriTemplate;
 
 	protected Semaphore dataGenerationFinished = new Semaphore(0);
 
@@ -90,6 +93,7 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 		super.init();
 
         dockerized = EnvVariables.getBoolean(ApiConstants.ENV_DOCKERIZED_KEY, true, LOGGER);
+        cloudNodeId = EnvVariables.getInt(ApiConstants.ENV_NODE_ID_KEY, LOGGER);
 
 		// initialize exchange with BC
 		String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);
@@ -146,17 +150,18 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
         LOGGER.info("Waiting to allow CKAN to initialize...");
         Thread.sleep(60000);
 
-        new PostgresCkanDAO(dockerized ? postGresContainer : "localhost").insertData();
-
-		LOGGER.warn("-- > Ckan Containers Initialized");
-
-		CheckedCkanClient client =
-				new CheckedCkanClient("http://"+(dockerized ? ckanContainer : "localhost")+":5000", Constants.CKAN_CLIENT_TOKEN);
+        uriTemplate = "http://" + (dockerized ? ckanContainer : "localhost") + ":5000/";
+        CheckedCkanClient client = new CheckedCkanClient(uriTemplate, Constants.CKAN_CLIENT_TOKEN);
 		ckanDao = new CkanDAO(client);
 
 //		CkanOrganization organization = new CkanOrganization();
 //		organization.setName(Constants.ORGANIZATION);
 //		ckanDao.insertOrganization(organization);
+
+        sendToCmdQueue(ApiConstants.NODE_URI_TEMPLATE, RabbitMQUtils.writeByteArrays(new byte[][] {
+            RabbitMQUtils.writeString(Integer.toString(cloudNodeId)),
+            RabbitMQUtils.writeString(uriTemplate),
+        }));
 
         // Inform the BC that this node is ready
         sendToCmdQueue(ApiConstants.NODE_INIT_SIGNAL);
@@ -169,7 +174,6 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 
 
 	private void addDataSources(String[] domainNames) {
-		LOGGER.info("Adding Ckan Datasources");
 		for(String domain: domainNames) {
 			LOGGER.info(" -- Adding " + domain);
 			CkanDatasetBase dataset = new CkanDatasetBase();
@@ -187,7 +191,7 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 	            NodeMetadata[] nodeMetadata = (NodeMetadata[]) ois.readObject();
 	            domainNames = new String[nodeMetadata.length];
 	            for (int i = 0; i < nodeMetadata.length; ++i) {
-	                domainNames[i] = nodeMetadata[i].getHostname();
+	                domainNames[i] = nodeMetadata[i].getUriTemplate();
 	            }
                 addDataSources(domainNames);
 	        } catch (Exception e) {

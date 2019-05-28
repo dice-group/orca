@@ -55,7 +55,7 @@ public class EvalModule extends AbstractCommandReceivingComponent {
     protected Semaphore dataGenerationFinished = new Semaphore(0);
 
     protected String graphFiles[];
-    protected String domainNames[];
+    protected String uriTemplates[];
     protected long startTimeStamp;
     protected long endTimeStamp;
     protected Timer timer = null;
@@ -102,15 +102,15 @@ public class EvalModule extends AbstractCommandReceivingComponent {
 
     protected void handleBCMessage(NodeMetadata[] nodeMetadata) {
         if (nodeMetadata != null) {
-            domainNames = new String[nodeMetadata.length];
+            uriTemplates = new String[nodeMetadata.length];
             for (int i = 0; i < nodeMetadata.length; ++i) {
-                domainNames[i] = nodeMetadata[i].getHostname();
+                uriTemplates[i] = nodeMetadata[i].getUriTemplate();
             }
         } else {
             LOGGER.error("Couldn't parse node metadata received from benchmark controller.");
-            domainNames = null;
+            uriTemplates = null;
         }
-        LOGGER.debug("Got domain names: {}", Arrays.toString(domainNames));
+        LOGGER.debug("Got URI templates: {}", Arrays.toString(uriTemplates));
     }
 
     @Override
@@ -211,7 +211,7 @@ public class EvalModule extends AbstractCommandReceivingComponent {
 
     private EvaluationResult runEvaluation() {
         // Evaluate the results based on the data from the SPARQL storage
-        GraphSupplier supplier = new FileBasedGraphSupplier(graphFiles, domainNames);
+        GraphSupplier supplier = new FileBasedGraphSupplier(graphFiles, uriTemplates);
         GraphValidator validator = SparqlBasedValidator.create(sparqlEndpoint);
         CrawledDataEvaluator evaluator = new SimpleCompleteEvaluator(supplier, validator);
         return evaluator.evaluate();

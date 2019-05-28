@@ -38,7 +38,7 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
     @Override
     public void initAfterDataGeneration() throws Exception {
         // Create the container based on the information that has been received
-        container = new CrawleableResourceContainer(new GraphBasedResource(domainId, domainNames,
+        container = new CrawleableResourceContainer(new GraphBasedResource(cloudNodeId, uriTemplates,
                 graphs.toArray(new Graph[graphs.size()]), (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
                         && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
                 new String[] {
@@ -51,8 +51,6 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
         SocketAddress address = new InetSocketAddress(
                 EnvVariables.getInt(ApiConstants.ENV_HTTP_PORT_KEY, DEFAULT_PORT, LOGGER));
         connection.connect(address);
-
-        LOGGER.info("HTTP server initialized.");
     }
 
     protected Model readModel(String modelFile, String modelLang) {

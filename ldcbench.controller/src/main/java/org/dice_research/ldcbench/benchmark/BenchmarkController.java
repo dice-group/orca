@@ -3,6 +3,7 @@ package org.dice_research.ldcbench.benchmark;
 import static org.dice_research.ldcbench.Constants.*;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
@@ -109,7 +110,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
             String containerId = nodeContainers.get(i).get();
             if (containerId != null) {
                 nodeMetadata[i] = new NodeMetadata();
-                nodeMetadata[i].setHostname(containerId);
+                nodeMetadata[i].setContainer(containerId);
+                nodeMetadata[i].setUriTemplate("http://" + containerId + "/%s-%s/%s-%s");
             } else {
                 String errorMsg = "Couldn't create generator component. Aborting.";
                 LOGGER.error(errorMsg);
@@ -363,6 +365,14 @@ public class BenchmarkController extends AbstractBenchmarkController {
     @Override
     public void receiveCommand(byte command, byte[] data) {
         switch (command) {
+            case ApiConstants.NODE_URI_TEMPLATE: {
+                ByteBuffer buffer = ByteBuffer.wrap(data);
+                int node = Integer.parseInt(RabbitMQUtils.readString(buffer));
+                String uriTemplate = RabbitMQUtils.readString(buffer);
+                nodeMetadata[node].setUriTemplate(uriTemplate);
+                LOGGER.debug("Received URI template {} for node {}.", uriTemplate, node);
+                break;
+            }
             case ApiConstants.NODE_INIT_SIGNAL: {
                 if (nodesInitSemaphore != null) {
                     LOGGER.debug("Received NODE_INIT_SIGNAL");
@@ -393,7 +403,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         IOUtils.closeQuietly(systemTaskSender);
         if (nodeMetadata != null) {
             for (int i = 0; i < nodeMetadata.length; ++i) {
-                stopContainer(nodeMetadata[i].getHostname());
+                stopContainer(nodeMetadata[i].getContainer());
             }
         }
 

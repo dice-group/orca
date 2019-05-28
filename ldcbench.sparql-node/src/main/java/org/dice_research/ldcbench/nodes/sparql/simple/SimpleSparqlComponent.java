@@ -38,20 +38,24 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
     public void initBeforeDataGeneration() throws Exception {
         sparqlContainer = createContainer(SPARQL_IMG, CONTAINER_TYPE_BENCHMARK,
                 new String[] { "DBA_PASSWORD=" + ApiConstants.SPARQL_PASSWORD });
-        sink = SparqlBasedSink.create("http://" + sparqlContainer + ":8890/sparql-auth", ApiConstants.SPARQL_USER,
+        uriTemplate = "http://" + sparqlContainer + ":8890/sparql";
+        sink = SparqlBasedSink.create(uriTemplate + "-auth", ApiConstants.SPARQL_USER,
                 ApiConstants.SPARQL_PASSWORD);
-
     }
 
     @Override
     public void initAfterDataGeneration() throws Exception {
         try {
-            resource = new SparqlResource(domainId, domainNames, graphs.toArray(new Graph[graphs.size()]),
-                (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
-                        && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
-                new String[] {}, sink);
-            for (int i = 0; i < domainNames.length; ++i) {
-                resource.storeGraphs(domainNames[i]);
+            resource = new SparqlResource(
+                cloudNodeId,
+                uriTemplates,
+                graphs.toArray(new Graph[graphs.size()]),
+                (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD) && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
+                new String[] {},
+                sink
+            );
+            for (int i = 0; i < uriTemplates.length; ++i) {
+                resource.storeGraphs(uriTemplates[i]);
             }
 
         } catch (Exception e) {

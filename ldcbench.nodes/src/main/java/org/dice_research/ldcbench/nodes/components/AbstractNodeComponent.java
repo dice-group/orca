@@ -15,6 +15,7 @@ import org.hobbit.core.Commands;
 import org.hobbit.core.components.AbstractCommandReceivingComponent;
 import org.hobbit.core.rabbit.DataReceiver;
 import org.hobbit.core.rabbit.SimpleFileReceiver;
+import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.utils.EnvVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,17 +25,25 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractNodeComponent.class);
 
     protected Semaphore dataGenerationFinished = new Semaphore(0);
-    protected int domainId;
+    protected int cloudNodeId;
+
+    /**
+     * If set to non-null during initBeforeDataGeneration, would be used as a hostname
+     * by which this node should be accessed by the benchmarked system
+     * instead of node container's hostname.
+     */
+    protected String uriTemplate;
+
     protected DataReceiver receiver;
     protected ObjectStreamFanoutExchangeConsumer<NodeMetadata[]> bcBroadcastConsumer;
-    protected String domainNames[];
+    protected String uriTemplates[];
     protected List<Graph> graphs;
 
     @Override
     public void init() throws Exception {
         super.init();
 
-        domainId = EnvVariables.getInt(ApiConstants.ENV_NODE_ID_KEY, LOGGER);
+        cloudNodeId = EnvVariables.getInt(ApiConstants.ENV_NODE_ID_KEY, LOGGER);
 
         // initialize exchange with BC
         String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);
@@ -58,6 +67,13 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
 
         initBeforeDataGeneration();
 
+        if (uriTemplate != null) {
+            sendToCmdQueue(ApiConstants.NODE_URI_TEMPLATE, RabbitMQUtils.writeByteArrays(new byte[][] {
+                RabbitMQUtils.writeString(Integer.toString(cloudNodeId)),
+                RabbitMQUtils.writeString(uriTemplate),
+            }));
+        }
+
         LOGGER.debug("{} initialized.", this);
         sendToCmdQueue(ApiConstants.NODE_INIT_SIGNAL);
 
@@ -72,10 +88,10 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
         }
         graphs = graphHandler.getGraphs();
         if (graphs.isEmpty()) {
-            throw new IllegalStateException("Didn't received a single graph.");
+            throw new IllegalStateException("Didn't receive a single graph.");
         }
-        if (domainNames == null) {
-            throw new IllegalStateException("Didn't received the domain names from the benchmark controller.");
+        if (uriTemplates == null) {
+            throw new IllegalStateException("Didn't receive the URI templates from the benchmark controller.");
         }
 
         initAfterDataGeneration();
@@ -99,15 +115,15 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
 
     protected void handleBCMessage(NodeMetadata[] nodeMetadata) {
         if (nodeMetadata != null) {
-            domainNames = new String[nodeMetadata.length];
+            uriTemplates = new String[nodeMetadata.length];
             for (int i = 0; i < nodeMetadata.length; ++i) {
-                domainNames[i] = nodeMetadata[i].getHostname();
+                uriTemplates[i] = nodeMetadata[i].getUriTemplate();
             }
         } else {
             LOGGER.error("Couldn't parse node metadata received from benchmark controller.");
-            domainNames = null;
+            uriTemplates = null;
         }
-        LOGGER.debug("Got domain names: {}", Arrays.toString(domainNames));
+        LOGGER.debug("Got URI templates: {}", Arrays.toString(uriTemplates));
     }
 
     @Override

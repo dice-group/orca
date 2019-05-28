@@ -22,5 +22,6 @@ public class ApiConstants {
     public static final byte DATAGENERATOR_READY_SIGNAL = 125;
     public static final byte NODE_INIT_SIGNAL = -1;
     public static final byte NODE_READY_SIGNAL = 124;
+    public static final byte NODE_URI_TEMPLATE = -2;
 
 }

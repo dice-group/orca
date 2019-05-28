@@ -5,13 +5,22 @@ import java.io.Serializable;
 public class NodeMetadata implements Serializable {
     static final long serialVersionUID = -1;
 
-    private String hostname;
+    private String container;
+    private String uriTemplate;
 
-    public void setHostname(String value) {
-        hostname = value;
+    public void setContainer(String value) {
+        container = value;
     }
 
-    public String getHostname() {
-        return hostname;
+    public String getContainer() {
+        return container;
+    }
+
+    public void setUriTemplate(String value) {
+        uriTemplate = value;
+    }
+
+    public String getUriTemplate() {
+        return uriTemplate;
     }
 }
