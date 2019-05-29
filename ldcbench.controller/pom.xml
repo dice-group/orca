@@ -126,7 +126,16 @@
         </configuration>
         <executions>
           <execution>
-            <id>build-images</id>
+            <id>default-test</id>
+            <phase>test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>${skipDefaultTest}</skip>
+            </configuration>
+          </execution>
+          <execution>
             <phase>package</phase>
             <goals>
               <goal>test</goal>

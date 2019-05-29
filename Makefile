@@ -6,7 +6,7 @@ test: dockerbuild-images
 publish: images push-images push-hobbit
 
 images:
-	mvn -DfailIfNoTests=false -Dtest=ImageBuilder package
+	mvn -DskipDefaultTest -DfailIfNoTests=false -Dtest=ImageBuilder package
 
 push-images:
 	docker push $(IMAGE_BASE)benchmark-controller
@@ -27,4 +27,4 @@ test-benchmark:
 	mvn -DfailIfNoTests=false -Dtest=BenchmarkTest#checkHealth test
 
 test-benchmark-dockerized:
-	mvn -DfailIfNoTests=false -Dtest=ImageBuilder#buildImages verify
+	mvn -DskipDefaultTest -DfailIfNoTests=false -Dtest=ImageBuilder verify
