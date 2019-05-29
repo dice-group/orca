@@ -1,6 +1,6 @@
 IMAGE_BASE = git.project-hobbit.eu:4567/ldcbench/ldcbench/
 
-test: dockerbuild-images
+test:
 	mvn verify
 
 publish: images push-images push-hobbit
