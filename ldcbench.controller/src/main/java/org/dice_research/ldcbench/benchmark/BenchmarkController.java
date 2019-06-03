@@ -63,7 +63,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private String sparqlUrl;
     private String sparqlUrlAuth;
     private String[] sparqlCredentials;
-    private String seedURI;
+    private ArrayList<String> seedURIs = new ArrayList<>();
 
     private Semaphore nodesInitSemaphore = new Semaphore(0);
     private Semaphore nodesReadySemaphore = new Semaphore(0);
@@ -237,15 +237,17 @@ public class BenchmarkController extends AbstractBenchmarkController {
         nodesInitSemaphore.acquire(nodesAmount + 1);
         nodesInitSemaphore = null;
 
-        // FIXME use entrance node of the node graph instead of 0
-        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(
-            0,
-            Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
-            Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
-        );
-        // FIXME use one of entrance nodes in graph instead of 0
-        seedURI = tripleCreator.createNode(0, -1, -1, false).toString();
-        LOGGER.info("Seed URI: {}", seedURI);
+        for (int i = 0; i < nodeManagers.size(); i++) {
+            if (nodeManagers.get(i).shouldBeInSeed()) {
+                seedURIs.add(getSeedForNode(i));
+            }
+        }
+        // FIXME also check if at least on entrance node of the node graph is there
+        if (seedURIs.size() == 0) {
+            // FIXME use entrance node of the node graph instead of 0
+            seedURIs.add(getSeedForNode(0));
+        }
+        LOGGER.info("Seed URIs: {}", seedURIs);
 
         LOGGER.debug("Broadcasting metadata to cloud nodes...");
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
@@ -321,6 +323,16 @@ public class BenchmarkController extends AbstractBenchmarkController {
         sparqlCredentials = new String[] { "dba", VOS_PASSWORD };
     }
 
+    protected String getSeedForNode(int node) {
+        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(
+            node,
+            Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+            Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
+        );
+        // FIXME use one of entrance nodes in graph instead of 0
+        return tripleCreator.createNode(0, -1, -1, false).toString();
+    }
+
     @Override
     protected void executeBenchmark() throws Exception {
         LOGGER.trace("BenchmarkController.executeBenchmark()");
@@ -344,8 +356,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 RabbitMQUtils.writeString(sparqlCredentials[0]), RabbitMQUtils.writeString(sparqlCredentials[1]) }));
 
         long startTime = System.currentTimeMillis();
-        systemTaskSender.sendData(RabbitMQUtils
-                .writeByteArrays(new byte[][] { RabbitMQUtils.writeString("0"), RabbitMQUtils.writeString(seedURI) }));
+        systemTaskSender.sendData(RabbitMQUtils.writeByteArrays(
+            new byte[][] {
+                RabbitMQUtils.writeString("0"),
+                RabbitMQUtils.writeString(String.join("\n", seedURIs)),
+            }
+        ));
 
         sendToCmdQueue(ApiConstants.CRAWLING_STARTED_SIGNAL, RabbitMQUtils.writeLong(startTime));
 

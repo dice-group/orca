@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -45,8 +46,8 @@ public class SystemAdapter extends AbstractSystemAdapter {
 
     @Override
     public void receiveGeneratedTask(String taskId, byte[] data) {
-        String seedURI = RabbitMQUtils.readString(data);
-        logger.info("Seed URI: {}", seedURI);
+        String[] seedURIs = RabbitMQUtils.readString(data).split("\n");
+        logger.info("Seed URIs: {}", Arrays.toString(seedURIs));
         terminate(null);
     }
 

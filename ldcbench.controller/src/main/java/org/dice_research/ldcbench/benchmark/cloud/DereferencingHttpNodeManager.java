@@ -11,6 +11,11 @@ public class DereferencingHttpNodeManager extends AbstractNodeManager {
     }
 
     @Override
+    public boolean shouldBeInSeed() {
+        return false;
+    }
+
+    @Override
     public String[] getDataGeneratorEnvironment(long averageRdfGraphDegree, long triplesPerNode) {
         String[] env = new String[]{
             DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageRdfGraphDegree,
