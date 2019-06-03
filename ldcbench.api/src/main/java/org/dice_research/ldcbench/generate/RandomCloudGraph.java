@@ -5,6 +5,8 @@ import static org.junit.Assume.assumeFalse;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.IntStream;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import org.dice_research.ldcbench.graph.GraphBuilder;
 
@@ -43,21 +45,12 @@ public class RandomCloudGraph implements GraphGenerator{
 
 	@Override
 public void generateGraph(int numberOfNodes, double avgDegree, long seed, GraphBuilder builder) {
-
-		
-//		ParallelBarabasiRDF rg;
-//		rg = new ParallelBarabasiRDF("Barabasi Random RDF");
-		
-//	rg.generateGraph(numberOfNodes, avgDegree, seed,builder);
 	/*
 	 * rules of which node types are allowed to link to which (maybe based on weights), e.g., {{1,1,0},{0,1,1},{1,1,1}} 
         which means that the following links are allowed: 0 --> 0, 0 --> 1, 1 --> 1, 1 --> 2, 2 --> 0, 2 --> 1, 2 --> 2 
         while 0 --> 2 and 1 --> 0 are not allowed
 	 */
 		
-	//get order of generation: preserving ratios
-		
-	//
 		getRandomLOD(numberOfNodes,avgDegree,seed,0.7,builder);
 }
 
@@ -250,11 +243,84 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 			System.out.println("Failed to add edge : i="+i+" subj="+subj[i]+" idRange[0]=" + idRange[0]+" obj[i]="+ obj[i]);
 		};
 	}
-	int[] entranceNodes= {0};
+	
+	int[] entranceNodes;
+	entranceNodes = findEnteranceNodes(builder);
 	builder.setEntranceNodes(entranceNodes);
 	
 }
 //----------------------------------------------------------
+
+public int[] findEnteranceNodes(GraphBuilder g) {
+	int N=g.getNumberOfNodes();
+	boolean[] visited=new boolean[N],isEnterance=new boolean[N];
+	Arrays.fill(visited, false);
+	Arrays.fill(isEnterance, false);
+	int cntENodes=0;
+	
+	Queue<Integer> processQ=new LinkedList<>();
+	for(int i = 0 ; i < N; i++) {
+		int[] sources=g.incomingEdgeSources(i);
+		if(sources.length==0) {
+			   System.out.println("****************new enterance [ "+ i + " ]************");
+			processQ.add(i);
+			visited[i] = isEnterance[i] = true;
+			cntENodes++;
+		}
+	}
+	
+	boolean finished=false;
+	int node ;
+	if(cntENodes==0) {
+		node = 0;//to be processed
+		processQ.add(0);
+		visited[0] = isEnterance[0] = true;
+		cntENodes++;
+	}
+	
+	while(!finished) {
+		node=processQ.poll();
+		int[] targets=g.outgoingEdgeTargets(node);
+		//processed[node]=true;
+		System.out.println("=============Processed========[ "+node+" ]==============");
+		for(int dist:targets) {
+			if(!visited[dist]) {
+				System.out.println("visited node:"+dist);
+				visited[dist]=true;
+				processQ.add(dist);
+			}
+		}
+
+		if(processQ.isEmpty()) {
+			finished=true;
+			for(int j=0; j < N; j++) {
+			   if(!visited[j]) {
+				   System.out.println("****************new enterance [ "+ j + " ]************");
+				   isEnterance[j]=true;
+				   visited[j]=true;
+				   System.out.println("visited node:"+ j);
+				   finished=false;
+				   cntENodes++;
+		
+				   processQ.add(j);
+				   break;
+			   }
+			}				
+		}
+	}
+	
+	System.out.println("Count enterance nodes:"+cntENodes);
+	
+	int[] enteranceNodes=new int[cntENodes];
+	int j=0;
+	for(int i=0;i<N;i++) {
+		if(isEnterance[i]) {
+			System.out.println(i);
+			enteranceNodes[j++] = i;
+		}
+	}
+	return(enteranceNodes);
+}
 
 public int[] getNodeSequence(int[] typeCnts) {
 	int totalNodes=IntStream.of(typeCnts).sum();
