@@ -181,7 +181,7 @@ public class BenchmarkTestBase {
         Resource experimentResource = org.hobbit.vocab.HobbitExperiments.New;
         model.add(experimentResource, RDF.type, HOBBIT.Experiment);
         model.add(experimentResource, LDCBench.seed, "100", XSDinteger);
-        model.add(experimentResource, LDCBench.triplesPerNode, "100", XSDinteger);
+        model.add(experimentResource, LDCBench.triplesPerNode, "5", XSDinteger);
         model.add(experimentResource, LDCBench.averageNodeDelay, "5000", XSDlong);
         model.add(experimentResource, LDCBench.averageRdfGraphDegree, "2", XSDinteger);
         model.add(experimentResource, LDCBench.dereferencingHttpNodeWeight, "1", XSDfloat);
