@@ -19,33 +19,33 @@ public class SparqlResource extends GraphBasedResource {
     
  private Sink sink;
 
-    public SparqlResource(int domainId, String[] domains, Graph[] graphs, Predicate<Request> predicate,
+    public SparqlResource(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs, Predicate<Request> predicate,
             String[] contentTypes,Sink sink) {
-        super(domainId, domains, graphs, predicate, contentTypes);
+        super(domainId, resourceUriTemplates, accessUriTemplates, graphs, predicate, contentTypes);
         this.sink = sink;
     }
 
 
-    public void storeGraphs(String domain) throws Exception {
-
-        URI uri = null;
-        LOGGER.info("Storing relation for: " + domain);
+    public void storeGraphs(int myId, String crawleableUri, int nodeId, String uriTemplate) throws Exception {
+        CrawleableUri uri = null;
+        LOGGER.info("Storing relation for: " + uriTemplate);
         try {
-            uri = new URI(domain);
-            sink.openSinkForUri(new CrawleableUri(uri));
-            int ids[] = parseIds(domain);
-            TripleIterator iterator = new TripleIterator(this, ids[0], ids[1]);
+            uri = new CrawleableUri(new URI(uriTemplate).resolve("/"));
+            sink.openSinkForUri(uri);
+
+            int ids[] = parseIds(uriTemplate);
+            TripleIterator iterator = new TripleIterator(this, nodeId, ids[1]);
         	LOGGER.info("Starting storing triples for sparqlResource");
             while (iterator.hasNext()) {
             	Triple t = iterator.next();
             	LOGGER.info("Triple: " + t.toString());
-                sink.addTriple(new CrawleableUri(uri), t);
-                iterator.next();  
+                sink.addTriple(uri, t);
+                iterator.next();
             }
         } catch (Exception e) {
 
         }finally {
-            sink.closeSinkForUri(new CrawleableUri(uri));
+            sink.closeSinkForUri(uri);
         }
     }
 

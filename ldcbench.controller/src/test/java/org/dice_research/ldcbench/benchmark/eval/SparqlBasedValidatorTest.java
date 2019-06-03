@@ -158,7 +158,12 @@ public class SparqlBasedValidatorTest implements GraphSupplier {
     }
 
     @Override
-    public String[] getDomains() {
+    public String[] getResourceUriTemplates() {
+        return domains;
+    }
+
+    @Override
+    public String[] getAccessUriTemplates() {
         return domains;
     }
 }

@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
@@ -38,7 +39,10 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
     @Override
     public void initAfterDataGeneration() throws Exception {
         // Create the container based on the information that has been received
-        container = new CrawleableResourceContainer(new GraphBasedResource(cloudNodeId, uriTemplates,
+        container = new CrawleableResourceContainer(new GraphBasedResource(
+                cloudNodeId,
+                Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+                Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
                 graphs.toArray(new Graph[graphs.size()]), (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
                         && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
                 new String[] {

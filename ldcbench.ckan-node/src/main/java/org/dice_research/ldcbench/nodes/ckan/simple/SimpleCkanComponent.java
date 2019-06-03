@@ -3,6 +3,7 @@ package org.dice_research.ldcbench.nodes.ckan.simple;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -159,9 +160,7 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 //		ckanDao.insertOrganization(organization);
 
         sendToCmdQueue(ApiConstants.NODE_URI_TEMPLATE, RabbitMQUtils.writeByteArrays(new byte[][] {
-            RabbitMQUtils.writeString(Integer.toString(cloudNodeId)),
-            RabbitMQUtils.writeString(uriTemplate),
-        }));
+                RabbitMQUtils.writeString(Integer.toString(cloudNodeId)), RabbitMQUtils.writeString(uriTemplate), RabbitMQUtils.writeString(uriTemplate), }));
 
         // Inform the BC that this node is ready
         sendToCmdQueue(ApiConstants.NODE_INIT_SIGNAL);
@@ -170,36 +169,31 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
         dataGenerationFinished.acquire();
 
         sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
-	}
+    }
 
+    private void addDataSource(String uri) {
+        LOGGER.info("Adding {} to CKAN...", uri);
+        CkanDatasetBase dataset = new CkanDatasetBase();
+        dataset.setTitle(uri);
+        dataset.setName(uri.replaceAll("[^A-Za-z0-9_-]", "_"));
+        dataset.setOwnerOrg(Constants.ORGANIZATION);
+        dataset.setAuthor(Constants.AUTHOR);
+        ckanDataSets.add(ckanDao.insertDataSource(dataset));
+    }
 
-	private void addDataSources(String[] domainNames) {
-		for(String domain: domainNames) {
-			LOGGER.info(" -- Adding " + domain);
-			CkanDatasetBase dataset = new CkanDatasetBase();
-			dataset.setTitle(domain);
-			dataset.setName(domain.replaceAll("[^A-Za-z0-9_-]", "_"));
-			dataset.setOwnerOrg(Constants.ORGANIZATION);
-			dataset.setAuthor(Constants.AUTHOR);
-			ckanDataSets.add(ckanDao.insertDataSource(dataset));
-		}
-	}
-
-
-	 protected void handleBCMessage(byte[] body) {
-	        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(body))) {
-	            NodeMetadata[] nodeMetadata = (NodeMetadata[]) ois.readObject();
-	            domainNames = new String[nodeMetadata.length];
-	            for (int i = 0; i < nodeMetadata.length; ++i) {
-	                domainNames[i] = nodeMetadata[i].getUriTemplate();
-	            }
-                addDataSources(domainNames);
-	        } catch (Exception e) {
-	            LOGGER.error("Couldn't parse node metadata received from benchmark controller.", e);
-	            domainNames = null;
-                throw new IllegalStateException("Didn't received the domain names from the benchmark controller.");
-	        }
-	    }
+    protected void handleBCMessage(byte[] body) {
+        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(body))) {
+            nodeMetadata = (NodeMetadata[]) ois.readObject();
+            LOGGER.debug("Node metadata: {}", Arrays.toString(nodeMetadata));
+            for (NodeMetadata nm : nodeMetadata) {
+                addDataSource(new URI(String.format(nm.getAccessUriTemplate(), "", "", "", "")).toString());
+            }
+        } catch (Exception e) {
+            LOGGER.error("Couldn't parse node metadata received from benchmark controller.", e);
+            nodeMetadata = null;
+            throw new IllegalStateException("Didn't received the domain names from the benchmark controller.");
+        }
+    }
 
 	@Override
 	public void receiveCommand(byte command, byte[] data) {

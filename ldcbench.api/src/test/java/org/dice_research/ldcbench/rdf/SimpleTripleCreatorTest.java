@@ -57,8 +57,8 @@ public class SimpleTripleCreatorTest extends AbstractTripleCreatorTest {
         return data;
     }
 
-    public SimpleTripleCreatorTest(int baseGraphId, String[] domains, int edge[], String expectedUris[]) {
-        super(new SimpleTripleCreator(baseGraphId, domains), edge, expectedUris);
+    public SimpleTripleCreatorTest(int baseGraphId, String[] resourceUriTemplates, String[] accessUriTemplates, int edge[], String expectedUris[]) {
+        super(new SimpleTripleCreator(baseGraphId, resourceUriTemplates, accessUriTemplates), edge, expectedUris);
     }
 
 }

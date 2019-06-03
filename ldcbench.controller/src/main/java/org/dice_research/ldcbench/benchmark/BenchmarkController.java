@@ -111,7 +111,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
             if (containerId != null) {
                 nodeMetadata[i] = new NodeMetadata();
                 nodeMetadata[i].setContainer(containerId);
-                nodeMetadata[i].setUriTemplate("http://" + containerId + "/%s-%s/%s-%s");
+                nodeMetadata[i].setResourceUriTemplate("http://" + containerId + "/%s-%s/%s-%s");
+                nodeMetadata[i].setAccessUriTemplate("http://" + containerId + "/%s-%s/%s-%s");
             } else {
                 String errorMsg = "Couldn't create generator component. Aborting.";
                 LOGGER.error(errorMsg);
@@ -237,8 +238,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
         nodesInitSemaphore = null;
 
         // FIXME use entrance node of the node graph instead of 0
-        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(0,
-                Stream.of(nodeMetadata).map(nm -> nm.getUriTemplate()).toArray(String[]::new));
+        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(
+            0,
+            Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+            Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
+        );
         // FIXME use one of entrance nodes in graph instead of 0
         seedURI = tripleCreator.createNode(0, -1, -1, false).toString();
         LOGGER.info("Seed URI: {}", seedURI);
@@ -368,9 +372,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
             case ApiConstants.NODE_URI_TEMPLATE: {
                 ByteBuffer buffer = ByteBuffer.wrap(data);
                 int node = Integer.parseInt(RabbitMQUtils.readString(buffer));
-                String uriTemplate = RabbitMQUtils.readString(buffer);
-                nodeMetadata[node].setUriTemplate(uriTemplate);
-                LOGGER.debug("Received URI template {} for node {}.", uriTemplate, node);
+                nodeMetadata[node].setResourceUriTemplate(RabbitMQUtils.readString(buffer));
+                nodeMetadata[node].setAccessUriTemplate(RabbitMQUtils.readString(buffer));
+                LOGGER.debug("Resource URI template {} for node {}.", nodeMetadata[node].getResourceUriTemplate(), node);
+                LOGGER.debug("Access URI template {} for node {}.", nodeMetadata[node].getAccessUriTemplate(), node);
                 break;
             }
             case ApiConstants.NODE_INIT_SIGNAL: {

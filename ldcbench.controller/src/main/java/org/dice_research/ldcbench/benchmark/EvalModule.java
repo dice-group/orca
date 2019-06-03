@@ -55,7 +55,7 @@ public class EvalModule extends AbstractCommandReceivingComponent {
     protected Semaphore dataGenerationFinished = new Semaphore(0);
 
     protected String graphFiles[];
-    protected String uriTemplates[];
+    private NodeMetadata[] nodeMetadata;
     protected long startTimeStamp;
     protected long endTimeStamp;
     protected Timer timer = null;
@@ -102,15 +102,12 @@ public class EvalModule extends AbstractCommandReceivingComponent {
 
     protected void handleBCMessage(NodeMetadata[] nodeMetadata) {
         if (nodeMetadata != null) {
-            uriTemplates = new String[nodeMetadata.length];
-            for (int i = 0; i < nodeMetadata.length; ++i) {
-                uriTemplates[i] = nodeMetadata[i].getUriTemplate();
-            }
+            this.nodeMetadata = nodeMetadata;
         } else {
             LOGGER.error("Couldn't parse node metadata received from benchmark controller.");
-            uriTemplates = null;
+            this.nodeMetadata = null;
         }
-        LOGGER.debug("Got URI templates: {}", Arrays.toString(uriTemplates));
+        LOGGER.debug("Got node metadata: {}", Arrays.toString(this.nodeMetadata));
     }
 
     @Override
@@ -123,7 +120,7 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         graphConsumer.close();
         graphConsumer = null;
 
-        LOGGER.info("Waiting for the crawling to finish...");
+        LOGGER.info("Waiting for the evaluation phase...");
         crawlingFinished.acquire();
 
         // Evaluate the crawled data, create result model and terminate
@@ -211,7 +208,11 @@ public class EvalModule extends AbstractCommandReceivingComponent {
 
     private EvaluationResult runEvaluation() {
         // Evaluate the results based on the data from the SPARQL storage
-        GraphSupplier supplier = new FileBasedGraphSupplier(graphFiles, uriTemplates);
+        GraphSupplier supplier = new FileBasedGraphSupplier(
+            graphFiles,
+            Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+            Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
+        );
         GraphValidator validator = SparqlBasedValidator.create(sparqlEndpoint);
         CrawledDataEvaluator evaluator = new SimpleCompleteEvaluator(supplier, validator);
         return evaluator.evaluate();

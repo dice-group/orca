@@ -59,7 +59,7 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
         Graph graph = supplier.getGraph(graphId);
         Objects.requireNonNull(graph, "Got null for graph #" + graphId);
         ValidationCounter counter = new ValidationCounter();
-        TripleCreator creator = new SimpleCachingTripleCreator(graphId, supplier.getDomains());
+        TripleCreator creator = new SimpleCachingTripleCreator(graphId, supplier.getResourceUriTemplates(), supplier.getAccessUriTemplates());
         IntStream.range(0, graph.getNumberOfNodes()).parallel()
                 .mapToObj(
                         n -> new int[][] { new int[] { n }, graph.outgoingEdgeTypes(n), graph.outgoingEdgeTargets(n) })
@@ -69,7 +69,8 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
                         edges[i] = new int[] { edgeData[0][0], edgeData[1][i], edgeData[2][i] };
                     }
                     return Arrays.stream(edges);
-                }).map(e -> exists(creator, graph, e)).forEach(b -> counter.accept(b));
+                })
+                .map(e -> exists(creator, graph, e)).forEach(b -> counter.accept(b));
         return counter.getValidationResult();
     }
 

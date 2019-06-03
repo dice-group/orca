@@ -32,11 +32,12 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
      * by which this node should be accessed by the benchmarked system
      * instead of node container's hostname.
      */
-    protected String uriTemplate;
+    protected String resourceUriTemplate;
+    protected String accessUriTemplate;
 
     protected DataReceiver receiver;
     protected ObjectStreamFanoutExchangeConsumer<NodeMetadata[]> bcBroadcastConsumer;
-    protected String uriTemplates[];
+    protected NodeMetadata nodeMetadata[];
     protected List<Graph> graphs;
 
     @Override
@@ -67,10 +68,11 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
 
         initBeforeDataGeneration();
 
-        if (uriTemplate != null) {
+        if (resourceUriTemplate != null && accessUriTemplate != null) {
             sendToCmdQueue(ApiConstants.NODE_URI_TEMPLATE, RabbitMQUtils.writeByteArrays(new byte[][] {
                 RabbitMQUtils.writeString(Integer.toString(cloudNodeId)),
-                RabbitMQUtils.writeString(uriTemplate),
+                RabbitMQUtils.writeString(resourceUriTemplate),
+                RabbitMQUtils.writeString(accessUriTemplate),
             }));
         }
 
@@ -90,7 +92,7 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
         if (graphs.isEmpty()) {
             throw new IllegalStateException("Didn't receive a single graph.");
         }
-        if (uriTemplates == null) {
+        if (nodeMetadata == null) {
             throw new IllegalStateException("Didn't receive the URI templates from the benchmark controller.");
         }
 
@@ -100,8 +102,17 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
         sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
     }
 
+    /**
+     * Initialization before any data is generated should be performed there.
+     * If needed, resourceUriTemplate and accessUriTemplate should be set there,
+     * possibly after starting relevant containers.
+     */
     abstract public void initBeforeDataGeneration() throws Exception;
 
+    /**
+     * Initialization with data generation already done.
+     * nodeMetadata[] (for all nodes) and graphs are available at this point.
+     */
     abstract public void initAfterDataGeneration() throws Exception;
 
     @Override
@@ -115,15 +126,12 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
 
     protected void handleBCMessage(NodeMetadata[] nodeMetadata) {
         if (nodeMetadata != null) {
-            uriTemplates = new String[nodeMetadata.length];
-            for (int i = 0; i < nodeMetadata.length; ++i) {
-                uriTemplates[i] = nodeMetadata[i].getUriTemplate();
-            }
+            this.nodeMetadata = nodeMetadata;
         } else {
             LOGGER.error("Couldn't parse node metadata received from benchmark controller.");
-            uriTemplates = null;
+            this.nodeMetadata = null;
         }
-        LOGGER.debug("Got URI templates: {}", Arrays.toString(uriTemplates));
+        LOGGER.debug("Got node metadata: {}", Arrays.toString(this.nodeMetadata));
     }
 
     @Override

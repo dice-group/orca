@@ -7,29 +7,31 @@ import org.dice_research.ldcbench.graph.Graph;
 
 /**
  * A simple {@link TripleCreator} implementation relying on a base graph Id and
- * a list of domain names of the existing graphs. Node that it makes this class
+ * a list of URI templates of the existing graphs. Node that it makes this class
  * being bound to a single graph.
- * 
+ *
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
 public class SimpleTripleCreator implements TripleCreator {
 
     protected int baseGraphId;
-    protected String domains[];
+    protected String resourceUriTemplates[];
+    protected String accessUriTemplates[];
 
     /**
      * Constructor.
-     * 
+     *
      * @param baseGraphId
      *            the graph Id of nodes that are not external nodes of the graph for
      *            which this triple creator is used.
-     * @param domains
+     * @param uriTemplates
      *            a mapping from graph Ids to domain names.
      */
-    public SimpleTripleCreator(int baseGraphId, String[] domains) {
+    public SimpleTripleCreator(int baseGraphId, String[] resourceUriTemplates, String[] accessUriTemplates) {
         this.baseGraphId = baseGraphId;
-        this.domains = domains;
+        this.resourceUriTemplates = resourceUriTemplates;
+        this.accessUriTemplates = accessUriTemplates;
     }
 
     @Override
@@ -41,7 +43,7 @@ public class SimpleTripleCreator implements TripleCreator {
 
     /**
      * Creates a {@link Node} instance based on the given information.
-     * 
+     *
      * @param nodeId
      *            the internal Id of the node
      * @param externalId
@@ -58,9 +60,9 @@ public class SimpleTripleCreator implements TripleCreator {
         String domain;
         if (extGraphId == Graph.INTERNAL_NODE_GRAPH_ID) {
             externalId = nodeId;
-            domain = domains[baseGraphId];
+            domain = resourceUriTemplates[baseGraphId];
         } else {
-            domain = domains[extGraphId];
+            domain = accessUriTemplates[extGraphId];
             // TODO get the datasetId on the other server
         }
         Node n;

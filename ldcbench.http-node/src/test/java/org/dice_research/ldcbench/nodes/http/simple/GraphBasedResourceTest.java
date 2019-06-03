@@ -111,7 +111,7 @@ public class GraphBasedResourceTest {
         Graph[] graphs = new Graph[] { graph };
 
         // create resource
-        GraphBasedResource resource = new GraphBasedResource(domainId, DOMAINS, graphs, (r -> true), new String[0]);
+        GraphBasedResource resource = new GraphBasedResource(domainId, DOMAINS, DOMAINS, graphs, (r -> true), new String[0]);
 
         // request data from resource
         ByteArrayOutputStream out = new ByteArrayOutputStream();

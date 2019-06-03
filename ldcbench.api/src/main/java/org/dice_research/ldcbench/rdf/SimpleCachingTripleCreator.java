@@ -25,11 +25,11 @@ public class SimpleCachingTripleCreator extends SimpleTripleCreator {
      * @param baseGraphId
      *            the graph Id of nodes that are not external nodes of the graph for
      *            which this triple creator is used.
-     * @param domains
+     * @param uriTemplates
      *            a mapping from graph Ids to domain names.
      */
-    public SimpleCachingTripleCreator(int baseGraphId, String[] domains) {
-        super(baseGraphId, domains);
+    public SimpleCachingTripleCreator(int baseGraphId, String[] resourceUriTemplates, String[] accessUriTemplates) {
+        super(baseGraphId, resourceUriTemplates, accessUriTemplates);
     }
 
     @Override

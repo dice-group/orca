@@ -1,16 +1,19 @@
 package org.dice_research.ldcbench.nodes.sparql.simple;
 
 import java.io.IOException;
+import java.net.URI;
+import java.util.stream.Stream;
 
 import static org.hobbit.core.Constants.CONTAINER_TYPE_BENCHMARK;
+
+import org.apache.jena.graph.Triple;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
-import org.dice_research.ldcbench.nodes.sparql.SparqlResource;
-import org.dice_research.ldcbench.rdf.UriHelper;
+import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.sink.Sink;
 import org.dice_research.ldcbench.sink.SparqlBasedSink;
-import org.hobbit.core.Commands;
+import org.dice_research.ldcbench.util.uri.CrawleableUri;
 import org.hobbit.core.components.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +31,6 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleSparqlComponent.class);
 
     protected String sparqlContainer = null;
-    protected SparqlResource resource;
 
     private static final String SPARQL_IMG = "openlink/virtuoso-opensource-7:latest";
 
@@ -36,33 +38,49 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
 
     @Override
     public void initBeforeDataGeneration() throws Exception {
+        LOGGER.debug("Starting SPARQL service: {}...", SPARQL_IMG);
         sparqlContainer = createContainer(SPARQL_IMG, CONTAINER_TYPE_BENCHMARK,
                 new String[] { "DBA_PASSWORD=" + ApiConstants.SPARQL_PASSWORD });
-        uriTemplate = "http://" + sparqlContainer + ":8890/sparql";
-        sink = SparqlBasedSink.create(uriTemplate + "-auth", ApiConstants.SPARQL_USER,
+        resourceUriTemplate = "http://" + sparqlContainer + "/data/%s-%s/%s-%s";
+        accessUriTemplate = "http://" + sparqlContainer + ":8890/sparql";
+        LOGGER.debug("SPARQL service started at: {}", accessUriTemplate);
+
+        sink = SparqlBasedSink.create(accessUriTemplate + "-auth", ApiConstants.SPARQL_USER,
                 ApiConstants.SPARQL_PASSWORD);
     }
 
     @Override
     public void initAfterDataGeneration() throws Exception {
-        try {
-            resource = new SparqlResource(
-                cloudNodeId,
-                uriTemplates,
-                graphs.toArray(new Graph[graphs.size()]),
-                (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD) && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
-                new String[] {},
-                sink
-            );
-            for (int i = 0; i < uriTemplates.length; ++i) {
-                resource.storeGraphs(uriTemplates[i]);
-            }
+        LOGGER.debug("Adding triples to SPARQL database...");
 
-        } catch (Exception e) {
-            LOGGER.error("Couldn't handle node metadata received from benchmark controller.", e);
+        CrawleableUri uri = new CrawleableUri(new URI(accessUriTemplate));
+        sink.openSinkForUri(uri);
+
+        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(
+            cloudNodeId,
+            Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+            Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
+        );
+
+        int triples = 0;
+        for (Graph graph : graphs) {
+            int nodes = graph.getNumberOfNodes();
+            for (int node = 0; node < nodes; node++) {
+                int[] types = graph.outgoingEdgeTypes(node);
+                int[] targets = graph.outgoingEdgeTargets(node);
+                int edges = targets.length;
+                for (int edge = 0; edge < edges; edge++) {
+                    Triple t = tripleCreator.createTriple(node, types[edge], targets[edge], graph.getExternalNodeId(targets[edge]), graph.getGraphId(targets[edge]));
+                    LOGGER.debug("Triple: {}", t);
+                    sink.addTriple(uri, t);
+                    triples++;
+                }
+            }
         }
 
         graphs = null;
+
+        LOGGER.debug("Added {} triples.", triples);
     }
 
     @Override

@@ -26,17 +26,19 @@ public class GraphBasedResource extends AbstractCrawleableResource {
     protected static final Lang DEFAULT_LANG = Lang.TURTLE;
 
     protected final int domainId;
-    protected final String[] domains;
+    protected final String[] resourceUriTemplates;
+    protected final String[] accessUriTemplates;
     protected final Graph[] graphs;
     protected boolean failIfContentTypeMismatch = false;
     protected Lang defaultLang = DEFAULT_LANG;
 
-    public GraphBasedResource(int domainId, String[] domains, Graph[] graphs, Predicate<Request> predicate,
+    public GraphBasedResource(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs, Predicate<Request> predicate,
             String[] contentTypes) {
         super(predicate, NullValueHelper.valueOrDefault(DEFAULT_LANG.getContentType().getCharset(), DEFAULT_CHARSET),
                 DEFAULT_LANG.getContentType().getContentType(), new String[0], contentTypes);
         this.domainId = domainId;
-        this.domains = domains;
+        this.resourceUriTemplates = resourceUriTemplates;
+        this.accessUriTemplates = accessUriTemplates;
         this.graphs = graphs;
     }
 
@@ -142,7 +144,7 @@ public class GraphBasedResource extends AbstractCrawleableResource {
             this.nodeId = nodeId;
             targets = parent.graphs[datasetId].outgoingEdgeTargets(nodeId);
             edgeTypes = parent.graphs[datasetId].outgoingEdgeTypes(nodeId);
-            tripleCreator = new SimpleCachingTripleCreator(parent.domainId, domains);
+            tripleCreator = new SimpleCachingTripleCreator(parent.domainId, resourceUriTemplates, accessUriTemplates);
         }
 
         @Override
