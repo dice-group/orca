@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.concurrent.Semaphore;
+import java.util.stream.Stream;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
