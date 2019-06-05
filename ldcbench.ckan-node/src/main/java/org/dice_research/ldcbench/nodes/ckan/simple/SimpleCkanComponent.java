@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
@@ -65,7 +66,7 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 	protected String ckanContainer = null;
 	protected String domainNames[];
 
-
+    protected NodeMetadata[] nodeMetadata;
 
 	private CkanDAO ckanDao;
 	private List<CkanDataset> ckanDataSets = new ArrayList<CkanDataset>();
