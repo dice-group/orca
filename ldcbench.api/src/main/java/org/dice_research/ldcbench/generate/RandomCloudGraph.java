@@ -315,7 +315,7 @@ public int[] findEnteranceNodes(GraphBuilder g) {
 	int j=0;
 	for(int i=0;i<N;i++) {
 		if(isEnterance[i]) {
-			System.out.println(i);
+			//System.out.println(i);
 			enteranceNodes[j++] = i;
 		}
 	}
@@ -325,7 +325,7 @@ public int[] findEnteranceNodes(GraphBuilder g) {
 public int[] getNodeSequence(int[] typeCnts) {
 	int totalNodes=IntStream.of(typeCnts).sum();
 	int nTypes=typeCnts.length;
-	int[] nodeTypes=new int[totalNodes+1];
+	int[] nodeTypes=new int[totalNodes+1];//start from 0
 	System.out.println(totalNodes);
 	int n = nTypes;
 	int[] crntCnts =new int[nTypes];
@@ -345,8 +345,10 @@ public int[] getNodeSequence(int[] typeCnts) {
 		}
 	}
 	
-	for(int x:crntCnts) System.out.println(x);
-	return(nodeTypes);
+	//for(int x:crntCnts) System.out.println(x);
+	int[] nodeTypesout;
+	nodeTypesout=Arrays.copyOf(nodeTypes, totalNodes);
+	return(nodeTypesout);
 }
 //----------------------------------------------------------------
 
