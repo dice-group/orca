@@ -131,6 +131,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // Start SPARQL endpoint
         createSparqlEndpoint();
 
+        createEmptyServer();
+
         // You might want to load parameters from the benchmarks parameter model
         int seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getInt();
         nodesAmount = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfNodes).getInt();
@@ -321,6 +323,21 @@ public class BenchmarkController extends AbstractBenchmarkController {
         sparqlUrl = "http://" + sparqlHostname + "/sparql";
         sparqlUrlAuth = sparqlUrl + "-auth";
         sparqlCredentials = new String[] { "dba", VOS_PASSWORD };
+    }
+
+    protected void createEmptyServer() {
+        LOGGER.info("Creating empty-server");
+        createContainer(
+            "git.project-hobbit.eu:4567/ldcbench/ldcbench/empty-server",
+            Constants.CONTAINER_TYPE_BENCHMARK,
+            null,
+            new String[] {
+                "purl.org",
+                "www.openlinksw.com",
+                "www.w3.org",
+                "www.w2.org",
+            }
+        );
     }
 
     protected String getSeedForNode(int node) {

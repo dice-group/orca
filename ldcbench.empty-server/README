@@ -1,0 +1,4 @@
+This is just a simple HTTP server which serves no data.
+
+It can be run with network aliases in Docker so crawlers will crawl it
+instead of public domains appearing in the metadata.

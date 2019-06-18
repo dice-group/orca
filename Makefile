@@ -13,6 +13,7 @@ push-images:
 	docker push $(IMAGE_BASE)datagen
 	docker push $(IMAGE_BASE)eval-module
 	docker push $(IMAGE_BASE)system-adapter
+	docker push $(IMAGE_BASE)empty-server
 	docker push $(IMAGE_BASE)simple-http-node
 	docker push $(IMAGE_BASE)ckan-node
 	docker push $(IMAGE_BASE)sparql-node
