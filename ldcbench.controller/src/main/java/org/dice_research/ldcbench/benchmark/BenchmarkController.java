@@ -350,18 +350,16 @@ public class BenchmarkController extends AbstractBenchmarkController {
         nodesReadySemaphore.acquire(nodesAmount);
         nodesReadySemaphore = null;
 
-        LOGGER.debug("Sending information to the system...");
+        long startTime = System.currentTimeMillis();
+
+        LOGGER.debug("Sending data to the system...");
         systemDataSender.sendData(RabbitMQUtils.writeByteArrays(new byte[][] {
                 RabbitMQUtils.writeString(sparqlUrlAuth),
-                RabbitMQUtils.writeString(sparqlCredentials[0]), RabbitMQUtils.writeString(sparqlCredentials[1]) }));
-
-        long startTime = System.currentTimeMillis();
-        systemTaskSender.sendData(RabbitMQUtils.writeByteArrays(
-            new byte[][] {
-                RabbitMQUtils.writeString("0"),
+                RabbitMQUtils.writeString(sparqlCredentials[0]),
+                RabbitMQUtils.writeString(sparqlCredentials[1]),
                 RabbitMQUtils.writeString(String.join("\n", seedURIs)),
-            }
-        ));
+        }));
+        systemTaskSender.close();
 
         sendToCmdQueue(ApiConstants.CRAWLING_STARTED_SIGNAL, RabbitMQUtils.writeLong(startTime));
 
