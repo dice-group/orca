@@ -86,7 +86,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 : new String[1];
 
         variables[variables.length - 1] = Constants.GENERATOR_ID_KEY + "=" + (dataGenContainers.size() + 1);
-        Future<String> container = createContainerAsync(generatorImageName, Constants.CONTAINER_TYPE_BENCHMARK, variables);
+        Future<String> container = createContainerAsync(generatorImageName, Constants.CONTAINER_TYPE_BENCHMARK, variables, null);
         dataGenContainers.add(container);
     }
 
@@ -216,7 +216,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345),
             };
 
-            nodeContainers.add(createContainerAsync(nodeManagers.get(i).getImageName(), Constants.CONTAINER_TYPE_BENCHMARK, envVariables));
+            nodeContainers.add(createContainerAsync(nodeManagers.get(i).getImageName(), Constants.CONTAINER_TYPE_BENCHMARK, envVariables, null));
 
             // FIXME: HOBBIT SDK workaround (setting environment for "containers")
             if (sdk) {
