@@ -61,6 +61,9 @@ public class SimpleTripleCreator implements TripleCreator {
         if (extGraphId == Graph.INTERNAL_NODE_GRAPH_ID) {
             externalId = nodeId;
             domain = resourceUriTemplates[baseGraphId];
+        } else if (extGraphId == -2) {
+            externalId = nodeId;
+            domain = accessUriTemplates[baseGraphId];
         } else {
             domain = accessUriTemplates[extGraphId];
             // TODO get the datasetId on the other server

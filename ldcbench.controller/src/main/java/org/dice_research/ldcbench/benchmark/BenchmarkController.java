@@ -330,7 +330,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
             Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
         );
         // FIXME use one of entrance nodes in graph instead of 0
-        return tripleCreator.createNode(0, -1, -1, false).toString();
+        // FIXME better signal that we just want an externally accessible URI instead of -2
+        return tripleCreator.createNode(0, -1, -2, false).toString();
     }
 
     @Override
