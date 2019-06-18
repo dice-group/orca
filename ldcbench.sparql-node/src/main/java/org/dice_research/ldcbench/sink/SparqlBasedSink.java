@@ -54,7 +54,7 @@ public class SparqlBasedSink extends AbstractBufferingTripleBasedSink implements
 
     protected CrawleableUri metadataGraphUri = null;
 
-    protected SparqlBasedSink(QueryExecutionFactory queryExecFactory, UpdateExecutionFactory updateExecFactory) {
+    public SparqlBasedSink(QueryExecutionFactory queryExecFactory, UpdateExecutionFactory updateExecFactory) {
         this.queryExecFactory = queryExecFactory;
         this.updateExecFactory = updateExecFactory;
         setMetadataGraphUri(new CrawleableUri(Constants.DEFAULT_META_DATA_GRAPH_URI));

@@ -2,6 +2,7 @@ package org.dice_research.ldcbench.nodes.sparql.simple;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.hobbit.core.Constants.CONTAINER_TYPE_BENCHMARK;
@@ -13,6 +14,7 @@ import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.sink.Sink;
 import org.dice_research.ldcbench.sink.SparqlBasedSink;
+import org.dice_research.ldcbench.util.uri.Constants;
 import org.dice_research.ldcbench.util.uri.CrawleableUri;
 import org.hobbit.core.components.Component;
 import org.slf4j.Logger;
@@ -55,6 +57,7 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
         LOGGER.info("Adding triples to SPARQL database...");
 
         CrawleableUri uri = new CrawleableUri(new URI(accessUriTemplate));
+        uri.addData(Constants.UUID_KEY, UUID.randomUUID().toString());
         sink.openSinkForUri(uri);
 
         SimpleTripleCreator tripleCreator = new SimpleTripleCreator(
