@@ -9,18 +9,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
+import org.apache.commons.io.IOUtils;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.nodes.ckan.Constants;
 import org.dice_research.ldcbench.nodes.ckan.dao.CkanDAO;
-import org.dice_research.ldcbench.nodes.ckan.dao.PostgresCkanDAO;
-import org.dice_research.ldcbench.nodes.rabbit.GraphHandler;
 import org.hobbit.core.Commands;
 import static org.hobbit.core.Constants.CONTAINER_TYPE_BENCHMARK;
 import org.hobbit.core.components.AbstractCommandReceivingComponent;
 import org.hobbit.core.components.Component;
 import org.hobbit.core.rabbit.DataReceiver;
-import org.hobbit.core.rabbit.DataReceiverImpl;
 import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.utils.EnvVariables;
 import org.slf4j.Logger;
@@ -71,6 +69,7 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 	private CkanDAO ckanDao;
 	private List<CkanDataset> ckanDataSets = new ArrayList<CkanDataset>();
 
+    protected DefaultConsumer bcBroadcastConsumer;
 
 	public static void main(String[] args) {
 
@@ -104,18 +103,18 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 		bcBroadcastChannel.exchangeDeclare(exchangeName, "fanout", false, true, null);
 		bcBroadcastChannel.queueBind(queueName, exchangeName, "");
 
-		Consumer consumer = new DefaultConsumer(bcBroadcastChannel) {
-			@Override
-			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
-					byte[] body) throws IOException {
-				try {
-					handleBCMessage(body);
-				} catch (Exception e) {
-					LOGGER.error("Exception while trying to handle incoming command.", e);
-				}
-			}
-		};
-		bcBroadcastChannel.basicConsume(queueName, true, consumer);
+        bcBroadcastConsumer = new DefaultConsumer(bcBroadcastChannel) {
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
+                    byte[] body) throws IOException {
+                        try {
+                            handleBCMessage(body);
+                        } catch (Exception e) {
+                            LOGGER.error("Exception while trying to handle incoming command.", e);
+                        }
+                    }
+        };
+        bcBroadcastChannel.basicConsume(queueName, true, bcBroadcastConsumer);
 
 //        // initialize graph queue
 //        queueName = EnvVariables.getString(ApiConstants.ENV_DATA_QUEUE_KEY);
@@ -248,6 +247,11 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 		for(CkanDataset dataset: ckanDataSets) {
 			ckanDao.deleteDataSource(dataset.getName());
 		}
+
+        IOUtils.closeQuietly(receiver);
+        if (bcBroadcastConsumer != null) {
+            //bcBroadcastConsumer.close();
+        }
 
 		super.close();
 	}
