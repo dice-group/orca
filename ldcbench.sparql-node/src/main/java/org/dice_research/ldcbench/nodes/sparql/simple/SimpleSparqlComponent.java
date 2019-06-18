@@ -43,7 +43,8 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
                 new String[] { "DBA_PASSWORD=" + ApiConstants.SPARQL_PASSWORD });
         resourceUriTemplate = "http://" + sparqlContainer + "/data/%s-%s/%s-%s";
         accessUriTemplate = "http://" + sparqlContainer + ":8890/sparql";
-        LOGGER.debug("SPARQL service started at: {}", accessUriTemplate);
+        LOGGER.info("SPARQL service started at: {}", accessUriTemplate);
+        
 
         sink = SparqlBasedSink.create(accessUriTemplate + "-auth", ApiConstants.SPARQL_USER,
                 ApiConstants.SPARQL_PASSWORD);
@@ -51,7 +52,7 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
 
     @Override
     public void initAfterDataGeneration() throws Exception {
-        LOGGER.debug("Adding triples to SPARQL database...");
+        LOGGER.info("Adding triples to SPARQL database...");
 
         CrawleableUri uri = new CrawleableUri(new URI(accessUriTemplate));
         sink.openSinkForUri(uri);
@@ -77,6 +78,8 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
                 }
             }
         }
+        
+        sink.closeSinkForUri(uri);
 
         graphs = null;
 
