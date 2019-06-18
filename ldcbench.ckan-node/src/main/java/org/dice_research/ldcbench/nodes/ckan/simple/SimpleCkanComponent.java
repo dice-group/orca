@@ -185,7 +185,6 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
     protected void handleBCMessage(byte[] body) {
         try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(body))) {
             nodeMetadata = (NodeMetadata[]) ois.readObject();
-            LOGGER.debug("Node metadata: {}", Arrays.toString(nodeMetadata));
             for (NodeMetadata nm : nodeMetadata) {
                 addDataSource(new URI(String.format(nm.getAccessUriTemplate(), "", "", "", "")).toString());
             }

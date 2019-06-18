@@ -192,8 +192,6 @@ public class DataGenerator extends AbstractDataGenerator {
             ConsumeDataGeneratorsExchange();
         }
 
-        LOGGER.info("Initialized.");
-
         if (type == Types.NODE_GRAPH_GENERATOR) {
             LOGGER.debug("Waiting for all other generators to be ready...");
             dataGeneratorsReady.acquire(numberOfNodes);
@@ -272,7 +270,6 @@ public class DataGenerator extends AbstractDataGenerator {
 
     @Override
     protected void generateData() throws Exception {
-        LOGGER.debug("generateData()");
     }
 
     @Override
@@ -284,13 +281,5 @@ public class DataGenerator extends AbstractDataGenerator {
         }
 
         super.receiveCommand(command, data);
-    }
-
-    @Override
-    public void close() throws IOException {
-        // Free the resources you requested here
-        LOGGER.debug("close()");
-        // Always close the super class after yours!
-        super.close();
     }
 }

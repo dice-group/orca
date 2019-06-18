@@ -38,7 +38,6 @@ public class SparqlResource extends GraphBasedResource {
         	LOGGER.info("Starting storing triples for sparqlResource");
             while (iterator.hasNext()) {
             	Triple t = iterator.next();
-            	LOGGER.info("Triple: " + t.toString());
                 sink.addTriple(uri, t);
                 iterator.next();
             }
