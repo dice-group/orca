@@ -47,6 +47,8 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
         accessUriTemplate = "http://" + sparqlContainer + ":8890/sparql";
         LOGGER.info("SPARQL service started at: {}", accessUriTemplate);
         
+        Thread.sleep(15000);
+        
 
         sink = SparqlBasedSink.create(accessUriTemplate + "-auth", ApiConstants.SPARQL_USER,
                 ApiConstants.SPARQL_PASSWORD);
