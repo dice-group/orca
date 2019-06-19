@@ -17,8 +17,6 @@ public class ImageBuilder extends BenchmarkTestBase {
         builder.addTask(dataGeneratorBuilder);
         builder.addTask(systemAdapterBuilder);
         builder.addTask(evalModuleBuilder);
-        builder.addTask(httpNodeBuilder);
-        builder.addTask(ckanNodeBuilder);
         builder.build();
     }
 }
