@@ -20,6 +20,10 @@
     </dependency>
     <dependency>
       <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.empty-server</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.http-node</artifactId>
       <!-- FIXME do not build httpNode image as part of this project
       <scope>test</scope>

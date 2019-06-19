@@ -52,6 +52,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.dice_research</groupId>
+				<artifactId>ldcbench.empty-server</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.dice_research</groupId>
 				<artifactId>ldcbench.nodes</artifactId>
 				<version>${project.version}</version>
 			</dependency>
