@@ -58,6 +58,8 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
 
         CrawleableUri uri = new CrawleableUri(new URI(accessUriTemplate));
         uri.addData(Constants.UUID_KEY, UUID.randomUUID().toString());
+        SparqlBasedSink sbs = (SparqlBasedSink) sink;
+        sbs.deleteTriples();
         sink.openSinkForUri(uri);
 
         SimpleTripleCreator tripleCreator = new SimpleTripleCreator(

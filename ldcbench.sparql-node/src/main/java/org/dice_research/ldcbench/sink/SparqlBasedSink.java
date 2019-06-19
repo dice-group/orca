@@ -11,6 +11,7 @@ import java.util.List;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.core.UpdateExecutionFactory;
 import org.aksw.jena_sparql_api.core.UpdateExecutionFactoryHttp;
+import org.aksw.jena_sparql_api.delay.core.QueryExecutionFactoryDelay;
 import org.aksw.jena_sparql_api.http.QueryExecutionFactoryHttp;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -102,6 +103,20 @@ public class SparqlBasedSink extends AbstractBufferingTripleBasedSink implements
             updateExecFactory = new UpdateExecutionFactoryHttp(sparqlEndpointUrl);
         }
         return new SparqlBasedSink(queryExecFactory, updateExecFactory);
+    }
+    
+    
+    public void deleteTriples() {
+        QueryExecution execution = null;
+        execution = queryExecFactory.createQueryExecution("DELETE { GRAPH ?g{\n" + 
+                "     ?s ?p ?o .}\n" + 
+                "}\n" + 
+                " WHERE { GRAPH ?g{\n" + 
+                "     ?s ?p ?o .}\n" + 
+                "}\n" + 
+                "");
+        execution.execSelect();
+        
     }
 
     @Override
