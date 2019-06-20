@@ -93,6 +93,7 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
     private void addDataSource(String uri) {
         LOGGER.info("Adding {} to CKAN...", uri);
         CkanDatasetBase dataset = new CkanDatasetBase();
+        dataset.setUrl(uri);
         dataset.setTitle(uri);
         dataset.setName(uri.replaceAll("[^A-Za-z0-9_-]", "_"));
         dataset.setOwnerOrg(Constants.ORGANIZATION);
