@@ -1,15 +1,15 @@
 package org.dice_research.ldcbench.nodes.ckan.simple;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
-import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.nodes.ckan.Constants;
 import org.dice_research.ldcbench.nodes.ckan.dao.CkanDAO;
 import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
+import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import static org.hobbit.core.Constants.CONTAINER_TYPE_BENCHMARK;
 import org.hobbit.core.components.Component;
 import org.slf4j.Logger;
@@ -103,8 +103,17 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
 
     @Override
     public void initAfterDataGeneration() throws Exception {
-        for (NodeMetadata nm : nodeMetadata) {
-            addDataSource(new URI(String.format(nm.getAccessUriTemplate(), "", "", "", "")).toString());
+        // FIXME: only add those nodes which are referenced from this node
+        for (int node = 0; node < nodeMetadata.length; node++) {
+            if (node != cloudNodeId) {
+                SimpleTripleCreator tripleCreator = new SimpleTripleCreator(
+                    node,
+                    Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+                    Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
+                );
+
+                addDataSource(tripleCreator.createNode(0, -1, -2, false).toString());
+            }
         }
     }
 
