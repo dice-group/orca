@@ -12,7 +12,7 @@ public class SparqlNodeManager extends AbstractNodeManager {
 
     @Override
     public boolean shouldBeInSeed() {
-        return true;
+        return false;
     }
 
     @Override
