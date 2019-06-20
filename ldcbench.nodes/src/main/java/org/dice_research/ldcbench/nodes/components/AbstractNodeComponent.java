@@ -26,6 +26,7 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
 
     protected Semaphore dataGenerationFinished = new Semaphore(0);
     protected int cloudNodeId;
+    protected boolean dockerized;
 
     /**
      * If set to non-null during initBeforeDataGeneration, would be used as a hostname
@@ -45,6 +46,7 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
         super.init();
 
         cloudNodeId = EnvVariables.getInt(ApiConstants.ENV_NODE_ID_KEY, LOGGER);
+        dockerized = EnvVariables.getBoolean(ApiConstants.ENV_DOCKERIZED_KEY, true, LOGGER);
 
         // initialize exchange with BC
         String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);

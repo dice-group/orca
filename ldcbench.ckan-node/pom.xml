@@ -13,10 +13,6 @@
   <artifactId>ldcbench.ckan-node</artifactId>
   <packaging>jar</packaging>
 
-  <properties>
-    <spring.version>5.1.4.RELEASE</spring.version>
-  </properties>
-
   <dependencies>
     <!-- JACKAN library -->
 
@@ -30,6 +26,11 @@
       <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.api</artifactId>
     </dependency>
+
+		<dependency>
+			<groupId>org.dice_research</groupId>
+			<artifactId>ldcbench.nodes</artifactId>
+		</dependency>
 
     <!-- https://mvnrepository.com/artifact/postgresql/postgresql -->
     <!-- https://mvnrepository.com/artifact/postgresql/postgresql -->
@@ -45,25 +46,6 @@
       <groupId>org.hobbit</groupId>
       <artifactId>core</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.simpleframework</groupId>
-      <artifactId>simple</artifactId>
-    </dependency>
-    <!-- ~~~~~~~~~~~~~~~~~~~ Spring ~~~~~~~~~~~~~~~~~~~~~~ -->
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-webmvc</artifactId>
-      <version>${spring.version}</version>
-    </dependency>
-    <!-- SPRING Test <dependency> <groupId>org.springframework</groupId> 
-      <artifactId>spring-test</artifactId> <version>${spring.version}</version> 
-      <scope>test</scope> </dependency> -->
-    <!-- ~~~~~~~~~~~~~~~~~~~ End Spring ~~~~~~~~~~~~~~~~~~~~~~ -->
     <!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
     <!-- slf4j: Logging API -->
     <dependency>

@@ -1,40 +1,23 @@
 package org.dice_research.ldcbench.nodes.ckan.simple;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
 import org.apache.commons.io.IOUtils;
-import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.nodes.ckan.Constants;
 import org.dice_research.ldcbench.nodes.ckan.dao.CkanDAO;
-import org.hobbit.core.Commands;
+import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
 import static org.hobbit.core.Constants.CONTAINER_TYPE_BENCHMARK;
-import org.hobbit.core.components.AbstractCommandReceivingComponent;
 import org.hobbit.core.components.Component;
-import org.hobbit.core.rabbit.DataReceiver;
-import org.hobbit.core.rabbit.RabbitMQUtils;
-import org.hobbit.utils.EnvVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
 
 import eu.trentorise.opendata.jackan.CheckedCkanClient;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanDatasetBase;
-import eu.trentorise.opendata.jackan.model.CkanOrganization;
 
 /**
  *
@@ -44,32 +27,17 @@ import eu.trentorise.opendata.jackan.model.CkanOrganization;
  *
  */
 
-public class SimpleCkanComponent extends AbstractCommandReceivingComponent implements Component {
+public class SimpleCkanComponent extends AbstractNodeComponent implements Component {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleCkanComponent.class);
-
-    private boolean dockerized;
-    protected int cloudNodeId;
-    protected String uriTemplate;
-
-	protected Semaphore dataGenerationFinished = new Semaphore(0);
-
-	protected Channel bcBroadcastChannel;
-    protected DataReceiver receiver;
-	protected static ConnectionFactory connectionFactory;
 
 	protected String postGresContainer = null;
 	protected String solrContainer = null;
 	protected String redisContainer = null;
 	protected String ckanContainer = null;
-	protected String domainNames[];
-
-    protected NodeMetadata[] nodeMetadata;
 
 	private CkanDAO ckanDao;
 	private List<CkanDataset> ckanDataSets = new ArrayList<CkanDataset>();
-
-    protected DefaultConsumer bcBroadcastConsumer;
 
 	public static void main(String[] args) {
 
@@ -87,45 +55,8 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 
 	}
 
-
-
-	@Override
-	public void init() throws Exception {
-		super.init();
-
-        dockerized = EnvVariables.getBoolean(ApiConstants.ENV_DOCKERIZED_KEY, true, LOGGER);
-        cloudNodeId = EnvVariables.getInt(ApiConstants.ENV_NODE_ID_KEY, LOGGER);
-
-		// initialize exchange with BC
-		String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);
-		bcBroadcastChannel = cmdQueueFactory.getConnection().createChannel();
-		String queueName = bcBroadcastChannel.queueDeclare().getQueue();
-		bcBroadcastChannel.exchangeDeclare(exchangeName, "fanout", false, true, null);
-		bcBroadcastChannel.queueBind(queueName, exchangeName, "");
-
-        bcBroadcastConsumer = new DefaultConsumer(bcBroadcastChannel) {
-            @Override
-            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
-                    byte[] body) throws IOException {
-                        try {
-                            handleBCMessage(body);
-                        } catch (Exception e) {
-                            LOGGER.error("Exception while trying to handle incoming command.", e);
-                        }
-                    }
-        };
-        bcBroadcastChannel.basicConsume(queueName, true, bcBroadcastConsumer);
-
-//        // initialize graph queue
-//        queueName = EnvVariables.getString(ApiConstants.ENV_DATA_QUEUE_KEY);
-//        GraphHandler graphHandler = new GraphHandler();
-//        receiver = DataReceiverImpl.builder().dataHandler(graphHandler).queue(this.incomingDataQueueFactory, queueName)
-//                .build();
-//
-//        receiver.closeWhenFinished();
-
-		LOGGER.warn("-- > Initializing Ckan Containers");
-
+    @Override
+    public void initBeforeDataGeneration() throws Exception {
 		postGresContainer = createContainer(Constants.POSTGRES, CONTAINER_TYPE_BENCHMARK, new String[] { "POSTGRES_PASSWORD=ckan",
 				"POSTGRES_USER=ckan", "PGDATA=/var/postgresql/data", "POSTGRES_DB=ckan"
 				});
@@ -136,6 +67,8 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
 
 		solrContainer = createContainer(Constants.SOLR, CONTAINER_TYPE_BENCHMARK, null);
 		redisContainer = createContainer(Constants.REDIS, CONTAINER_TYPE_BENCHMARK, null);
+
+        LOGGER.debug("Starting CKAN service: {}...", Constants.CKAN);
 		ckanContainer = createContainer(Constants.CKAN, CONTAINER_TYPE_BENCHMARK,
 				new String[] { "CKAN_SOLR_URL=http://" + solrContainer + ":8983/solr/ckan",
 						"CKAN_SQLALCHEMY_URL=postgresql://ckan:ckan@" + postGresContainer + ":5432/ckan",
@@ -151,24 +84,10 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
         LOGGER.info("Waiting to allow CKAN to initialize...");
         Thread.sleep(60000);
 
-        uriTemplate = "http://" + (dockerized ? ckanContainer : "localhost") + ":5000/";
-        CheckedCkanClient client = new CheckedCkanClient(uriTemplate, Constants.CKAN_CLIENT_TOKEN);
+        accessUriTemplate = "http://" + (dockerized ? ckanContainer : "localhost") + ":5000/";
+        resourceUriTemplate = accessUriTemplate;
+        CheckedCkanClient client = new CheckedCkanClient(accessUriTemplate, Constants.CKAN_CLIENT_TOKEN);
 		ckanDao = new CkanDAO(client);
-
-//		CkanOrganization organization = new CkanOrganization();
-//		organization.setName(Constants.ORGANIZATION);
-//		ckanDao.insertOrganization(organization);
-
-        sendToCmdQueue(ApiConstants.NODE_URI_TEMPLATE, RabbitMQUtils.writeByteArrays(new byte[][] {
-                RabbitMQUtils.writeString(Integer.toString(cloudNodeId)), RabbitMQUtils.writeString(uriTemplate), RabbitMQUtils.writeString(uriTemplate), }));
-
-        // Inform the BC that this node is ready
-        sendToCmdQueue(ApiConstants.NODE_INIT_SIGNAL);
-
-        // Wait for the data generation to finish
-        dataGenerationFinished.acquire();
-
-        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
     }
 
     private void addDataSource(String uri) {
@@ -181,35 +100,12 @@ public class SimpleCkanComponent extends AbstractCommandReceivingComponent imple
         ckanDataSets.add(ckanDao.insertDataSource(dataset));
     }
 
-    protected void handleBCMessage(byte[] body) {
-        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(body))) {
-            nodeMetadata = (NodeMetadata[]) ois.readObject();
-            for (NodeMetadata nm : nodeMetadata) {
-                addDataSource(new URI(String.format(nm.getAccessUriTemplate(), "", "", "", "")).toString());
-            }
-        } catch (Exception e) {
-            LOGGER.error("Couldn't parse node metadata received from benchmark controller.", e);
-            nodeMetadata = null;
-            throw new IllegalStateException("Didn't received the domain names from the benchmark controller.");
+    @Override
+    public void initAfterDataGeneration() throws Exception {
+        for (NodeMetadata nm : nodeMetadata) {
+            addDataSource(new URI(String.format(nm.getAccessUriTemplate(), "", "", "", "")).toString());
         }
     }
-
-	@Override
-	public void receiveCommand(byte command, byte[] data) {
-		switch (command) {
-		case Commands.DATA_GENERATION_FINISHED:
-			LOGGER.debug("Received DATA_GENERATION_FINISHED");
-			dataGenerationFinished.release();
-		}
-
-	}
-
-	@Override
-	public void run() throws Exception {
-		synchronized (this) {
-			this.wait();
-		}
-	}
 
 	@Override
 	public void close() throws IOException {
