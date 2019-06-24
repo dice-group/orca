@@ -118,8 +118,8 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
                 while (!success) {
                     try {
                         addDataSource(tripleCreator.createNode(0, -1, -2, false).toString());
+                        LOGGER.info("Datasource added!");
                         success = true;
-                        LOGGER.info("Datasource Added!");
                     } catch (CkanException ce) {
                         if (ce.getMessage().contains("Solr returned an error")) {
                             LOGGER.info("Solr is not ready yet. Trying again in 5 seconds");
