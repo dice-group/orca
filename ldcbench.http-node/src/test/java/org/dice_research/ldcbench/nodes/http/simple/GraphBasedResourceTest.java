@@ -21,7 +21,7 @@ import junit.framework.Assert;
 
 public class GraphBasedResourceTest {
 
-    private static final String[] DOMAINS = new String[] { "domain0", "domain1" };
+    private static final String[] URI_TEMPLATES = new String[] { "http://domain0.org/%s-%s/%s-%s", "http://domain1.org/%s-%s/%s-%s" };
 
     @Test
     public void testTurtle1() throws Exception {
@@ -111,7 +111,7 @@ public class GraphBasedResourceTest {
         Graph[] graphs = new Graph[] { graph };
 
         // create resource
-        GraphBasedResource resource = new GraphBasedResource(domainId, DOMAINS, DOMAINS, graphs, (r -> true), new String[0]);
+        GraphBasedResource resource = new GraphBasedResource(domainId, URI_TEMPLATES, URI_TEMPLATES, graphs, (r -> true), new String[0]);
 
         // request data from resource
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -144,13 +144,6 @@ public class GraphBasedResourceTest {
     }
 
     private String getUri(String nodeType, int nodeId, int domainId) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("http://");
-        builder.append(DOMAINS[domainId]);
-        builder.append("/dataset-0/");
-        builder.append(nodeType);
-        builder.append("-");
-        builder.append(nodeId);
-        return builder.toString();
+        return String.format(URI_TEMPLATES[domainId], "dataset", 0, nodeType, nodeId);
     }
 }
