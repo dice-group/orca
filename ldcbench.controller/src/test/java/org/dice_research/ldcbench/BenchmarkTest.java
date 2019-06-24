@@ -60,7 +60,7 @@ public class BenchmarkTest extends BenchmarkTestBase {
         Resource experimentResource = org.hobbit.vocab.HobbitExperiments.New;
         // Create only one node of each type to prevent port allocation conflicts on host.
         model.add(experimentResource, LDCBench.numberOfNodes, "2", XSDinteger);
-        model.add(experimentResource, LDCBench.averageNodeGraphDegree, "2", XSDinteger);
+        model.add(experimentResource, LDCBench.averageNodeGraphDegree, "1", XSDinteger);
 
         /*
         FIXME if using SPARQL node:
