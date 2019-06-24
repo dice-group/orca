@@ -48,4 +48,11 @@ public class RandomRDFTest {
 		//g.saveToFile(String.format("D:\\RandGj_N%d.txt", N));
 	}
     
+    @Test
+	public void ZeroDegree() {
+		rg.generateGraph(1, 0.0, 123L, g);
+		assertEquals("Number of nodes", 1, g.getNumberOfNodes());
+		assertEquals("Number of edges", 0, g.getNumberOfEdges());
+	}
+
 }
