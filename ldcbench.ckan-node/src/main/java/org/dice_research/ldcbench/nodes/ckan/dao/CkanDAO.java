@@ -1,6 +1,5 @@
 package org.dice_research.ldcbench.nodes.ckan.dao;
 
-import org.dice_research.ldcbench.nodes.ckan.simple.SimpleCkanComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
