@@ -98,16 +98,14 @@
 				<version>${dockerfile-maven-version}</version>
 				<executions>
 					<execution>
-						<phase>package</phase>
 						<goals>
 							<goal>build</goal>
-							<!-- <goal>push</goal> -->
+							<goal>push</goal>
 						</goals>
 					</execution>
 				</executions>
 				<configuration>
 					<repository>git.project-hobbit.eu:4567/ldcbench/ldcbench/simple-http-node</repository>
-					<tag>latest</tag>
 				</configuration>
 			</plugin>
     </plugins>

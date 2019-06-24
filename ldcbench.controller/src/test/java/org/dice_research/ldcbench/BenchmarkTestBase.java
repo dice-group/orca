@@ -81,7 +81,7 @@ public class BenchmarkTestBase {
 
     }
 
-    protected void checkHealth(Boolean dockerized) throws Exception {
+    protected void executeBenchmark(Boolean dockerized) throws Exception {
 
         String[] benchmarkParamsStr = new String[]{
             HOBBIT_EXPERIMENT_URI_KEY+"="+org.hobbit.vocab.HobbitExperiments.New.getURI(),

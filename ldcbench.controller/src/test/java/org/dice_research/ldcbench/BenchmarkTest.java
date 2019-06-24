@@ -34,8 +34,8 @@ public class BenchmarkTest extends BenchmarkTestBase {
     CkanNodeBuilder ckanNodeBuilder;
 
     @Test
-    public void checkHealth() throws Exception {
-        checkHealth(false);
+    public void executeBenchmark() throws Exception {
+        executeBenchmark(false);
     }
 
     //Flush a queue of a locally running platform

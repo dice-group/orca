@@ -36,13 +36,15 @@ and use use SPARQL endpoint to store crawled data.
 
 ## Building and testing
 
-Use `mvn verify` to build project, docker images and run tests.
+Use `mvn verify` to run build and all available tests.
+
+Use `make test-benchmark` to run tests with main components running without docker.
+
+Use `make test-benchmark-dockerized` to run tests with docker images.
 
 ## Building and pushing images
 
-`make images`
-
-`make push-images`
+Use `make images push-images` to build docker images and push them to the HOBBIT repository.
 
 ## Updating benchmark metadata in the HOBBIT Platform
 

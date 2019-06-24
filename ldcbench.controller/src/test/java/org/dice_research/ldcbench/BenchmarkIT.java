@@ -13,8 +13,8 @@ import org.dice_research.ldcbench.vocab.LDCBench;
 
 public class BenchmarkIT extends BenchmarkTestBase {
     @Test
-    public void checkHealthDockerized() throws Exception {
-        checkHealth(true);
+    public void executeBenchmark() throws Exception {
+        executeBenchmark(true);
     }
 
     @Override
