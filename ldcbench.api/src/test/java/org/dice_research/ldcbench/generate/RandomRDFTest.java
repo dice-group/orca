@@ -2,7 +2,6 @@
 package org.dice_research.ldcbench.generate;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -20,7 +19,7 @@ public class RandomRDFTest {
     	g = new GrphBasedGraph();
 		rg = new RandomRDF("Barabasi Random RDF");
 		N = 40000;
-		
+
 	}
 
     @Test(expected = IllegalArgumentException.class)
@@ -41,20 +40,24 @@ public class RandomRDFTest {
 
     @Test
 	public void IntDegree() {
+    	System.out.println("IntDegree...");
 		rg.generateGraph(5.0,200000,123L,g);
 		assertEquals("Number of nodes", 40000, g.getNumberOfNodes());
 		assertEquals("Number of edges", 200000, g.getNumberOfEdges());
-		
+
 		//g.print();
 		//g.saveToFile(String.format("D:\\RandGj_N%d.txt", N));
 	}
-    
+
     @Test
-    @Ignore // FIXME
-	public void ZeroDegree() {
-		rg.generateGraph(1, 0.0, 123L, g);
+	public void OneNodeGraph() {
+    	System.out.println(" One node graph ...");
+		rg.generateGraph(1,0.0,123L,g);
 		assertEquals("Number of nodes", 1, g.getNumberOfNodes());
 		assertEquals("Number of edges", 0, g.getNumberOfEdges());
+
+		//g.print();
+		//g.saveToFile(String.format("D:\\RandGj_N%d.txt", N));
 	}
 
 }
