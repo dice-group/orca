@@ -18,7 +18,7 @@ public class RandomLODTest {
     @Before
 	public void setUp() {
     	g = new GrphBasedGraph();
-		rg = new RandomCloudGraph("Barabasi RandomLOD",typecounts,100,typeconn);		
+		rg = new RandomCloudGraph("Barabasi RandomLOD",typecounts,100,typeconn);
 	}
 
     @Test(expected = IllegalArgumentException.class)
@@ -32,7 +32,6 @@ public class RandomLODTest {
 	}
     @Test
 	public void LOD2017() {
-    	System.out.println("Simulating LOD 2017...");
     	double degree=15654.0/N;
 		//rg.generateGraph(5.0,200000,123L,g);
 		rg.generateGraph(N,degree,123L,g);
@@ -42,9 +41,7 @@ public class RandomLODTest {
 		int[] nodeTypes=rg.getNodeTypes();
 		int[] tmptypecounts=new int[typecounts.length];
 		for(int i=0; i < nodeTypes.length; i++) tmptypecounts[nodeTypes[i]]++;
-		for(int i=0;i<typecounts.length;i++) 
-			System.out.println(i+" :"+tmptypecounts[i]);
-		
+
 		for(int i=0;i<typecounts.length;i++) {
 			assertEquals("Number of nodes in type: "+i, tmptypecounts[i], typecounts[i]);
 		}

@@ -9,27 +9,27 @@ import org.dice_research.ldcbench.graph.GraphBuilder;
 
 public class ParallelBarabasiRDF implements GraphGenerator{
 	protected Random generator;
-	
+
     public String name;
-	
+
 	public ParallelBarabasiRDF(String gname) {
 		name = gname;
 	}
-	
+
 	protected int[] weightedSampleWithoutReplacement(int n, int m, int[] wt,Random generator) {
 		/* without accumulated weights*/
-		
+
 		int[] Res = new int[m];
 
 		int rand;
 		int i;
 	    int Sum = 0;
 	    int n1 = n;
-	    
+
 	    for(i = 1; i <= n; i++) Sum += wt[i];
-	    
+
 		int[] wt1=Arrays.copyOf(wt,n+1);
-		
+
 		for (int j = 0; j < m; j++) {
 			rand =  generator.nextInt(Sum);
 
@@ -37,14 +37,14 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 			for (i = 1; i <= n1; i++) {
 				rand-=wt1[i];
 				if (rand < 0) {//to avoid getting nodes set to zero degree, must be less than
-					Res[j] = i;				
+					Res[j] = i;
 					Sum -= wt1[i];
 					wt1[i] = 0;// to avoid replacement
-					
+
 					break;
 				}
 			}
-			
+
 		}
 
 		return (Res);
@@ -52,24 +52,24 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 
 	protected int getInitGraph(int N, double degree, long seed,int[] subj,int[]obj,int[] inDeg,int m,Random generator) {
 		int indexToEdgeList = 0;
-		
+
 		if (degree < 1) {
 			throw new IllegalArgumentException("Degree must be more than 1.");
 		}
-		
+
 		if (degree > (N-1)) {// max links created at any step is N-1
 			throw new IllegalArgumentException("Degree can NOT be more than (N-1).");
 		}
-		
+
 //		generator = new Random(seed);// seed
-		
+
 		if(m >1 ) {
 			subj[indexToEdgeList] = 1;
 			obj[indexToEdgeList] = 2;// first edge
 			indexToEdgeList++;
 			inDeg[2] = 2;
 		}
-					
+
 		// initial part
 		if (m > 2) {
 			for (int i = 3; i <= m; i++) {
@@ -94,7 +94,7 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 	}
 
 	//-------------------------------------------------------------------------------------------
-	
+
 	protected void getBarabasiRDFParallel(int N, double degree, long seed, GraphBuilder builder,int nCores) {
 		/* nodes are numbered from 1 to N */
         /* uniform distribution for in/out typing*/
@@ -102,51 +102,48 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 			 int node;
 			 int[] conns;
 			 public Connections(int node,int[] conns) {
-				 this.node = node;				 
+				 this.node = node;
 				 this.conns = conns;
 			 }
 		}
 		int indexToEdgeList ;// index to edge list
 		long t0 = System.currentTimeMillis();
 		long ti0 = System.currentTimeMillis();
-		
+
 		int nE=(int) Math.ceil(N*degree);
 		int[] subj = new int[nE];
 		int[] obj = new int[nE];
 		int[] inDeg = new int[N + 1];
 		Arrays.fill(inDeg, 1);
-		inDeg[0] = 0;// not used			
+		inDeg[0] = 0;// not used
 		int m = (int) Math.floor(degree);// average degree of graph
-		
+
 		generator=new Random(seed);
 		indexToEdgeList=getInitGraph(N,degree,seed,subj,obj,inDeg,m,generator);
 
-		System.out.println(String.format("init graph: m0=%d, nE=%d", m, indexToEdgeList ));
-		
 		int P1 = (m + 1)*(N-m) - (nE - indexToEdgeList) + m ;
-		if (P1<=m ) P1 = m + 1;			
-		System.out.println("Adding other nodes: " + (N - m) +" P1:" + P1);			
-		
+		if (P1<=m ) P1 = m + 1;
+
 		double biasedCoin=((m/2.0-1)/(m-1));
 		long ts10k = 0;
 		int cntE=indexToEdgeList;
 		List<Connections> clist;
 		for (int i = m + 1; i <= N; i+=nCores) {//index to node
 			long ts1=System.currentTimeMillis();
-			
+
 			int m1= 1+ generator.nextInt(2*m);// to use uniform distribution from 1 to 2m
 			if(m1 >= i) m1=i-1;
 			if(m1 > 2*m) m1=2*m;
 			int  m2=m1;
-			
+
 			clist= IntStream.range(i, i + nCores).parallel()
 	        .mapToObj(a -> new Connections(a,weightedSampleWithoutReplacement(a - 1, m2, inDeg,generator)))
-	        		.collect(Collectors.toList());			
-			
+	        		.collect(Collectors.toList());
+
 			ts10k += (System.currentTimeMillis()-ts1);
 			/*
 			 * 8/2/2019: choose randomly the number of in-links [1,m],
-			 * 	 1. select randomly one link to be in-link then 
+			 * 	 1. select randomly one link to be in-link then
 			 *   2. toss a biased coin ((m/2)-1 inlink,(m/2) outlink)
 			 */
 			//in- link
@@ -161,20 +158,20 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 
 				int vin_ix = generator.nextInt(m1) ;//uniform distribution of(m)
 				if (vin_ix == m1)
-					vin_ix--;	
+					vin_ix--;
 
 				biasedCoin=((m1/2.0-1)/(m1-1));
-				for (int k = 0; k < m1; k++) {					
-					if (k != vin_ix && (generator.nextDouble() > biasedCoin) ) {						
+				for (int k = 0; k < m1; k++) {
+					if (k != vin_ix && (generator.nextDouble() > biasedCoin) ) {
 						inDeg[tmp[k]] = inDeg[tmp[k]] + 1;
 						subj[indexToEdgeList] = node;
-						obj[indexToEdgeList] = tmp[k];						
+						obj[indexToEdgeList] = tmp[k];
 					} else {// inverted link
 						inDeg[node] = inDeg[node] + 1;
 						subj[indexToEdgeList] = tmp[k];
-						obj[indexToEdgeList] = node;						
+						obj[indexToEdgeList] = node;
 					}
-					indexToEdgeList++;					
+					indexToEdgeList++;
 				}
 				if(node==P1) { // consider nCores
 					m = m + 1;//second part
@@ -183,9 +180,8 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 				if (node % 10000 == 0) {
 					long ti1;
 					ti1= System.currentTimeMillis();
-					System.out.println(String.format("processed nodes: %d, time: %.1f", node,(ti1-ti0)/1000.0));
 					ts10k=0;
-					ti0= System.currentTimeMillis();				
+					ti0= System.currentTimeMillis();
 				}
 				if(indexToEdgeList >= nE) break;
 			}
@@ -193,10 +189,7 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 		}
 
 		long t_barabasi = System.currentTimeMillis();
-		System.out.println("time Barabsi =" + ((t_barabasi-t0)/1000.0));
-		
-		System.out.println("nE =" + nE +" indexToEdgeList:" + indexToEdgeList);
-		
+
 		//Grph structure ----------------------------------------------
 		int nEdges = indexToEdgeList;
 		int[] idRange=builder.addNodes(N);//Range
@@ -207,21 +200,19 @@ public class ParallelBarabasiRDF implements GraphGenerator{
 		}
 		int[] entranceNodes= {0};
 		builder.setEntranceNodes(entranceNodes);
-		
+
 		long t_gbuilder = System.currentTimeMillis();
-		System.out.println("time Barabsi =" + ((t_barabasi-t0)/1000.0) +" time formatting = " + ((t_gbuilder-t_barabasi)/1000.0) + " sec");
-		System.out.flush();
 	}
 
 	//-------------------------------------------------------------------------------------------
 
 	@Override
 public void generateGraph(int numberOfNodes, double avgDegree, long seed, GraphBuilder builder) {
-	this.getBarabasiRDFParallel(numberOfNodes, avgDegree, seed,builder,3);	
+	this.getBarabasiRDFParallel(numberOfNodes, avgDegree, seed,builder,3);
 }
 
 @Override
-public void generateGraph(double avgDegree, int numberOfEdges, long seed, GraphBuilder builder) {		
+public void generateGraph(double avgDegree, int numberOfEdges, long seed, GraphBuilder builder) {
 	this.getBarabasiRDFParallel((int)Math.ceil(numberOfEdges/avgDegree), avgDegree, seed,builder,3);
 }
 }

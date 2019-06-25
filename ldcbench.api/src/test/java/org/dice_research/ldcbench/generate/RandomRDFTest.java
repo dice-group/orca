@@ -40,7 +40,6 @@ public class RandomRDFTest {
 
     @Test
 	public void IntDegree() {
-    	System.out.println("IntDegree...");
 		rg.generateGraph(5.0,200000,123L,g);
 		assertEquals("Number of nodes", 40000, g.getNumberOfNodes());
 		assertEquals("Number of edges", 200000, g.getNumberOfEdges());
@@ -51,7 +50,6 @@ public class RandomRDFTest {
 
     @Test
 	public void OneNodeGraph() {
-    	System.out.println(" One node graph ...");
 		rg.generateGraph(1,0.0,123L,g);
 		assertEquals("Number of nodes", 1, g.getNumberOfNodes());
 		assertEquals("Number of edges", 0, g.getNumberOfEdges());

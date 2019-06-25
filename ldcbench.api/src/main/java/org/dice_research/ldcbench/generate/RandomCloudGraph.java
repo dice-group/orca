@@ -122,11 +122,9 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 
 	//--------------------------------------
 	indexToEdgeList=il;
-	System.out.println(String.format("init graph: m0=%d, nE=%d", m, indexToEdgeList ));
 
 	int P1 = (m + 1)*(N-m) - (nE - indexToEdgeList) + m ;
 	if (P1 <= m ) P1 = m + 1;
-	System.out.println("Adding other nodes: " + (N - typeconnectivity.length) +" P1:" + P1);
 	//
 	for(int node=typeconnectivity.length+1;node<=N;node++) {//next node
 
@@ -148,7 +146,6 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 			mo = (int) Math.round(m1 * outlinkspct);
 		}
 		mi = m1 - mo;
-		System.out.println("m1="+m1+" mi="+mi+" mo="+mo);
 
 		ctype = nodetypes[node-1];
 		//get possible out connections
@@ -161,7 +158,6 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 				}
 				else typewt[i]=0;
 			}
-			System.out.println("node=" + node + " ctype=" + ctype + " ndests=" + ndests);
 			int[] outlinks;
 			if(ndests > mo) {//sample out-links
 				outlinks = weightedSampleWithoutReplacement(node-1, mo, typewt, generator);
@@ -196,7 +192,6 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 				}
 				else typewt[i]=0;
 			}
-			System.out.println("node="+node+" ctype="+ctype+" nsrcs="+nsrcs+" nEdg:"+indexToEdgeList);
 			int[] inlinks;
 			if(nsrcs > mi) {//sample in-links
 				inlinks = weightedSampleWithoutReplacement(node-1, mi, typewt, generator);
@@ -226,17 +221,14 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 		if (node % 10000 == 0) {
 			long ti1;
 			ti1= System.currentTimeMillis();
-			System.out.println(String.format("processed nodes: %d, time: %.1f", node,(ti1-ti0)/1000.0));
 			ti0= System.currentTimeMillis();
 		}
 	if(indexToEdgeList >= nE) break;
 	}
-	System.out.println("nEdges="+indexToEdgeList);
 	//Grph structure ----------------------------------------------
 	int nEdges = indexToEdgeList;
 	int[] idRange=builder.addNodes(N);//Range
 	for(int i=0; i < nEdges; i++) {
-		System.out.println(i+"    "+(idRange[0]+subj[i]-1) +" -> "+ (obj[i]-1+idRange[0]));
 		if(!builder.addEdge(subj[i]-1 + idRange[0], obj[i]-1+idRange[0], 0)) {
 			System.out.println("Failed to add edge : i="+i+" subj="+subj[i]+" idRange[0]=" + idRange[0]+" obj[i]="+ obj[i]);
 		};
@@ -260,7 +252,6 @@ public int[] findEnteranceNodes(GraphBuilder g) {
 	for(int i = 0 ; i < N; i++) {
 		int[] sources=g.incomingEdgeSources(i);
 		if(sources.length==0) {
-			   System.out.println("****************new enterance [ "+ i + " ]************");
 			processQ.add(i);
 			visited[i] = isEnterance[i] = true;
 			cntENodes++;
@@ -280,10 +271,8 @@ public int[] findEnteranceNodes(GraphBuilder g) {
 		node=processQ.poll();
 		int[] targets=g.outgoingEdgeTargets(node);
 		//processed[node]=true;
-		System.out.println("=============Processed========[ "+node+" ]==============");
 		for(int dist:targets) {
 			if(!visited[dist]) {
-				System.out.println("visited node:"+dist);
 				visited[dist]=true;
 				processQ.add(dist);
 			}
@@ -293,10 +282,8 @@ public int[] findEnteranceNodes(GraphBuilder g) {
 			finished=true;
 			for(int j=0; j < N; j++) {
 			   if(!visited[j]) {
-				   System.out.println("****************new enterance [ "+ j + " ]************");
 				   isEnterance[j]=true;
 				   visited[j]=true;
-				   System.out.println("visited node:"+ j);
 				   finished=false;
 				   cntENodes++;
 
@@ -306,8 +293,6 @@ public int[] findEnteranceNodes(GraphBuilder g) {
 			}
 		}
 	}
-
-	System.out.println("Count enterance nodes:"+cntENodes);
 
 	int[] enteranceNodes=new int[cntENodes];
 	int j=0;
@@ -324,7 +309,6 @@ public int[] getNodeSequence(int[] typeCnts) {
 	int totalNodes=IntStream.of(typeCnts).sum();
 	int nTypes=typeCnts.length;
 	int[] nodeTypes=new int[totalNodes+1];//start from 0
-	System.out.println(totalNodes);
 	int n = nTypes;
 	int[] crntCnts =new int[nTypes];
 	for(int i=0;i < nTypes;i++) {//init
