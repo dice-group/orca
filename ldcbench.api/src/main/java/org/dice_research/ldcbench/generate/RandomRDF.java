@@ -346,8 +346,8 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 		protected int getInitGraph(int N, double degree, long seed,int[] subj,int[]obj,int[] inDeg,int m) {
 			int indexToEdgeList = 0;
 			
-			if (degree < 1) {
-				throw new IllegalArgumentException("Degree must be more than 1.");
+			if (degree < 1 && N>1) {
+				throw new IllegalArgumentException("When N>1, degree must be more than 1.");
 			}
 			
 			if (degree > (N-1)) {// max links created at any step is N-1
@@ -521,6 +521,13 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 //--------------------------------------------------------------------------------------------
 		@Override
 	public void generateGraph(int numberOfNodes, double avgDegree, long seed, GraphBuilder builder) {
+        if(numberOfNodes ==1) {//special case
+				
+				builder.addNodes(numberOfNodes);
+				int[] entranceNodes= {0};
+				builder.setEntranceNodes(entranceNodes);
+				return;
+			}
 //		this.getBarabasiRDF(numberOfNodes, avgDegree, seed,builder);//String algorithm	
 		this.getBarabasiRDFum(numberOfNodes, avgDegree, seed,builder);//use uniform distribution for degree	
 //		this.getBarabasiRDFumChkRep(numberOfNodes, avgDegree, seed,builder);//Slowest
