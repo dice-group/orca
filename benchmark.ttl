@@ -20,7 +20,7 @@
     :ckanNodeWeight,
     :sparqlNodeWeight,
     :triplesEvaluated;
-  hobbit:measuresKPI :truePositives, :recall;
+  hobbit:measuresKPI :truePositives, :recall, :runtime;
   hobbit:hasAPI :Api .
 
 :Api a hobbit:API .
