@@ -23,7 +23,7 @@
   hobbit:measuresKPI :truePositives, :recall;
   hobbit:hasAPI :Api .
 
-:api a hobbit:API .
+:Api a hobbit:API .
 
 :seed a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Seed"@en;
