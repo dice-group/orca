@@ -54,9 +54,4 @@ public class BenchmarkTest extends BenchmarkTestBase {
         QueueClient queueClient = new QueueClient(GIT_USERNAME);
         queueClient.submitToQueue(BENCHMARK_URI, SYSTEM_URI, createBenchmarkParameters());
     }
-
-    @Override
-    public Model createBenchmarkParameters() throws IOException {
-        return ModelsHandler.readModelFromFile("test-benchmark-parameters.ttl");
-    }
 }
