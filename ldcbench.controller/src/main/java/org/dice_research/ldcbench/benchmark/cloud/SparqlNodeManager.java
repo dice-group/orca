@@ -28,4 +28,9 @@ public class SparqlNodeManager extends AbstractNodeManager {
     public String getImageName() {
         return SPARQLNODE_IMAGE_NAME;
     }
+
+    @Override
+    public String getLabel() {
+        return "sparql";
+    }
 }

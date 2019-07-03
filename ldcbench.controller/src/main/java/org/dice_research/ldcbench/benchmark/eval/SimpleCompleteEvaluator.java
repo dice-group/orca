@@ -1,10 +1,13 @@
 package org.dice_research.ldcbench.benchmark.eval;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * A simple implementation of the {@link CrawledDataEvaluator} inteface which
  * iterates over all triples of all graphs and checks whether they can be found
  * in the crawled data.
- * 
+ *
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
@@ -22,7 +25,7 @@ public class SimpleCompleteEvaluator implements CrawledDataEvaluator {
 
     /**
      * Constructor.
-     * 
+     *
      * @param supplier
      *            Supplier used to access the generated graphs, i.e., the ground
      *            truth for the evaluation.
@@ -35,12 +38,16 @@ public class SimpleCompleteEvaluator implements CrawledDataEvaluator {
     }
 
     @Override
-    public EvaluationResult evaluate() {
-        ValidationResult result = new ValidationResult();
+    public Map<Integer, EvaluationResult> evaluate() {
+        ValidationResult totalResult = new ValidationResult();
+        Map<Integer, EvaluationResult> results = new HashMap<>();
         for (int i = 0; i < supplier.getNumberOfGraphs(); ++i) {
-            result.add(validator.validate(supplier, i));
+            EvaluationResult graphResult = new EvaluationResult(validator.validate(supplier, i));
+            results.put(i, graphResult);
+            totalResult.add(graphResult);
         }
-        return new EvaluationResult(result);
+        results.put(-1, new EvaluationResult(totalResult));
+        return results;
     }
 
 }

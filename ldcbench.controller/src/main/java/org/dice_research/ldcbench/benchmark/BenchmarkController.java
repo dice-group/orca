@@ -4,10 +4,14 @@ import static org.dice_research.ldcbench.Constants.*;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +26,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.benchmark.cloud.*;
 import org.dice_research.ldcbench.data.NodeMetadata;
@@ -65,6 +70,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private String[] sparqlCredentials;
     private ArrayList<String> seedURIs = new ArrayList<>();
 
+    private ArrayList<AbstractNodeManager> nodeManagers = new ArrayList<>();
+
     private Semaphore nodesInitSemaphore = new Semaphore(0);
     private Semaphore nodesReadySemaphore = new Semaphore(0);
     private Semaphore nodeGraphMutex = new Semaphore(0);
@@ -75,6 +82,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
     protected DataSender systemDataSender;
     protected DataSender systemTaskSender;
     protected NodeMetadata[] nodeMetadata = null;
+
+    protected List<String> dotlangLines = Collections.synchronizedList(new ArrayList<>());
 
     private String getRandomNameForRabbitMQ() {
         return java.util.UUID.randomUUID().toString();
@@ -157,6 +166,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
             public void handleNodeGraph(int senderId, Graph g) {
                 LOGGER.info("Got the node graph #{}", senderId);
                 if (senderId == 0) {
+                    int numberOfNodes = g.getNumberOfNodes();
+                    for (int node = 0; node < numberOfNodes; node++) {
+                        for (int target : g.outgoingEdgeTargets(node)) {
+                            dotlangLines.add(String.format("%d -> %d", node, target));
+                        }
+                    }
                     nodeGraphMutex.release();
                 }
             }
@@ -176,7 +191,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         String[] envVariables;
         LOGGER.debug("Starting all cloud nodes...");
-        ArrayList<AbstractNodeManager> nodeManagers = new ArrayList<>();
         float nodeWeight[] = new float[nodeManagerClasses.length];
         float totalNodeWeight = 0;
         for (int i = 0; i < nodeManagerClasses.length; i++) {
@@ -241,13 +255,13 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         for (int i = 0; i < nodeManagers.size(); i++) {
             if (nodeManagers.get(i).shouldBeInSeed()) {
-                seedURIs.add(getSeedForNode(i));
+                addNodeToSeed(i);
             }
         }
         // FIXME also check if at least on entrance node of the node graph is there
         if (seedURIs.size() == 0) {
             // FIXME use entrance node of the node graph instead of 0
-            seedURIs.add(getSeedForNode(0));
+            addNodeToSeed(0);
         }
         LOGGER.info("Seed URIs: {}", seedURIs);
 
@@ -351,6 +365,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
         return tripleCreator.createNode(0, -1, -2, false).toString();
     }
 
+    protected void addNodeToSeed(int node) {
+        seedURIs.add(getSeedForNode(node));
+        dotlangLines.add(String.format("{rank=min; %d [penwidth=2]}", node));
+    }
+
     @Override
     protected void executeBenchmark() throws Exception {
         LOGGER.trace("BenchmarkController.executeBenchmark()");
@@ -392,6 +411,27 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // results. We should add the configuration of the benchmark to this
         // model.
         // this.resultModel.add(...);
+
+        final int amountOfColors = 9;
+        // https://www.graphviz.org/doc/info/colors.html
+        final String colorScheme = "rdylgn" + amountOfColors;
+        for (int i = 0; i < nodesAmount; i++) {
+            Resource nodeResource = resultModel.createResource(experimentUri + "_Node_" + i);
+            double recall = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.recall));
+            String fillColor = Double.isNaN(recall) ? "" : "/" + colorScheme + "/" + String.valueOf((int) Math.floor(recall * 8) + 1);
+            dotlangLines.add(String.format("%d [label=<%s<BR/>%s>, fillcolor=\"%s\", style=filled]", i, nodeManagers.get(i).getLabel(), Double.isNaN(recall) ? "&empty;" : String.format("%.2f", recall), fillColor));
+            resultModel.removeAll(nodeResource, null, null);
+        }
+
+        dotlangLines.add(0, "digraph {");
+        dotlangLines.add("}");
+        String dotlang = String.join("\n", dotlangLines);
+
+        Resource experimentResource = resultModel.getResource(experimentUri);
+        resultModel.add(resultModel.createLiteralStatement(experimentResource, LDCBench.graphVisualization, dotlang));
+
+        Path dotfile = Files.createTempFile("cloud", ".dot");
+        Files.write(dotfile, dotlangLines, Charset.defaultCharset());
 
         // Send the resultModul to the platform controller and terminate
         LOGGER.debug("Sending result model: {}", RabbitMQUtils.writeModel2String(resultModel));
