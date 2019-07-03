@@ -10,11 +10,11 @@ import org.dice_research.ldcbench.util.uri.CrawleableUri;
 public abstract class AbstractKnownUriFilterDecorator implements KnownUriFilterDecorator {
 
     protected KnownUriFilter decorated;
-    
+
     protected AbstractKnownUriFilterDecorator() {
         this.decorated = null;
     }
-    
+
     public AbstractKnownUriFilterDecorator(KnownUriFilter decorated) {
         this.decorated = decorated;
     }
@@ -48,7 +48,7 @@ public abstract class AbstractKnownUriFilterDecorator implements KnownUriFilterD
     public KnownUriFilter getDecorated() {
         return decorated;
     }
-    
+
     @Override
     public void close() throws IOException {
         if(decorated instanceof Closeable) {

@@ -113,7 +113,7 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
                 );
-                
+
                 boolean success = false;
                 while (!success) {
                     try {
@@ -125,7 +125,7 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
                             LOGGER.info("Solr is not ready yet. Trying again in 5 seconds");
                             Thread.sleep(5000);
                         }
-                            
+
                     }
                 }
 

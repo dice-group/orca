@@ -55,9 +55,9 @@ public class GraphBasedResource extends AbstractCrawleableResource {
         // lang = defaultLang;
         // }
         // parse target
-        
+
         // TODO add a prefix map
-        
+
         int ids[] = parseIds(target);
         TripleIterator iterator = new TripleIterator(this, ids[0], ids[1]);
 

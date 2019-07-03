@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.TimerTask;
 
 public class TripleCountingTimerTask extends TimerTask {
-    
+
     protected List<Long> timestamps = new ArrayList<>();
     protected List<Long> tripleCounts = new ArrayList<>();
     protected TripleCounter counter;
@@ -23,7 +23,7 @@ public class TripleCountingTimerTask extends TimerTask {
     public List<Long> getTimestamps() {
         return timestamps;
     }
-    
+
     public List<Long> getTripleCounts() {
         return tripleCounts;
     }

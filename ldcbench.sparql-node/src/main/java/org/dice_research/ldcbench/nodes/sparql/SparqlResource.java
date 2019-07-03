@@ -13,10 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SparqlResource extends GraphBasedResource {
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(SparqlResource.class);
-	
-    
+
+
  private Sink sink;
 
     public SparqlResource(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs, Predicate<Request> predicate,

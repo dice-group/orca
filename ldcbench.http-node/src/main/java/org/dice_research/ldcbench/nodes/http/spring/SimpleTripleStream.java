@@ -9,7 +9,7 @@ public class SimpleTripleStream {
 
     protected Lang lang;
     protected Iterator<Triple> iterator;
-    
+
     public SimpleTripleStream(Lang lang, Iterator<Triple> iterator) {
         super();
         this.lang = lang;

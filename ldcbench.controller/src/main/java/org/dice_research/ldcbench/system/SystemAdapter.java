@@ -69,7 +69,7 @@ public class SystemAdapter extends AbstractSystemAdapter {
         }
 
 //        Thread.sleep(6000000);
-        
+
         logger.info("Dummy system terminates.");
         terminate(null);
     }

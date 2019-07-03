@@ -43,7 +43,7 @@ public interface KnownUriFilter extends UriFilter {
      * @return the number of lines in that database
      */
     long count();
-    
+
     /**
      * Opens the queue and allocates necessary resources.
      */

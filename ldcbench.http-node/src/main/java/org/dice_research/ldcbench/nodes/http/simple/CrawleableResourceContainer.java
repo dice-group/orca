@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A simple {@link Container} implementation that can be used to host
  * {@link CrawleableResource} instances.
- * 
+ *
  * @author Michael R&ouml;der (roeder@informatik.uni-leipzig.de)
  *
  */
@@ -27,7 +27,7 @@ public class CrawleableResourceContainer implements Container {
 
     /**
      * Constructor.
-     * 
+     *
      * @param resources
      *            resources that should be hosted by this container.
      */

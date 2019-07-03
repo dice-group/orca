@@ -12,7 +12,7 @@ import org.simpleframework.http.Status;
 /**
  * A simple resource which redirects all incoming requests to a given target
  * URL.
- * 
+ *
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
@@ -25,8 +25,8 @@ public class RedirectingResource implements CrawleableResource {
     protected Charset charset;
 
     /**
-     * 
-     * 
+     *
+     *
      * @param redirectionTarget
      */
     public RedirectingResource(String redirectionTarget) {

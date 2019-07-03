@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public abstract class AbstractTripleCreatorTest {
-    
+
     protected TripleCreator creator;
     protected int edgeData[];
     protected String expectedUris[];
@@ -16,7 +16,7 @@ public abstract class AbstractTripleCreatorTest {
         this.edgeData = edgeData;
         this.expectedUris = expectedUris;
     }
-    
+
     @Test
     public void test() {
         Triple t = creator.createTriple(edgeData[0], edgeData[1], edgeData[2], edgeData[3], edgeData[4]);

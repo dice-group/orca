@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 public class SamplingEvaluator implements CrawledDataEvaluator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SamplingEvaluator.class);
-    
+
     protected long seed;
-    
+
     @Override
     public EvaluationResult evaluate() {
         Random random = new Random(seed);

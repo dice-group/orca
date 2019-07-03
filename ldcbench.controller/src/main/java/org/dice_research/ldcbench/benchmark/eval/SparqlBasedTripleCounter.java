@@ -27,7 +27,7 @@ public class SparqlBasedTripleCounter implements TripleCounter, AutoCloseable {
 
     /**
      * Constructor.
-     * 
+     *
      * @param qef
      *            Query execution factory used for the communication with the SPARQL
      *            endpoint.
@@ -40,7 +40,7 @@ public class SparqlBasedTripleCounter implements TripleCounter, AutoCloseable {
     /**
      * Creates a {@link SparqlBasedTripleCounter} instance which uses the given
      * SPARQL endpoint.
-     * 
+     *
      * @param endpoint
      *            the URL of the SPARQL endpoint which will be used by the created
      *            instance.

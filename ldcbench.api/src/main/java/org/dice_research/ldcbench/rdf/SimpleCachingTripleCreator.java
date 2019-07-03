@@ -10,7 +10,7 @@ import org.apache.jena.graph.Node;
  * A simple extension of the {@link SimpleTripleCreator} which uses internal
  * maps for caching created nodes. Note that the used maps have no size
  * restriction.
- * 
+ *
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
@@ -21,7 +21,7 @@ public class SimpleCachingTripleCreator extends SimpleTripleCreator {
 
     /**
      * Constructor.
-     * 
+     *
      * @param baseGraphId
      *            the graph Id of nodes that are not external nodes of the graph for
      *            which this triple creator is used.

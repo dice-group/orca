@@ -13,7 +13,7 @@ public class ApiConstants {
     public static final String ENV_NODE_DELAY_KEY = "LDCBENCH_NODE_DELAY";
 
     public static final String ENV_HTTP_PORT_KEY = "HTTP_PORT";
-    
+
     public static final String SPARQL_USER= "dba";
     public static final String SPARQL_PASSWORD = "123dice";
 

@@ -7,7 +7,7 @@ public class ValidationCounter implements Consumer<Boolean>{
 
     protected AtomicInteger positives = new AtomicInteger();
     protected AtomicInteger count = new AtomicInteger();
-    
+
     @Override
     public void accept(Boolean t) {
         count.incrementAndGet();
@@ -15,7 +15,7 @@ public class ValidationCounter implements Consumer<Boolean>{
             positives.incrementAndGet();
         }
     }
-    
+
     public ValidationResult getValidationResult() {
         return new ValidationResult(count.get(), positives.get());
     }

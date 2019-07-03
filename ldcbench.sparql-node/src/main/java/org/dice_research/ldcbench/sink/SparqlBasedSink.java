@@ -104,19 +104,19 @@ public class SparqlBasedSink extends AbstractBufferingTripleBasedSink implements
         }
         return new SparqlBasedSink(queryExecFactory, updateExecFactory);
     }
-    
-    
+
+
     public void deleteTriples() {
         QueryExecution execution = null;
-        execution = queryExecFactory.createQueryExecution("DELETE { GRAPH ?g{\n" + 
-                "     ?s ?p ?o .}\n" + 
-                "}\n" + 
-                " WHERE { GRAPH ?g{\n" + 
-                "     ?s ?p ?o .}\n" + 
-                "}\n" + 
+        execution = queryExecFactory.createQueryExecution("DELETE { GRAPH ?g{\n" +
+                "     ?s ?p ?o .}\n" +
+                "}\n" +
+                " WHERE { GRAPH ?g{\n" +
+                "     ?s ?p ?o .}\n" +
+                "}\n" +
                 "");
         execution.execSelect();
-        
+
     }
 
     @Override

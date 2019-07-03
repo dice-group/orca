@@ -48,7 +48,7 @@ public class UriUtils {
     }
 
     /**
-     * 
+     *
      * @deprecated use {@link #generateFileName(String, String)} instead.
      */
     @Deprecated
@@ -73,12 +73,12 @@ public class UriUtils {
         }
         return builder.toString();
     }
-    
+
     public static String generateFileName(CrawleableUri curi, String fileEnding) {
     	Object temp = curi.getData(Constants.UUID_KEY);
-    	
+
     	String fileName = "";
-    	
+
     	if(temp == null) {
     		fileName = curi.getUri().toString();
     	}else {

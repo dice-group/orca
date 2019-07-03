@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
-@Component  
+@Component
 public interface UnstructuredDataSink extends SinkBase {
 
     /**

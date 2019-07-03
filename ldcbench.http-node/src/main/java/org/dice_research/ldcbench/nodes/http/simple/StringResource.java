@@ -8,7 +8,7 @@ import org.simpleframework.http.Request;
 import org.simpleframework.http.Status;
 
 /**
- * 
+ *
  * @author Michael R&ouml;der (roeder@informatik.uni-leipzig.de)
  *
  */

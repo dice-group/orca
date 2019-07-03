@@ -5,7 +5,7 @@ import org.dice_research.ldcbench.graph.GraphBuilder;
 /**
  * Interface of a class that is able to generate a graph based on the given
  * parameters.
- * 
+ *
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
@@ -14,7 +14,7 @@ public interface GraphGenerator {
     /**
      * Generates a graph based on the given parameters using the given
      * {@link GraphBuilder}.
-     * 
+     *
      * @param numberOfNodes
      *            the number of nodes the generated graph should have
      * @param avgDegree
@@ -30,7 +30,7 @@ public interface GraphGenerator {
     /**
      * Generates a graph based on the given parameters using the given
      * {@link GraphBuilder}.
-     * 
+     *
      * @param avgDegree
      *            the average degree the nodes in the graph should have
      * @param numberOfEdges

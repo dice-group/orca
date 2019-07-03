@@ -116,6 +116,6 @@ public class InMemoryKnownUriFilter implements KnownUriFilter {
     @Override
     public void open() {
         // TODO Auto-generated method stub
-        
+
     }
 }

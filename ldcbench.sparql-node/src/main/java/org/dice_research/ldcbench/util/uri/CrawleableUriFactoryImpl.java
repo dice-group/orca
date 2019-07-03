@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A simple implementation of a {@link CrawleableUriFactory} that is expandable
  * by UriFilter instances.
- * 
+ *
  * @author Michael R&ouml;der (roeder@informatik.uni-leipzig.de)
  *
  */
@@ -35,7 +35,7 @@ public class CrawleableUriFactoryImpl implements CrawleableUriFactory {
     /**
      * Constructor taking additional filters that are used to check URIs during
      * the creation.
-     * 
+     *
      * @param filters
      */
     public CrawleableUriFactoryImpl(UriFilter... filters) {
@@ -75,7 +75,7 @@ public class CrawleableUriFactoryImpl implements CrawleableUriFactory {
     /**
      * Returns the given {@link CrawleableUri} instance if all local
      * {@link #filters} marked it as a good URI. Otherwise null is returned.
-     * 
+     *
      * @param createdUri
      *            the URI that should be checked using the local filters.
      * @return the given {@link CrawleableUri} instance if it is a good URI.

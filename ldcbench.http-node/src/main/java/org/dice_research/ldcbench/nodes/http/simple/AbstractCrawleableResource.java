@@ -136,7 +136,7 @@ public abstract class AbstractCrawleableResource implements CrawleableResource {
     public void setDefaultCharset(String defaultCharset) {
         this.defaultCharset = defaultCharset;
     }
-    
+
     public void setDefaultContentType(String defaultContentType) {
         this.defaultContentType = defaultContentType;
     }

@@ -13,7 +13,7 @@ public class TripleBuffer {
     protected final List<Triple> buffer;
     protected final int bufferSize;
     protected long numberOfTriples = 0;
-    
+
     public TripleBuffer() {
         this(AbstractBufferingTripleBasedSink.DEFAULT_BUFFER_SIZE);
     }

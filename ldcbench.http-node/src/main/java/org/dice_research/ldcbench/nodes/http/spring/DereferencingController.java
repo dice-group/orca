@@ -34,7 +34,7 @@ public class DereferencingController {
     public SimpleTripleStream resource(@PathVariable String datasetId, @PathVariable String resourceId) {
         // TODO Select dataset and resource to stream
         // TODO Get a language and the triple iterator
-        
+
         return new SimpleTripleStream(Lang.TTL,
                 Arrays.asList(Triple.create(
                         ResourceFactory.createResource("http://example.org/" + datasetId + "/" + resourceId).asNode(),

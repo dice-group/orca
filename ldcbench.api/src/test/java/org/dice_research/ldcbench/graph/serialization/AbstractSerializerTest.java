@@ -41,7 +41,7 @@ public abstract class AbstractSerializerTest {
         g1.setEntranceNodes(new int[] { n1, n2 });
         // define n3 as external node
         g1.setGraphIdOfNode(n3, 9, 14);
-        
+
         Graph g2 = SerializationHelper.deserialize(SerializationHelper.serialize(serializerClass, g1));
         checkGraphs(g1, g2);
     }

@@ -15,12 +15,12 @@ public class SparqlBasedTripleCounterTest {
     @Test
     public void test() throws Exception {
         Dataset dataset = DatasetFactory.create();
-        
+
         try (SparqlBasedTripleCounter counter = new SparqlBasedTripleCounter(
                 new QueryExecutionFactoryDataset(dataset), QueryFactory.create(SparqlBasedTripleCounter.COUNT_QUERY))) {
             // The dataset should be empty
             Assert.assertEquals(0, counter.countTriples());
-            
+
             // Add a graph with some triples
             Model model1 = ModelFactory.createDefaultModel();
             model1.add(model1.getResource("http://domain1.org/dataset-0/resource-0"),
@@ -33,9 +33,9 @@ public class SparqlBasedTripleCounterTest {
                     model1.getProperty("http://domain1.org/dataset-0/property-2"),
                     model1.getResource("http://domain0.org/dataset-0/resource-0"));
             dataset.addNamedModel("http://domain1.org", model1);
-            
+
             Assert.assertEquals(3, counter.countTriples());
-            
+
             // Add a second graph with the same triples as the first graph
             Model model2 = ModelFactory.createDefaultModel();
             model2.add(model2.getResource("http://domain1.org/dataset-0/resource-0"),
@@ -48,7 +48,7 @@ public class SparqlBasedTripleCounterTest {
                     model2.getProperty("http://domain1.org/dataset-0/property-2"),
                     model2.getResource("http://domain0.org/dataset-0/resource-0"));
             dataset.addNamedModel("http://domain2.org", model2);
-            
+
             Assert.assertEquals(6, counter.countTriples());
         }
     }
