@@ -9,8 +9,10 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -50,11 +52,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private Set<Future<String>> dataGenContainers = new HashSet<>();
     private List<Future<String>> nodeContainers = new ArrayList<>();
 
-    private Class<?>[] nodeManagerClasses = {
-        DereferencingHttpNodeManager.class,
-        CkanNodeManager.class,
-        SparqlNodeManager.class,
-    };
+    private Class<?>[] nodeManagerClasses = { DereferencingHttpNodeManager.class, CkanNodeManager.class,
+            SparqlNodeManager.class, };
 
     private boolean sdk;
     private boolean dockerized;
@@ -75,18 +74,19 @@ public class BenchmarkController extends AbstractBenchmarkController {
     protected DataSender systemDataSender;
     protected DataSender systemTaskSender;
     protected NodeMetadata[] nodeMetadata = null;
+    protected Map<String, NodeMetadata> nodeContainerMap = new HashMap<>();
 
     private String getRandomNameForRabbitMQ() {
         return java.util.UUID.randomUUID().toString();
     }
 
     private void createDataGenerator(String generatorImageName, String[] envVariables) {
-        String containerId;
         String variables[] = envVariables != null ? Arrays.copyOf(envVariables, envVariables.length + 1)
                 : new String[1];
 
         variables[variables.length - 1] = Constants.GENERATOR_ID_KEY + "=" + (dataGenContainers.size() + 1);
-        Future<String> container = createContainerAsync(generatorImageName, Constants.CONTAINER_TYPE_BENCHMARK, variables, null);
+        Future<String> container = createContainerAsync(generatorImageName, Constants.CONTAINER_TYPE_BENCHMARK,
+                variables, null);
         dataGenContainers.add(container);
     }
 
@@ -113,6 +113,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 nodeMetadata[i].setContainer(containerId);
                 nodeMetadata[i].setResourceUriTemplate("http://" + containerId + "/%s-%s/%s-%s");
                 nodeMetadata[i].setAccessUriTemplate("http://" + containerId + "/%s-%s/%s-%s");
+                nodeContainerMap.put(containerId, nodeMetadata[i]);
             } else {
                 String errorMsg = "Couldn't create generator component. Aborting.";
                 LOGGER.error(errorMsg);
@@ -209,16 +210,15 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         nodeMetadata = new NodeMetadata[nodesAmount];
         for (int i = 0; i < nodesAmount; i++) {
-            envVariables = new String[] {
-                    ApiConstants.ENV_DOCKERIZED_KEY + "=" + dockerized,
+            envVariables = new String[] { ApiConstants.ENV_DOCKERIZED_KEY + "=" + dockerized,
                     ApiConstants.ENV_NODE_ID_KEY + "=" + i,
                     ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                     ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                     ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay,
-                    ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345),
-            };
+                    ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345), };
 
-            nodeContainers.add(createContainerAsync(nodeManagers.get(i).getImageName(), Constants.CONTAINER_TYPE_BENCHMARK, envVariables, null));
+            nodeContainers.add(createContainerAsync(nodeManagers.get(i).getImageName(),
+                    Constants.CONTAINER_TYPE_BENCHMARK, envVariables, null));
 
             // FIXME: HOBBIT SDK workaround (setting environment for "containers")
             if (sdk) {
@@ -275,16 +275,17 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         // RDF graph generators
         for (int i = 0; i < nodesAmount; i++) {
-            LOGGER.info("Requesting creation of {}/{} RDF graph generator...", i+1, nodesAmount);
-            envVariables = ArrayUtils.addAll(new String[] {
-                    DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + 0, // HOBBIT SDK workaround
+            LOGGER.info("Requesting creation of {}/{} RDF graph generator...", i + 1, nodesAmount);
+            envVariables = ArrayUtils.addAll(new String[] { DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + 0, // HOBBIT
+                                                                                                             // SDK
+                                                                                                             // workaround
                     Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
                     DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.RDF_GRAPH_GENERATOR,
                     DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(1 + i),
                     DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                     ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
-                    DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
-            }, nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree, triplesPerNode));
+                    DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, },
+                    nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree, triplesPerNode));
             createDataGenerator(DATAGEN_IMAGE_NAME, envVariables);
             // FIXME: HOBBIT SDK workaround (setting environment for "containers")
             if (sdk) {
@@ -308,12 +309,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
         String defaultPort = "8890";
         String exposedPort = "8889";
         String sparqlHostname = createContainer("openlink/virtuoso-opensource-7", Constants.CONTAINER_TYPE_BENCHMARK,
-                new String[] {
-                    "DBA_PASSWORD=" + VOS_PASSWORD,
-                    "HOBBIT_SDK_CONTAINER_NAME=benchmark-sparql",
-                    "HOBBIT_SDK_PUBLISH_PORTS=" + exposedPort + ":" + defaultPort
-                });
-        if(sparqlHostname == null) {
+                new String[] { "DBA_PASSWORD=" + VOS_PASSWORD, "HOBBIT_SDK_CONTAINER_NAME=benchmark-sparql",
+                        "HOBBIT_SDK_PUBLISH_PORTS=" + exposedPort + ":" + defaultPort });
+        if (sparqlHostname == null) {
             throw new IllegalStateException("Couldn't create SPARQL endpoint. Aborting.");
         }
         sparqlHostname += ":" + defaultPort;
@@ -327,27 +325,17 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     protected void createEmptyServer() {
         LOGGER.info("Creating empty-server");
-        createContainer(
-            "git.project-hobbit.eu:4567/ldcbench/ldcbench/empty-server",
-            Constants.CONTAINER_TYPE_BENCHMARK,
-            null,
-            new String[] {
-                "purl.org",
-                "www.openlinksw.com",
-                "www.w3.org",
-                "www.w2.org",
-            }
-        );
+        createContainer("git.project-hobbit.eu:4567/ldcbench/ldcbench/empty-server", Constants.CONTAINER_TYPE_BENCHMARK,
+                null, new String[] { "purl.org", "www.openlinksw.com", "www.w3.org", "www.w2.org", });
     }
 
     protected String getSeedForNode(int node) {
-        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(
-            node,
-            Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
-            Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
-        );
+        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(node,
+                Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+                Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new));
         // FIXME use one of entrance nodes in graph instead of 0
-        // FIXME better signal that we just want an externally accessible URI instead of -2
+        // FIXME better signal that we just want an externally accessible URI instead of
+        // -2
         return tripleCreator.createNode(0, -1, -2, false).toString();
     }
 
@@ -371,12 +359,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
         long startTime = System.currentTimeMillis();
 
         LOGGER.debug("Sending data to the system...");
-        systemDataSender.sendData(RabbitMQUtils.writeByteArrays(new byte[][] {
-                RabbitMQUtils.writeString(sparqlUrlAuth),
-                RabbitMQUtils.writeString(sparqlCredentials[0]),
-                RabbitMQUtils.writeString(sparqlCredentials[1]),
-                RabbitMQUtils.writeString(String.join("\n", seedURIs)),
-        }));
+        systemDataSender.sendData(RabbitMQUtils.writeByteArrays(new byte[][] { RabbitMQUtils.writeString(sparqlUrlAuth),
+                RabbitMQUtils.writeString(sparqlCredentials[0]), RabbitMQUtils.writeString(sparqlCredentials[1]),
+                RabbitMQUtils.writeString(String.join("\n", seedURIs)), }));
         systemTaskSender.close();
 
         sendToCmdQueue(ApiConstants.CRAWLING_STARTED_SIGNAL, RabbitMQUtils.writeLong(startTime));
@@ -401,33 +386,42 @@ public class BenchmarkController extends AbstractBenchmarkController {
     @Override
     public void receiveCommand(byte command, byte[] data) {
         switch (command) {
-            case ApiConstants.NODE_URI_TEMPLATE: {
-                ByteBuffer buffer = ByteBuffer.wrap(data);
-                int node = Integer.parseInt(RabbitMQUtils.readString(buffer));
-                nodeMetadata[node].setResourceUriTemplate(RabbitMQUtils.readString(buffer));
-                nodeMetadata[node].setAccessUriTemplate(RabbitMQUtils.readString(buffer));
-                LOGGER.debug("Resource URI template {} for node {}.", nodeMetadata[node].getResourceUriTemplate(), node);
-                LOGGER.debug("Access URI template {} for node {}.", nodeMetadata[node].getAccessUriTemplate(), node);
-                break;
+        case ApiConstants.NODE_URI_TEMPLATE: {
+            ByteBuffer buffer = ByteBuffer.wrap(data);
+            int node = Integer.parseInt(RabbitMQUtils.readString(buffer));
+            nodeMetadata[node].setResourceUriTemplate(RabbitMQUtils.readString(buffer));
+            nodeMetadata[node].setAccessUriTemplate(RabbitMQUtils.readString(buffer));
+            LOGGER.debug("Resource URI template {} for node {}.", nodeMetadata[node].getResourceUriTemplate(), node);
+            LOGGER.debug("Access URI template {} for node {}.", nodeMetadata[node].getAccessUriTemplate(), node);
+            break;
+        }
+        case ApiConstants.NODE_INIT_SIGNAL: {
+            if (nodesInitSemaphore != null) {
+                LOGGER.debug("Received NODE_INIT_SIGNAL");
+                nodesInitSemaphore.release();
+            } else {
+                throw new IllegalStateException("Received unexpected NODE_INIT_SIGNAL");
             }
-            case ApiConstants.NODE_INIT_SIGNAL: {
-                if (nodesInitSemaphore != null) {
-                    LOGGER.debug("Received NODE_INIT_SIGNAL");
-                    nodesInitSemaphore.release();
-                } else {
-                    throw new IllegalStateException("Received unexpected NODE_INIT_SIGNAL");
-                }
-                break;
+            break;
+        }
+        case ApiConstants.NODE_READY_SIGNAL: {
+            if (nodesReadySemaphore != null) {
+                LOGGER.debug("Received NODE_READY_SIGNAL");
+                nodesReadySemaphore.release();
+            } else {
+                throw new IllegalStateException("Received unexpected NODE_READY_SIGNAL");
             }
-            case ApiConstants.NODE_READY_SIGNAL: {
-                if (nodesReadySemaphore != null) {
-                    LOGGER.debug("Received NODE_READY_SIGNAL");
-                    nodesReadySemaphore.release();
-                } else {
-                    throw new IllegalStateException("Received unexpected NODE_READY_SIGNAL");
-                }
-                break;
+            break;
+        }
+        case Commands.DOCKER_CONTAINER_TERMINATED: {
+            ByteBuffer buffer = ByteBuffer.wrap(data);
+            String containerName = RabbitMQUtils.readString(buffer);
+            int exitCode = buffer.get();
+            // FIXME Handle the crash of a container during the crawling phase
+            if (nodeContainerMap.containsKey(containerName)) {
+                nodeContainerMap.get(containerName).setTerminated(true);
             }
+        }
         }
         super.receiveCommand(command, data);
     }
@@ -440,10 +434,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
         IOUtils.closeQuietly(systemTaskSender);
         if (nodeMetadata != null) {
             for (int i = 0; i < nodeMetadata.length; ++i) {
-                stopContainer(nodeMetadata[i].getContainer());
+                if (!nodeMetadata[i].isTerminated()) {
+                    stopContainer(nodeMetadata[i].getContainer());
+                }
             }
         }
-
         // Always close the super class after yours!
         super.close();
     }

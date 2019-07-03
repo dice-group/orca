@@ -18,7 +18,7 @@ import org.dice_research.ldcbench.rdf.TripleCreator;
 /**
  * Implementation of the {@link GraphValidator} interface querying the crawled
  * graph triples from the given SPARQL endpoint.
- * 
+ *
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
@@ -31,7 +31,7 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
 
     /**
      * Constructor.
-     * 
+     *
      * @param qef
      *            Query execution factory used for the communication with the SPARQL
      *            endpoint.
@@ -43,7 +43,7 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
     /**
      * Creates a {@link SparqlBasedValidator} instance which uses the given SPARQL
      * endpoint.
-     * 
+     *
      * @param endpoint
      *            the URL of the SPARQL endpoint which will be used by the created
      *            instance.
@@ -60,6 +60,7 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
         Objects.requireNonNull(graph, "Got null for graph #" + graphId);
         ValidationCounter counter = new ValidationCounter();
         TripleCreator creator = new SimpleCachingTripleCreator(graphId, supplier.getResourceUriTemplates(), supplier.getAccessUriTemplates());
+        try {
         IntStream.range(0, graph.getNumberOfNodes()).parallel()
                 .mapToObj(
                         n -> new int[][] { new int[] { n }, graph.outgoingEdgeTypes(n), graph.outgoingEdgeTargets(n) })
@@ -72,12 +73,18 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
                 })
                 .map(e -> exists(creator, graph, e)).forEach(b -> counter.accept(b));
         return counter.getValidationResult();
+        } catch(Exception e) {
+            System.out.println("graphId = " + graphId);
+            System.out.println(Arrays.toString(supplier.getResourceUriTemplates()));
+            System.out.println(Arrays.toString(supplier.getAccessUriTemplates()));
+            throw e;
+        }
     }
 
     /**
      * Checks whether the given edge exists by creating a {@link Triple} using the
      * given {@link TripleCreator}.
-     * 
+     *
      * @param creator
      *            used for creating a {@link Triple} instance of the given edge
      * @param graph

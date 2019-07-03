@@ -208,10 +208,10 @@ public class DataGenerator extends AbstractDataGenerator {
         }
 
         if (numberOfNodes != 0) {
-            LOGGER.debug("Generating a graph with {} nodes and {} average degree", numberOfNodes, avgDegree);
+            LOGGER.debug("Generator {} : Generating a graph with {} nodes {} average degree and {} seed", generatorId, numberOfNodes, avgDegree, seed);
             generator.generateGraph(numberOfNodes, avgDegree, seed, graph);
         } else {
-            LOGGER.debug("Generating a graph with {} average degree and {} edges", avgDegree, numberOfEdges);
+            LOGGER.debug("Generator {} : Generating a graph with {} average degree and {} edges and {} seed", generatorId, avgDegree, numberOfEdges, seed);
             generator.generateGraph(avgDegree, numberOfEdges, seed, graph);
         }
 
