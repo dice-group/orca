@@ -47,6 +47,15 @@ public abstract class AbstractSerializerTest {
         checkGraphs(g1, g2);
     }
 
+    @Test
+    public void testNodeWithNoEdges() throws Exception {
+         GraphBuilder g1 = new GrphBasedGraph();
+         g1.addNode();
+         byte[] data = SerializationHelper.serialize(DumbSerializer.class, g1);
+         Graph g2 = SerializationHelper.deserialize(data);
+         checkGraphs(g1, g2);
+    }
+
     public void checkGraphs(Graph g1, Graph g2) {
         // Check graph sizes
         Assert.assertEquals("Number of nodes is not equal", g1.getNumberOfNodes(), g2.getNumberOfNodes());
