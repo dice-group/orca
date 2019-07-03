@@ -1,5 +1,6 @@
 package org.dice_research.ldcbench.graph.serialization;
 
+import java.util.Arrays;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.graph.GraphBuilder;
 import org.dice_research.ldcbench.graph.GrphBasedGraph;
@@ -56,15 +57,31 @@ public abstract class AbstractSerializerTest {
             Assert.assertEquals("Wrong external Id for node " + i, g1.getExternalNodeId(i), g2.getExternalNodeId(i));
             Assert.assertEquals("Wrong graph Id for node " + i, g1.getGraphId(i), g2.getGraphId(i));
             // Check edges
-            Assert.assertArrayEquals("Wrong outgoing edge targets for node " + i, g1.outgoingEdgeTargets(i),
-                    g2.outgoingEdgeTargets(i));
-            Assert.assertArrayEquals("Wrong outgoing edge types for node " + i, g1.outgoingEdgeTypes(i),
-                    g2.outgoingEdgeTypes(i));
-            Assert.assertArrayEquals("Wrong incoming edge sources for node " + i, g1.incomingEdgeSources(i),
-                    g2.incomingEdgeSources(i));
-            Assert.assertArrayEquals("Wrong incoming edge types for node " + i, g1.incomingEdgeTypes(i),
-                    g2.incomingEdgeTypes(i));
+            assertEdgesEqual("Wrong outgoing edges for node " + i,
+                    g1.outgoingEdgeTargets(i), g1.outgoingEdgeTypes(i),
+                    g2.outgoingEdgeTargets(i), g2.outgoingEdgeTypes(i));
+            assertEdgesEqual("Wrong incoming edges for node " + i,
+                    g1.incomingEdgeSources(i), g1.incomingEdgeTypes(i),
+                    g2.incomingEdgeSources(i), g2.incomingEdgeTypes(i));
         }
         Assert.assertArrayEquals("Entrance nodes are not equal", g1.getEntranceNodes(), g2.getEntranceNodes());
+    }
+
+    private void assertEdgesEqual(String message, int[] vertices1, int[] types1, int[] vertices2, int[] types2) {
+        Assert.assertEquals("Amount of vertices and types for the first graph", vertices1.length, types1.length);
+        Assert.assertEquals("Amount of vertices and types for the first graph", vertices2.length, types2.length);
+        Assert.assertEquals("Amount of vertices in both graphs", vertices1.length, vertices2.length);
+
+        int n = vertices1.length;
+
+        String[] s1 = new String[n];
+        String[] s2 = new String[n];
+        for (int i = 0; i < n; i++) {
+            s1[i] = vertices1[i] + ":" + types1[i];
+            s2[i] = vertices2[i] + ":" + types2[i];
+        }
+        Arrays.sort(s1);
+        Arrays.sort(s2);
+        Assert.assertArrayEquals(message, s1, s2);
     }
 }
