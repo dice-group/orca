@@ -41,12 +41,15 @@
   <!-- MODULES -->
   <modules>
     <module>ldcbench.api</module>
-    <module>ldcbench.controller</module>
-    <module>ldcbench.parent</module>
-    <module>ldcbench.nodes</module>
-    <module>ldcbench.empty-server</module>
-    <module>ldcbench.http-node</module>
     <module>ldcbench.ckan-node</module>
+    <module>ldcbench.controller</module>
+    <module>ldcbench.data-generator</module>
+    <module>ldcbench.empty-server</module>
+    <module>ldcbench.eval-module</module>
+    <module>ldcbench.http-node</module>
+    <module>ldcbench.nodes</module>
+    <module>ldcbench.parent</module>
     <module>ldcbench.sparql-node</module>
+    <module>ldcbench.system</module>
   </modules>
 </project>

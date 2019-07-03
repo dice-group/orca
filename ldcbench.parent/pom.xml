@@ -51,6 +51,11 @@
       </dependency>
       <dependency>
         <groupId>org.dice_research</groupId>
+        <artifactId>ldcbench.data-generator</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dice_research</groupId>
         <artifactId>ldcbench.empty-server</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -270,20 +275,20 @@
         </plugin>
         <!-- Plugin for copying dependencies -->
         <plugin>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <version>3.1.1</version>
-            <executions>
-              <execution>
-                <phase>install</phase>
-                <goals>
-                  <goal>copy-dependencies</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.1.1</version>
+          <executions>
+            <execution>
+              <phase>install</phase>
+              <goals>
+                <goal>copy-dependencies</goal>
+              </goals>
+              <configuration>
+                <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
         <!-- lock down plugins versions to avoid using Maven defaults (may 
           be moved to parent pom) -->
         <plugin>

@@ -10,17 +10,13 @@
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../ldcbench.parent</relativePath>
   </parent>
-  <artifactId>ldcbench.controller</artifactId>
+  <artifactId>ldcbench.eval-module</artifactId>
   <packaging>jar</packaging>
 
   <dependencies>
     <dependency>
       <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.dice_research</groupId>
-      <artifactId>ldcbench.data-generator</artifactId>
     </dependency>
     <dependency>
       <groupId>org.dice_research</groupId>

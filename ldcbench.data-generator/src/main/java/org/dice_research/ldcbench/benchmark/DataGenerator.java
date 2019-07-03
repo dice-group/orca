@@ -120,7 +120,7 @@ public class DataGenerator extends AbstractDataGenerator {
         Random random = new Random(seed);
         for (Map.Entry<Integer, GraphMetadata> entry : rdfMetadata.entrySet()) {
             int targetNodeGraph = entry.getKey();
-            GraphMetadata gm = entry.getValue();
+//            GraphMetadata gm = entry.getValue();
 
             // use random node
             int nodeWithOutgoingLink = random.nextInt(numberOfInternalNodes);
