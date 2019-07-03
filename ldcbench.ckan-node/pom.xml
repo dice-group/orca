@@ -107,9 +107,6 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <repository>git.project-hobbit.eu:4567/ldcbench/ldcbench/ckan-node</repository>
-        </configuration>
       </plugin>
     </plugins>
   </build>

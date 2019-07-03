@@ -105,9 +105,6 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <repository>git.project-hobbit.eu:4567/ldcbench/ldcbench/simple-http-node</repository>
-        </configuration>
       </plugin>
     </plugins>
   </build>
