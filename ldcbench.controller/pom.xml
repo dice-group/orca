@@ -101,16 +101,19 @@
     <!-- ~~~~~~~~~~~~~~~~~~~ End Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
   </dependencies>
   <build>
+    <finalName>${project.artifactId}</finalName>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
+        <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
             <phase>package</phase>
             <goals>
-              <goal>shade</goal>
+              <goal>copy-dependencies</goal>
             </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -122,7 +125,6 @@
             <id>dockerfile-controller</id>
             <goals>
               <goal>build</goal>
-              <goal>push</goal>
             </goals>
             <configuration>
               <dockerfile>Dockerfile.controller</dockerfile>
@@ -133,7 +135,6 @@
             <id>dockerfile-datagen</id>
             <goals>
               <goal>build</goal>
-              <goal>push</goal>
             </goals>
             <configuration>
               <dockerfile>Dockerfile.datagen</dockerfile>
@@ -144,7 +145,6 @@
             <id>dockerfile-eval-module</id>
             <goals>
               <goal>build</goal>
-              <goal>push</goal>
             </goals>
             <configuration>
               <dockerfile>Dockerfile.eval-module</dockerfile>
@@ -155,7 +155,6 @@
             <id>dockerfile-system-adapter</id>
             <goals>
               <goal>build</goal>
-              <goal>push</goal>
             </goals>
             <configuration>
               <dockerfile>Dockerfile.system-adapter</dockerfile>
