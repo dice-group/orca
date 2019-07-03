@@ -29,4 +29,4 @@ test-benchmark:
 	mvn -DfailIfNoTests=false -Dtest=BenchmarkTest#executeBenchmark test
 
 test-benchmark-dockerized:
-	mvn -DfailIfNoTests=false -Dtest=BenchmarkIT#executeBenchmark verify
+	mvn -DskipTestPhase -DfailIfNoTests=false -Dtest=BenchmarkIT#executeBenchmark verify
