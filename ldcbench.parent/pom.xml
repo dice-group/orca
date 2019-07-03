@@ -61,6 +61,11 @@
       </dependency>
       <dependency>
         <groupId>org.dice_research</groupId>
+        <artifactId>ldcbench.eval-module</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dice_research</groupId>
         <artifactId>ldcbench.nodes</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -77,6 +82,11 @@
       <dependency>
         <groupId>org.dice_research</groupId>
         <artifactId>ldcbench.sparql-node</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dice_research</groupId>
+        <artifactId>ldcbench.system</artifactId>
         <version>${project.version}</version>
       </dependency>
       <!-- ~~~~~~~~~~~~~~~~~~~ End LDCBench modules ~~~~~~~~~~~~~~~~~~~~~~ -->

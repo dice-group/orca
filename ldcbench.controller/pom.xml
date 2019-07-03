@@ -28,6 +28,11 @@
     </dependency>
     <dependency>
       <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.eval-module</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.http-node</artifactId>
       <scope>test</scope>
     </dependency>
@@ -39,6 +44,11 @@
     <dependency>
       <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.sparql-node</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.system</artifactId>
       <scope>test</scope>
     </dependency>
     <!-- HOBBIT core library -->
