@@ -58,8 +58,6 @@ public class RandomRDFTest {
         assertEquals("Number of nodes", 1, g.getNumberOfNodes());
         assertEquals("Number of edges", 0, g.getNumberOfEdges());
 
-        // g.print();
-        // g.saveToFile(String.format("D:\\RandGj_N%d.txt", N));
     }
 
     @Test
@@ -67,6 +65,7 @@ public class RandomRDFTest {
         // With these numbers it was observed that node 19 has neither incoming nor
         // outgoing edges. This should not be possible.
         rg.generateGraph(5.0, 100, 496, g);
+//        g.print();
         Assert.assertTrue("Node 19 has no edges!", (g.incomingEdgeTypes(19).length + g.outgoingEdgeTypes(19).length) > 0);
         assertEquals("Number of edges", 60000, g.getNumberOfEdges());
     }
