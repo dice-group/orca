@@ -173,7 +173,7 @@ public class BenchmarkTestBase {
         if (componentsExecutor.anyExceptions()) {
             LOGGER.error("Some components didn't execute cleanly");
             for (Throwable e : componentsExecutor.getExceptions()) {
-                LOGGER.error("- {}", e.toString());
+                LOGGER.error("Component didn't execute cleanly", e);
             }
             Assert.fail();
         }
