@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
@@ -200,24 +201,31 @@ public class BenchmarkController extends AbstractBenchmarkController {
             totalNodeWeight += nodeWeight[i];
         }
         // create at least one node per any included node type
+        int[] nodetypes = new int[nodeManagerClasses.length];
         for (int i = 0; i < nodeManagerClasses.length; i++) {
             if (nodeWeight[i] != 0) {
-                nodeManagers.add((AbstractNodeManager) nodeManagerClasses[i].newInstance());
+                nodetypes[i] += 1;
             }
         }
         // create other nodes according to the weights provided
         for (int i = 0; i < nodeManagerClasses.length; i++) {
             nodeWeight[i] /= totalNodeWeight;
         }
-        for (int i = nodeManagers.size(); i < nodesAmount; i++) {
+        for (int i = IntStream.of(nodetypes).sum(); i < nodesAmount; i++) {
             float sample = random.nextFloat();
             float current = 0;
             for (int j = 0; j < nodeManagerClasses.length; j++) {
                 current += nodeWeight[j];
                 if (sample <= current || j == nodeManagerClasses.length - 1) {
-                    nodeManagers.add((AbstractNodeManager) nodeManagerClasses[j].newInstance());
+                    nodetypes[j] += 1;
                     break;
                 }
+            }
+        }
+
+        for (int i = 0; i < nodeManagerClasses.length; i++) {
+            for (int j = 0; j < nodetypes[i]; j++) {
+                nodeManagers.add((AbstractNodeManager) nodeManagerClasses[i].newInstance());
             }
         }
 
