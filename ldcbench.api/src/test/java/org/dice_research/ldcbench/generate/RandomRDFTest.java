@@ -44,8 +44,9 @@ public class RandomRDFTest {
 
     @Test
     public void IntDegree() {
-        rg.generateGraph(5.0, 200000, 123L, g);
-        assertEquals("Number of nodes", 40000, g.getNumberOfNodes());
+        rg.generateGraph(5.0, 200000, 10L, g);
+//        assertEquals("Number of nodes", 40000, g.getNumberOfNodes());
+        assertEquals("Number of nodes", 36395, g.getNumberOfNodes());//when using uniform degree
         assertEquals("Number of edges", 200000, g.getNumberOfEdges());
 
         // g.print();
@@ -66,8 +67,10 @@ public class RandomRDFTest {
         // outgoing edges. This should not be possible.
         rg.generateGraph(5.0, 100, 496, g);
 //        g.print();
-        Assert.assertTrue("Node 19 has no edges!", (g.incomingEdgeTypes(19).length + g.outgoingEdgeTypes(19).length) > 0);
-        assertEquals("Number of edges", 60000, g.getNumberOfEdges());
+        assertEquals("Number of edges", 100, g.getNumberOfEdges());
+        int nodeCnt=g.getNumberOfNodes();
+        for(int nn=0;nn < nodeCnt;nn++) 
+           Assert.assertTrue(String.format("Node %d has no edges!",nn), (g.incomingEdgeTypes(nn).length + g.outgoingEdgeTypes(nn).length) > 0);
     }
 
 }
