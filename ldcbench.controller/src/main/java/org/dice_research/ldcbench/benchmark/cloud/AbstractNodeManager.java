@@ -18,6 +18,8 @@ public abstract class AbstractNodeManager {
 
     public abstract String getImageName();
 
+    public abstract String getLabel();
+
     public NodeMetadata getMetadata() {
         return new NodeMetadata();
     }

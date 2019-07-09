@@ -28,4 +28,9 @@ public class DereferencingHttpNodeManager extends AbstractNodeManager {
     public String getImageName() {
         return HTTPNODE_IMAGE_NAME;
     }
+
+    @Override
+    public String getLabel() {
+        return "http";
+    }
 }
