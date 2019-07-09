@@ -16,6 +16,7 @@ public class RandomCloudGraph implements GraphGenerator{
 	protected boolean[] ishub;
 	protected int[][] typeconnectivity;
 	protected int hcount;
+	protected int[] typecounts;
 
 	public RandomCloudGraph(String gname,int[] nt,boolean[] ih, int[][] tc) {
 		name = gname;
@@ -26,6 +27,7 @@ public class RandomCloudGraph implements GraphGenerator{
 
 	public RandomCloudGraph(String gname,int[] typecounts,int hcount, int[][] tc) {
 		name = gname;
+		this.typecounts=typecounts;
 		nodetypes=getNodeSequence(typecounts);
 		//ishub=ih;
 		typeconnectivity=tc;
@@ -217,23 +219,47 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 		}
 
 //		The dataset currently contains 1,239 datasets with 16,147 links (as of March 2019): d~=15
-
-		if (node % 10000 == 0) {
+     if (node % 10000 == 0) {
 			long ti1;
 			ti1= System.currentTimeMillis();
 			ti0= System.currentTimeMillis();
 		}
 	if(indexToEdgeList >= nE) break;
 	}
+	//5/7/2019 remapping ids to make nodes of same type having adjacent ids.
+	// type is 0 to n0-1, type1 n to n+n1-1 .. etc
+	
+	int nTypes=typeconnectivity.length;
+    int[] crnt_indx=new int[nTypes];
+    crnt_indx[0]=0;
+    for(int i=1; i < nTypes ;i++) {
+    	crnt_indx[i] = crnt_indx[i-1] + typecounts[i-1];
+    }
+    int[] remappedIds=new int[N];
+    for(int i=0; i<N; i++) {
+    	remappedIds[i] = crnt_indx[nodetypes[i]];
+    	crnt_indx[nodetypes[i]]++;
+    }
+	
 	//Grph structure ----------------------------------------------
 	int nEdges = indexToEdgeList;
 	int[] idRange=builder.addNodes(N);//Range
-	for(int i=0; i < nEdges; i++) {
-		if(!builder.addEdge(subj[i]-1 + idRange[0], obj[i]-1+idRange[0], 0)) {
-			System.out.println("Failed to add edge : i="+i+" subj="+subj[i]+" idRange[0]=" + idRange[0]+" obj[i]="+ obj[i]);
+	for(int i = 0; i < nEdges; i++) {
+	if(!builder.addEdge(remappedIds[subj[i]-1] + idRange[0], remappedIds[obj[i]-1]+idRange[0], 0)) {
+		//if(!builder.addEdge(subj[i]-1 + idRange[0], obj[i]-1+idRange[0], 0)) {
+			System.out.println("Failed to add edge : i="+i+" subj="+subj[i]+" idRange[0]=" + idRange[0]
+				+" obj[i]="+ obj[i]+"remappedIds[obj[i]-1]"+remappedIds[subj[i]-1]
+							);
 		};
 	}
-
+// adjust node types
+	int nodetype_index=0;
+    for(int i=0; i < nTypes ;i++) {
+    	for(int j=0; j < typecounts[i];j++) {
+    		this.nodetypes[nodetype_index++]=i;
+        }
+    }
+	
 	int[] entranceNodes;
 	entranceNodes = findEnteranceNodes(builder);
 	builder.setEntranceNodes(entranceNodes);

@@ -15,7 +15,7 @@ public class RandomLOD2File {
 //	int[] typecounts= {14,8,6};
 //    int[][] typeconn= {{1,1,0},{0,1,1},{1,1,1}};
 //    double degree=46.0/N;
-
+//
     int N=1096;
     int[] typecounts= {500,400,100,96};
     int[][] typeconn= {{1,1,0,0},{0,1,1,0},{0,0,1,1},{1,1,1,1}};
