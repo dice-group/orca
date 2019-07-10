@@ -41,4 +41,14 @@ public class SmallRandomCloudTest {
         GrphBasedGraph g = new GrphBasedGraph();
         rg.generateGraph(2, 1.0, 0, g);
     }
+
+    @Test
+    public void testNodeCounts2() {
+        int[] typecounts = {1, 1}; // 1 node of first type, 1 node of second type, 0 nodes of third type
+        int hcount = 0; // What to pass there?
+        int[][] typeconn = {{1,0},{1,1}};
+        RandomCloudGraph rg = new RandomCloudGraph("Graph", typecounts, hcount, typeconn);
+        GrphBasedGraph g = new GrphBasedGraph();
+        rg.generateGraph(2, 1.0, 0, g);
+    }
 }
