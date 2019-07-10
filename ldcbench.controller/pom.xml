@@ -20,10 +20,22 @@
     </dependency>
     <dependency>
       <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.empty-server</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.http-node</artifactId>
-      <!-- FIXME do not build httpNode image as part of this project
       <scope>test</scope>
-      -->
+    </dependency>
+    <dependency>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.ckan-node</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.sparql-node</artifactId>
+      <scope>test</scope>
     </dependency>
     <!-- HOBBIT core library -->
     <dependency>
@@ -92,8 +104,72 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>dockerfile-maven-plugin</artifactId>
+        <version>${dockerfile-maven-version}</version>
+        <executions>
+          <execution>
+            <id>dockerfile-controller</id>
+            <goals>
+              <goal>build</goal>
+              <goal>push</goal>
+            </goals>
+            <configuration>
+              <dockerfile>Dockerfile.controller</dockerfile>
+              <repository>git.project-hobbit.eu:4567/ldcbench/ldcbench/benchmark-controller</repository>
+            </configuration>
+          </execution>
+          <execution>
+            <id>dockerfile-datagen</id>
+            <goals>
+              <goal>build</goal>
+              <goal>push</goal>
+            </goals>
+            <configuration>
+              <dockerfile>Dockerfile.datagen</dockerfile>
+              <repository>git.project-hobbit.eu:4567/ldcbench/ldcbench/datagen</repository>
+            </configuration>
+          </execution>
+          <execution>
+            <id>dockerfile-eval-module</id>
+            <goals>
+              <goal>build</goal>
+              <goal>push</goal>
+            </goals>
+            <configuration>
+              <dockerfile>Dockerfile.eval-module</dockerfile>
+              <repository>git.project-hobbit.eu:4567/ldcbench/ldcbench/eval-module</repository>
+            </configuration>
+          </execution>
+          <execution>
+            <id>dockerfile-system-adapter</id>
+            <goals>
+              <goal>build</goal>
+              <goal>push</goal>
+            </goals>
+            <configuration>
+              <dockerfile>Dockerfile.system-adapter</dockerfile>
+              <repository>git.project-hobbit.eu:4567/ldcbench/ldcbench/system-adapter</repository>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <skip>${skipTestPhase}</skip>
           <systemPropertyVariables>
             <sdkJarFilePath>${project.build.directory}/${project.artifactId}-shaded.jar</sdkJarFilePath>
           </systemPropertyVariables>
@@ -101,12 +177,17 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <sdkJarFilePath>${project.build.directory}/${project.artifactId}-shaded.jar</sdkJarFilePath>
+          </systemPropertyVariables>
+        </configuration>
         <executions>
           <execution>
-            <phase>package</phase>
             <goals>
-              <goal>shade</goal>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
             </goals>
           </execution>
         </executions>

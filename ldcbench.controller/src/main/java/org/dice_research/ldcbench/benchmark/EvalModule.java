@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.Semaphore;
+import java.util.stream.Stream;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -35,7 +37,6 @@ import org.hobbit.utils.EnvVariables;
 import org.hobbit.vocab.HOBBIT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.tokens.StreamStartToken;
 
 public class EvalModule extends AbstractCommandReceivingComponent {
     private static final Logger LOGGER = LoggerFactory.getLogger(EvalModule.class);
@@ -56,8 +57,7 @@ public class EvalModule extends AbstractCommandReceivingComponent {
     protected Semaphore dataGenerationFinished = new Semaphore(0);
 
     protected String graphFiles[];
-    protected String domainNames[];
-    protected Semaphore domainNamesReceived = new Semaphore(0);
+    private NodeMetadata[] nodeMetadata;
     protected long startTimeStamp;
     protected long endTimeStamp;
     protected Timer timer = null;
@@ -97,25 +97,19 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         };
 
         // Signal to the BC that we are ready to receive
-        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
+        sendToCmdQueue(ApiConstants.NODE_INIT_SIGNAL);
 
         LOGGER.info("Evaluation module initialized.");
     }
 
     protected void handleBCMessage(NodeMetadata[] nodeMetadata) {
         if (nodeMetadata != null) {
-            domainNames = new String[nodeMetadata.length];
-            for (int i = 0; i < nodeMetadata.length; ++i) {
-                domainNames[i] = nodeMetadata[i].getHostname();
-            }
+            this.nodeMetadata = nodeMetadata;
         } else {
             LOGGER.error("Couldn't parse node metadata received from benchmark controller.");
-            domainNames = null;
+            this.nodeMetadata = null;
         }
-        LOGGER.debug("Got domain names: {}", Arrays.toString(domainNames));
-        // In any case, we should release the semaphore. Otherwise, this component would
-        // get stuck and wait forever for an additional message.
-        domainNamesReceived.release();
+        LOGGER.debug("Got node metadata: {}", Arrays.toString(this.nodeMetadata));
     }
 
     @Override
@@ -128,7 +122,7 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         graphConsumer.close();
         graphConsumer = null;
 
-        LOGGER.info("Waiting for the crawling to finish...");
+        LOGGER.info("Waiting for the evaluation phase...");
         crawlingFinished.acquire();
 
         // Evaluate the crawled data, create result model and terminate
@@ -214,15 +208,20 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         sendToCmdQueue(Commands.EVAL_MODULE_FINISHED_SIGNAL, outputStream.toByteArray());
     }
 
-    private EvaluationResult runEvaluation() {
+    private Map<Integer, EvaluationResult> runEvaluation() {
         // Evaluate the results based on the data from the SPARQL storage
-        GraphSupplier supplier = new FileBasedGraphSupplier(graphFiles, domainNames);
+        GraphSupplier supplier = new FileBasedGraphSupplier(
+            graphFiles,
+            Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+            Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
+        );
         GraphValidator validator = SparqlBasedValidator.create(sparqlEndpoint);
         CrawledDataEvaluator evaluator = new SimpleCompleteEvaluator(supplier, validator);
         return evaluator.evaluate();
     }
 
-    protected Model summarizeEvaluation(EvaluationResult result) throws Exception {
+    protected Model summarizeEvaluation(Map<Integer, EvaluationResult> results) throws Exception {
+        EvaluationResult result = results.get(CrawledDataEvaluator.TOTAL_EVALUATION_RESULTS);
         // Write results into a Jena model and send it to the BC
         Model model = ModelFactory.createDefaultModel();
         model.add(model.createResource(experimentUri), RDF.type, HOBBIT.Experiment);
@@ -235,6 +234,15 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         long runtime = endTimeStamp - startTimeStamp;
         if (runtime > 0) {
             model.add(model.createLiteralStatement(experimentResource, LDCBench.runtime, runtime));
+        }
+
+        // Add results from all nodes
+        for (Map.Entry<Integer, EvaluationResult> entry : results.entrySet()) {
+            if (entry.getKey() != CrawledDataEvaluator.TOTAL_EVALUATION_RESULTS) {
+                Resource nodeResource = model.createResource(experimentUri + "_Node_" + entry.getKey());
+                //model.add(model.createStatement(experimentResource, model.createProperty(LDCBench.getURI(), "node"), nodeResource));
+                model.add(model.createLiteralStatement(nodeResource, LDCBench.recall, entry.getValue().recall));
+            }
         }
 
         // Transform the data of the triple counter into RDF

@@ -1,5 +1,4 @@
-package org.dice_research.ldcbench;
-
+package org.dice_research.ldcbench.builders;
 
 import org.hobbit.core.run.ComponentStarter;
 import org.hobbit.sdk.docker.builders.DynamicDockerFileBuilder;

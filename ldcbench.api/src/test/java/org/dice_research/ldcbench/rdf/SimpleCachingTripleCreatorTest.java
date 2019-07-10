@@ -17,8 +17,8 @@ public class SimpleCachingTripleCreatorTest extends AbstractTripleCreatorTest {
         return SimpleTripleCreatorTest.testCases();
     }
 
-    public SimpleCachingTripleCreatorTest(int baseGraphId, String[] domains, int edge[], String expectedUris[]) {
-        super(new SimpleCachingTripleCreator(baseGraphId, domains), edge, expectedUris);
+    public SimpleCachingTripleCreatorTest(int baseGraphId, String[] resourceUriTemplates, String[] accessUriTemplates, int edge[], String expectedUris[]) {
+        super(new SimpleCachingTripleCreator(baseGraphId, resourceUriTemplates, accessUriTemplates), edge, expectedUris);
     }
 
     @Test

@@ -1,0 +1,21 @@
+@prefix hobbit: <http://w3id.org/hobbit/vocab#> .
+@prefix experiments: <http://w3id.org/hobbit/experiments#>
+@prefix : <https://github.com/dice-group/ldcbench#> .
+
+experiments:New a hobbit:Experiment;
+  :seed 100;
+  :triplesPerNode 5;
+  :averageNodeDelay 5000;
+  :averageRdfGraphDegree 2;
+  :dereferencingHttpNodeWeight 1;
+  :ckanNodeWeight 0.01;
+  # FIXME if using SPARQL node:
+  #
+  #     ERROR [org.hobbit.sdk.utils.ComponentsExecutor] - <Error while running component SimpleSparqlComponent:>
+  #     java.lang.NoClassDefFoundError: org/apache/jena/atlas/web/auth/HttpAuthenticator
+  #             at org.dice_research.ldcbench.nodes.sparql.simple.SimpleSparqlComponent.initBeforeDataGeneration(SimpleSparqlComponent.java:43)
+  #     Caused by: java.lang.ClassNotFoundException: org.apache.jena.atlas.web.auth.HttpAuthenticator
+  #             at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:583)
+  :sparqlNodeWeight 0;
+  :numberOfNodes 2;
+  :averageNodeGraphDegree 1.

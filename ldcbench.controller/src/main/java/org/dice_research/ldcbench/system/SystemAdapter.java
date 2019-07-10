@@ -11,6 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -41,15 +45,38 @@ public class SystemAdapter extends AbstractSystemAdapter {
 
     @Override
     public void receiveGeneratedData(byte[] data) {
-        String sparqlEndpoint = RabbitMQUtils.readString(data);
-        logger.info("SPARQL endpoint: {}", sparqlEndpoint);
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+        String sparqlUrl = RabbitMQUtils.readString(buffer);
+        String sparqlUser = RabbitMQUtils.readString(buffer);
+        String sparqlPwd = RabbitMQUtils.readString(buffer);
+        String[] seedURIs = RabbitMQUtils.readString(buffer).split("\n");
+
+        logger.info("SPARQL endpoint: " + sparqlUrl);
+        assert sparqlUrl.length() > 0;
+        logger.info("Seed URIs: {}.", Arrays.toString(seedURIs));
+        assert seedURIs.length > 0;
+        logger.info("SPARQL endpoint username: {}.", sparqlUser);
+        assert sparqlUser.length() > 0;
+        assert sparqlPwd.length() > 0;
+
+        for (String uri : seedURIs) {
+            try {
+                URLConnection connection = new URL(uri).openConnection();
+                connection.getContent();
+            } catch (IOException e) {
+                logger.error("Failed to fetch {}.", uri, e);
+            }
+        }
+
+//        Thread.sleep(6000000);
+        
+        logger.info("Dummy system terminates.");
+        terminate(null);
     }
 
     @Override
     public void receiveGeneratedTask(String taskId, byte[] data) {
-        String seedURI = RabbitMQUtils.readString(data);
-        logger.info("Seed URI: {}", seedURI);
-        terminate(null);
+        throw new IllegalStateException("Should not receive any tasks.");
     }
 
     @Override

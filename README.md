@@ -31,3 +31,22 @@ and `receiveGeneratedTask` method to receive seed URI.
 
 System should start crawling by retrieving provided seed URI
 and use use SPARQL endpoint to store crawled data.
+
+# Benchmark maintenance
+
+## Building and testing
+
+Use `mvn verify` to run build and all available tests.
+
+Use `make test-benchmark` to run tests with main components running without docker.
+
+Use `make test-benchmark-dockerized` to run tests with docker images.
+
+## Building and pushing images
+
+Use `make images push-images` to build docker images and push them to the HOBBIT repository.
+
+## Updating benchmark metadata in the HOBBIT Platform
+
+Updated files should be in the `master` branch.
+Use `make push-hobbit` to push to HOBBIT git.

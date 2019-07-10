@@ -34,5 +34,6 @@ public interface GraphSupplier {
      * 
      * @return the domain names of the graphs
      */
-    public String[] getDomains();
+    public String[] getResourceUriTemplates();
+    public String[] getAccessUriTemplates();
 }

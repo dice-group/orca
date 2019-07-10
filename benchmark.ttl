@@ -19,11 +19,12 @@
     :dereferencingHttpNodeWeight,
     :ckanNodeWeight,
     :sparqlNodeWeight,
+    :graphVisualization,
     :triplesEvaluated;
-  hobbit:measuresKPI :truePositives, :recall;
+  hobbit:measuresKPI :truePositives, :recall, :runtime;
   hobbit:hasAPI :Api .
 
-:api a hobbit:API .
+:Api a hobbit:API .
 
 :seed a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Seed"@en;
@@ -87,6 +88,12 @@
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:float;
   hobbit:defaultValue "1"^^xsd:float .
+
+:graphVisualization a hobbit:Parameter ;
+  rdfs:label "Cloud graph visualization"@en;
+  rdfs:comment "Cloud graph visualization, in DOT language."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:string .
 
 :triplesEvaluated a hobbit:Parameter ;
   rdfs:label "Triples evaluated"@en;

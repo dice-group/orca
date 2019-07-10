@@ -13,11 +13,13 @@ public class FileBasedGraphSupplier implements GraphSupplier {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileBasedGraphSupplier.class);
 
     protected String[] graphFiles;
-    protected String[] domains;
+    protected String[] resourceUriTemplates;
+    protected String[] accessUriTemplates;
 
-    public FileBasedGraphSupplier(String[] graphFiles, String[] domains) {
+    public FileBasedGraphSupplier(String[] graphFiles, String[] resourceUriTemplates, String[] accessUriTemplates) {
         this.graphFiles = graphFiles;
-        this.domains = domains;
+        this.resourceUriTemplates = resourceUriTemplates;
+        this.accessUriTemplates = accessUriTemplates;
     }
 
     @Override
@@ -36,8 +38,13 @@ public class FileBasedGraphSupplier implements GraphSupplier {
     }
 
     @Override
-    public String[] getDomains() {
-        return domains;
+    public String[] getResourceUriTemplates() {
+        return resourceUriTemplates;
+    }
+
+    @Override
+    public String[] getAccessUriTemplates() {
+        return accessUriTemplates;
     }
 
 }

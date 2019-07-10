@@ -22,6 +22,10 @@
       <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.nodes</artifactId>
+    </dependency>
     <!-- HOBBIT core library -->
     <dependency>
       <groupId>org.hobbit</groupId>
@@ -88,6 +92,22 @@
           </execution>
         </executions>
       </plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>dockerfile-maven-plugin</artifactId>
+				<version>${dockerfile-maven-version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build</goal>
+							<goal>push</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<repository>git.project-hobbit.eu:4567/ldcbench/ldcbench/simple-http-node</repository>
+				</configuration>
+			</plugin>
     </plugins>
   </build>
 </project>
