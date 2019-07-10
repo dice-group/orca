@@ -69,6 +69,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private String sparqlUrl;
     private String sparqlUrlAuth;
     private String[] sparqlCredentials;
+    private ArrayList<Integer> seedNodes;
     private ArrayList<String> seedURIs;
 
     private ArrayList<AbstractNodeManager> nodeManagers = new ArrayList<>();
@@ -365,12 +366,13 @@ public class BenchmarkController extends AbstractBenchmarkController {
     }
 
     protected void addNodeToSeed(ArrayList<String> seedURIs, int node) {
+        seedNodes.add(node);
         seedURIs.add(getSeedForNode(node));
-        dotlangLines.add(String.format("{rank=min; %d [penwidth=2]}", node));
     }
 
-    protected ArrayList<String> getSeedURIs(Graph g) {
-        ArrayList<String> seedURIs = new ArrayList<>();
+    protected void getSeedURIs(Graph g) {
+        seedNodes = new ArrayList<>();
+        seedURIs = new ArrayList<>();
 
         int[] entranceNodes = g.getEntranceNodes();
         for (int i = 0; i < entranceNodes.length; i++) {
@@ -379,7 +381,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
         if (seedURIs.size() == 0) {
             throw new IllegalStateException();
         }
-        return seedURIs;
     }
 
     protected int[][] getTypeConnectivity(ArrayList<Class<?>> nodeManagerClasses) throws IllegalAccessException, InstantiationException {
@@ -413,7 +414,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         LOGGER.debug("Waiting for the node graph...");
         nodeGraphMutex.acquire();
 
-        seedURIs = getSeedURIs(nodeGraph);
+        getSeedURIs(nodeGraph);
         LOGGER.info("Seed URIs: {}", seedURIs);
 
         LOGGER.debug("Waiting for the data generators to finish...");
@@ -444,6 +445,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // results. We should add the configuration of the benchmark to this
         // model.
         // this.resultModel.add(...);
+
+        dotlangLines.add("{rank=min; S [label=seed, style=dotted]}");
+        dotlangLines.add(String.format("{rank=same; %s}", seedNodes.stream().map(String::valueOf).collect(Collectors.joining(" "))));
+        seedNodes.stream().map(i -> String.format("S -> %d [style=dotted]", i)).forEach(dotlangLines::add);
 
         final int amountOfColors = 9;
         // https://www.graphviz.org/doc/info/colors.html
