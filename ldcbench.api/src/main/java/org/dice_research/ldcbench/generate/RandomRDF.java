@@ -253,7 +253,8 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 			double biasedCoin=((m/2.0-1)/(m-1));
 			long ts10k=0;
 			int cntE=indexToEdgeList;
-			for (int i = m + 1; i <= N; i++) {
+			int i;
+			for ( i = m + 1; i <= N; i++) {
 				long ts1=System.currentTimeMillis();
 				int m1= 1+ generator.nextInt(2*m);
 				if(m1 >= i) m1=i-1;
@@ -301,13 +302,20 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 				}
 				if(indexToEdgeList >= nE) break;
 			}
-
+			
+			System.out.println("nE:"+indexToEdgeList);
+			
 			long t_barabasi = System.currentTimeMillis();
+//            ##4/7/2019
+			if(i <= N ) {
+            	System.out.println("Actual number of nodes:" +i+" instead of: "+N );
+            	N=i;
+            }
 
 			//Grph structure ----------------------------------------------
 			int nEdges = indexToEdgeList;
 			int[] idRange=builder.addNodes(N);//Range
-			for(int i=0; i < nEdges; i++) {
+			for( i=0; i < nEdges; i++) {
 				if(!builder.addEdge(subj[i]-1 + idRange[0], obj[i]-1+idRange[0], 0)) {
 					System.out.println("Failed to add edge : i="+i+" subj="+subj[i]+" idRange[0]=" + idRange[0]+" obj[i]="+ obj[i]);
 				};
