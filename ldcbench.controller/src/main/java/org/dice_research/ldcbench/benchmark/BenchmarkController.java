@@ -1,5 +1,6 @@
 package org.dice_research.ldcbench.benchmark;
 
+import java.util.stream.Collectors;
 import static org.dice_research.ldcbench.Constants.*;
 
 import java.io.ByteArrayOutputStream;
@@ -58,7 +59,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private Set<Future<String>> dataGenContainers = new HashSet<>();
     private List<Future<String>> nodeContainers = new ArrayList<>();
 
-    private Class<?>[] nodeManagerClasses = { DereferencingHttpNodeManager.class, CkanNodeManager.class,
+    private Class<?>[] possibleNodeManagerClasses = { DereferencingHttpNodeManager.class, CkanNodeManager.class,
             SparqlNodeManager.class, };
 
     private boolean sdk;
@@ -68,7 +69,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private String sparqlUrl;
     private String sparqlUrlAuth;
     private String[] sparqlCredentials;
-    private ArrayList<String> seedURIs = new ArrayList<>();
+    private ArrayList<String> seedURIs;
 
     private ArrayList<AbstractNodeManager> nodeManagers = new ArrayList<>();
 
@@ -83,6 +84,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     protected DataSender systemTaskSender;
     protected NodeMetadata[] nodeMetadata = null;
     protected Map<String, NodeMetadata> nodeContainerMap = new HashMap<>();
+    private Graph nodeGraph;
 
     protected List<String> dotlangLines = Collections.synchronizedList(new ArrayList<>());
 
@@ -174,6 +176,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                             dotlangLines.add(String.format("%d -> %d", node, target));
                         }
                     }
+                    nodeGraph = g;
                     nodeGraphMutex.release();
                 }
             }
@@ -193,40 +196,46 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         String[] envVariables;
         LOGGER.debug("Starting all cloud nodes...");
-        float nodeWeight[] = new float[nodeManagerClasses.length];
+        float nodeWeight[] = new float[possibleNodeManagerClasses.length];
         float totalNodeWeight = 0;
-        for (int i = 0; i < nodeManagerClasses.length; i++) {
-            Property param = (Property) nodeManagerClasses[i].getDeclaredMethod("getBenchmarkParameter").invoke(null);
+        ArrayList<Class<?>> nodeManagerClasses = new ArrayList<>();
+        for (int i = 0; i < possibleNodeManagerClasses.length; i++) {
+            Property param = (Property) possibleNodeManagerClasses[i].getDeclaredMethod("getBenchmarkParameter").invoke(null);
             Literal value = RdfHelper.getLiteral(benchmarkParamModel, null, param);
             nodeWeight[i] = value != null ? value.getFloat() : 1;
-            totalNodeWeight += nodeWeight[i];
+            if (nodeWeight[i] != 0) {
+                totalNodeWeight += nodeWeight[i];
+                nodeManagerClasses.add(possibleNodeManagerClasses[i]);
+            }
         }
         // create at least one node per any included node type
-        int[] nodetypes = new int[nodeManagerClasses.length];
-        for (int i = 0; i < nodeManagerClasses.length; i++) {
+        int[] typecounts = new int[nodeManagerClasses.size()];
+        for (int i = 0; i < nodeManagerClasses.size(); i++) {
             if (nodeWeight[i] != 0) {
-                nodetypes[i] += 1;
+                typecounts[i] += 1;
             }
         }
         // create other nodes according to the weights provided
-        for (int i = 0; i < nodeManagerClasses.length; i++) {
+        for (int i = 0; i < nodeManagerClasses.size(); i++) {
             nodeWeight[i] /= totalNodeWeight;
         }
-        for (int i = IntStream.of(nodetypes).sum(); i < nodesAmount; i++) {
+        for (int i = IntStream.of(typecounts).sum(); i < nodesAmount; i++) {
             float sample = random.nextFloat();
             float current = 0;
-            for (int j = 0; j < nodeManagerClasses.length; j++) {
+            for (int j = 0; j < nodeManagerClasses.size(); j++) {
                 current += nodeWeight[j];
-                if (sample <= current || j == nodeManagerClasses.length - 1) {
-                    nodetypes[j] += 1;
+                if (sample <= current || j == nodeManagerClasses.size() - 1) {
+                    typecounts[j] += 1;
                     break;
                 }
             }
         }
 
-        for (int i = 0; i < nodeManagerClasses.length; i++) {
-            for (int j = 0; j < nodetypes[i]; j++) {
-                nodeManagers.add((AbstractNodeManager) nodeManagerClasses[i].newInstance());
+        ArrayList<Integer> nodetypes = new ArrayList<>();
+        for (int i = 0; i < nodeManagerClasses.size(); i++) {
+            for (int j = 0; j < typecounts[i]; j++) {
+                nodetypes.add(i);
+                nodeManagers.add((AbstractNodeManager) nodeManagerClasses.get(i).newInstance());
             }
         }
 
@@ -261,18 +270,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
         nodesInitSemaphore.acquire(nodesAmount + 1);
         nodesInitSemaphore = null;
 
-        for (int i = 0; i < nodeManagers.size(); i++) {
-            if (nodeManagers.get(i).shouldBeInSeed()) {
-                addNodeToSeed(i);
-            }
-        }
-        // FIXME also check if at least on entrance node of the node graph is there
-        if (seedURIs.size() == 0) {
-            // FIXME use entrance node of the node graph instead of 0
-            addNodeToSeed(0);
-        }
-        LOGGER.info("Seed URIs: {}", seedURIs);
-
         LOGGER.debug("Broadcasting metadata to cloud nodes...");
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         new ObjectOutputStream(buf).writeObject(nodeMetadata);
@@ -284,11 +281,17 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         // Node graph generator
         LOGGER.info("Creating node graph generator...");
-        envVariables = new String[] { DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
+        envVariables = new String[] {
+                DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
                 DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(0),
                 DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
                 DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageNodeGraphDegree,
-                DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, };
+                DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
+                //DataGenerator.ENV_NODETYPES_KEY + "=" + nodetypes.stream().map(String::valueOf).collect(Collectors.joining(",")),
+                DataGenerator.ENV_NODETYPES_KEY + "=" + Stream.of(ArrayUtils.toObject(typecounts)).map(String::valueOf).collect(Collectors.joining(",")),
+                DataGenerator.ENV_ISHUB_KEY + "=" + Stream.of(ArrayUtils.toObject(getIsHub(nodeManagerClasses))).map(String::valueOf).collect(Collectors.joining(",")),
+                DataGenerator.ENV_TYPECONNECTIVITY_KEY + "=" + Arrays.stream(getTypeConnectivity(nodeManagerClasses)).map(Arrays::stream).map(s -> s.mapToObj(String::valueOf).collect(Collectors.joining(","))).collect(Collectors.joining(";")),
+        };
         createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
         // FIXME: HOBBIT SDK workaround (setting environment for "containers")
         if (sdk) {
@@ -361,9 +364,43 @@ public class BenchmarkController extends AbstractBenchmarkController {
         return tripleCreator.createNode(0, -1, -2, false).toString();
     }
 
-    protected void addNodeToSeed(int node) {
+    protected void addNodeToSeed(ArrayList<String> seedURIs, int node) {
         seedURIs.add(getSeedForNode(node));
         dotlangLines.add(String.format("{rank=min; %d [penwidth=2]}", node));
+    }
+
+    protected ArrayList<String> getSeedURIs(Graph g) {
+        ArrayList<String> seedURIs = new ArrayList<>();
+
+        int[] entranceNodes = g.getEntranceNodes();
+        for (int i = 0; i < entranceNodes.length; i++) {
+            addNodeToSeed(seedURIs, entranceNodes[i]);
+        }
+        if (seedURIs.size() == 0) {
+            throw new IllegalStateException();
+        }
+        return seedURIs;
+    }
+
+    protected int[][] getTypeConnectivity(ArrayList<Class<?>> nodeManagerClasses) throws IllegalAccessException, InstantiationException {
+        // Build node type -> connectivity matrix for node graph generator.
+        int[][] typeconnectivity = new int[nodeManagerClasses.size()][nodeManagerClasses.size()];
+        for (int i = 0; i < nodeManagerClasses.size(); i++) {
+            AbstractNodeManager manager = (AbstractNodeManager) nodeManagerClasses.get(i).newInstance();
+            for (int j = 0; j < nodeManagerClasses.size(); j++) {
+                typeconnectivity[j][i] = manager.weightOfLinkFrom(nodeManagerClasses.get(j));
+            }
+        }
+        return typeconnectivity;
+    }
+
+    protected boolean[] getIsHub(ArrayList<Class<?>> nodeManagerClasses) throws IllegalAccessException, InstantiationException {
+        boolean[] ishub = new boolean[nodeManagerClasses.size()];
+        for (int i = 0; i < nodeManagerClasses.size(); i++) {
+            AbstractNodeManager manager = (AbstractNodeManager) nodeManagerClasses.get(i).newInstance();
+            ishub[i] = manager.canBeHub();
+        }
+        return ishub;
     }
 
     @Override
@@ -375,6 +412,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         LOGGER.debug("Waiting for the node graph...");
         nodeGraphMutex.acquire();
+
+        seedURIs = getSeedURIs(nodeGraph);
+        LOGGER.info("Seed URIs: {}", seedURIs);
 
         LOGGER.debug("Waiting for the data generators to finish...");
         waitForDataGenToFinish();

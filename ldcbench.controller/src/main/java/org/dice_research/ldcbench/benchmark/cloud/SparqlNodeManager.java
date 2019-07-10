@@ -11,7 +11,16 @@ public class SparqlNodeManager extends AbstractNodeManager {
     }
 
     @Override
-    public boolean shouldBeInSeed() {
+    public int weightOfLinkFrom(Class<?> nodeManager) {
+        if (nodeManager == CkanNodeManager.class) {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    @Override
+    public boolean canBeHub() {
         return false;
     }
 
