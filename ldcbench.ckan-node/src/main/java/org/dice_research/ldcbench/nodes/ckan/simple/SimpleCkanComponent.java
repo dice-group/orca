@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
+import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.ckan.Constants;
 import org.dice_research.ldcbench.nodes.ckan.dao.CkanDAO;
 import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
@@ -103,30 +104,36 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
         ckanDataSets.add(ckanDao.insertDataSource(dataset));
     }
 
+    private void addCloudNode(int node) throws Exception {
+        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(
+            node,
+            Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+            Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
+        );
+
+        boolean success = false;
+        while (!success) {
+            try {
+                addDataSource(tripleCreator.createNode(0, -1, -2, false).toString());
+                LOGGER.info("Datasource added!");
+                success = true;
+            } catch (CkanException ce) {
+                if (ce.getMessage().contains("Solr returned an error")) {
+                    LOGGER.info("Solr is not ready yet. Trying again in 5 seconds");
+                    Thread.sleep(5000);
+                }
+            }
+        }
+    }
+
     @Override
     public void initAfterDataGeneration() throws Exception {
-        // FIXME: only add those nodes which are referenced from this node
-        for (int node = 0; node < nodeMetadata.length; node++) {
-            if (node != cloudNodeId) {
-                SimpleTripleCreator tripleCreator = new SimpleTripleCreator(
-                    node,
-                    Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
-                    Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
-                );
-                
-                boolean success = false;
-                while (!success) {
-                    try {
-                        addDataSource(tripleCreator.createNode(0, -1, -2, false).toString());
-                        LOGGER.info("Datasource added!");
-                        success = true;
-                    } catch (CkanException ce) {
-                        if (ce.getMessage().contains("Solr returned an error")) {
-                            LOGGER.info("Solr is not ready yet. Trying again in 5 seconds");
-                            Thread.sleep(5000);
-                        }
-                            
-                    }
+        for (Graph graph : graphs) {
+            int graphNodes = graph.getNumberOfNodes();
+            for (int graphNode = 0; graphNode < graphNodes; graphNode++) {
+                int targetCloudNode = graph.getGraphId(graphNode);
+                if (targetCloudNode != Graph.INTERNAL_NODE_GRAPH_ID) {
+                    addCloudNode(targetCloudNode);
                 }
 
             }

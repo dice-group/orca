@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.Semaphore;
 import java.util.stream.Stream;
@@ -207,7 +208,7 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         sendToCmdQueue(Commands.EVAL_MODULE_FINISHED_SIGNAL, outputStream.toByteArray());
     }
 
-    private EvaluationResult runEvaluation() {
+    private Map<Integer, EvaluationResult> runEvaluation() {
         // Evaluate the results based on the data from the SPARQL storage
         GraphSupplier supplier = new FileBasedGraphSupplier(
             graphFiles,
@@ -219,7 +220,8 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         return evaluator.evaluate();
     }
 
-    protected Model summarizeEvaluation(EvaluationResult result) throws Exception {
+    protected Model summarizeEvaluation(Map<Integer, EvaluationResult> results) throws Exception {
+        EvaluationResult result = results.get(CrawledDataEvaluator.TOTAL_EVALUATION_RESULTS);
         // Write results into a Jena model and send it to the BC
         Model model = ModelFactory.createDefaultModel();
         model.add(model.createResource(experimentUri), RDF.type, HOBBIT.Experiment);
@@ -232,6 +234,15 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         long runtime = endTimeStamp - startTimeStamp;
         if (runtime > 0) {
             model.add(model.createLiteralStatement(experimentResource, LDCBench.runtime, runtime));
+        }
+
+        // Add results from all nodes
+        for (Map.Entry<Integer, EvaluationResult> entry : results.entrySet()) {
+            if (entry.getKey() != CrawledDataEvaluator.TOTAL_EVALUATION_RESULTS) {
+                Resource nodeResource = model.createResource(experimentUri + "_Node_" + entry.getKey());
+                //model.add(model.createStatement(experimentResource, model.createProperty(LDCBench.getURI(), "node"), nodeResource));
+                model.add(model.createLiteralStatement(nodeResource, LDCBench.recall, entry.getValue().recall));
+            }
         }
 
         // Transform the data of the triple counter into RDF

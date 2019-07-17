@@ -4,16 +4,20 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Stream;
 import java.util.concurrent.Semaphore;
+import org.apache.commons.lang.ArrayUtils;
 
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.generate.GraphGenerator;
+import org.dice_research.ldcbench.generate.RandomCloudGraph;
 import org.dice_research.ldcbench.generate.RandomRDF;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.graph.GraphBuilder;
@@ -38,6 +42,9 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_NUMBER_OF_EDGES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_EDGES";
     public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
     public static final String ENV_DATAGENERATOR_EXCHANGE_KEY = "LDCBENCH_DATAGENERATOR_EXCHANGE";
+    public static final String ENV_NODETYPES_KEY = "LDCBENCH_DATAGENERATOR_NODETYPES";
+    public static final String ENV_ISHUB_KEY = "LDCBENCH_DATAGENERATOR_ISHUB";
+    public static final String ENV_TYPECONNECTIVITY_KEY = "LDCBENCH_DATAGENERATOR_TYPECONNECTIVITY";
 
     public static enum Types {
         NODE_GRAPH_GENERATOR, RDF_GRAPH_GENERATOR
@@ -66,6 +73,7 @@ public class DataGenerator extends AbstractDataGenerator {
     private String dataQueueName;
     private String evalDataQueueName;
 
+    private GraphGenerator generator;
     private Graph nodeGraph;
     private Integer nodeId;
 
@@ -200,7 +208,16 @@ public class DataGenerator extends AbstractDataGenerator {
             sendToCmdQueue(ApiConstants.DATAGENERATOR_READY_SIGNAL);
         }
 
-        GraphGenerator generator = new RandomRDF("Graph " + generatorId);
+        if (type == Types.NODE_GRAPH_GENERATOR) {
+            int[] nodetypes = Stream.of(EnvVariables.getString(ENV_NODETYPES_KEY).split(",")).mapToInt(Integer::parseInt).toArray();
+            boolean[] ishub = ArrayUtils.toPrimitive(Stream.of(EnvVariables.getString(ENV_ISHUB_KEY).split(",")).map(Boolean::parseBoolean).toArray(Boolean[]::new));
+            int[][] typeconnectivity = Stream.of(EnvVariables.getString(ENV_TYPECONNECTIVITY_KEY).split(";")).map(s -> Stream.of(s.split(",")).mapToInt(Integer::parseInt).toArray()).toArray(int[][]::new);
+
+            generator = new RandomCloudGraph("Graph " + generatorId, nodetypes, 0, typeconnectivity);
+        } else {
+            generator = new RandomRDF("Graph " + generatorId);
+        }
+
         GraphBuilder graph = new GrphBasedGraph();
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
@@ -216,6 +233,7 @@ public class DataGenerator extends AbstractDataGenerator {
         }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
+            LOGGER.info("Node types generated: {}", Arrays.toString(((RandomCloudGraph)generator).getNodeTypes()));
             LOGGER.debug("Broadcasting the node graph...");
         } else {
             LOGGER.debug("Waiting for the node graph...");

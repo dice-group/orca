@@ -11,7 +11,12 @@ public class DereferencingHttpNodeManager extends AbstractNodeManager {
     }
 
     @Override
-    public boolean shouldBeInSeed() {
+    public int weightOfLinkFrom(Class<?> nodeManager) {
+        return 1;
+    }
+
+    @Override
+    public boolean canBeHub() {
         return false;
     }
 
@@ -27,5 +32,10 @@ public class DereferencingHttpNodeManager extends AbstractNodeManager {
     @Override
     public String getImageName() {
         return HTTPNODE_IMAGE_NAME;
+    }
+
+    @Override
+    public String getLabel() {
+        return "http";
     }
 }
