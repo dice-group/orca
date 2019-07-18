@@ -55,19 +55,21 @@ public class DumbSerializer implements Serializer {
 
     public Graph deserialize(byte[] data) {
         ByteBuffer buf = ByteBuffer.wrap(data);
-        /* int nodes = */ buf.getInt();
+        int nodes = buf.getInt();
         int edges = buf.getInt();
         int numberOfExternalNodes = buf.getInt();
         int numberOfEntranceNodes = buf.getInt();
         GrphBasedGraph graph = new GrphBasedGraph();
+
+        for (int n = 0; n < nodes; n++) {
+            graph.addNode();
+        }
 
         int src, type, dest;
         for (int j = 0; j < edges; j++) {
             src = buf.getInt();
             type = buf.getInt();
             dest = buf.getInt();
-            graph.addNode(src);
-            graph.addNode(dest);
             graph.addEdge(src, dest, type);
         }
         int nodeId, graphId, externalId;
