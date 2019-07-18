@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Stream;
 import java.util.concurrent.Semaphore;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.generate.GraphGenerator;
