@@ -81,7 +81,7 @@ public class BenchmarkTestBase {
 
     }
 
-    protected void checkHealth(Boolean dockerized) throws Exception {
+    protected void executeBenchmark(Boolean dockerized) throws Exception {
 
         String[] benchmarkParamsStr = new String[]{
             HOBBIT_EXPERIMENT_URI_KEY+"="+org.hobbit.vocab.HobbitExperiments.New.getURI(),
@@ -177,25 +177,10 @@ public class BenchmarkTestBase {
     }
 
     public Model createBenchmarkParameters() throws IOException {
-        Model model = createDefaultModel();
-        Resource experimentResource = org.hobbit.vocab.HobbitExperiments.New;
-        model.add(experimentResource, RDF.type, HOBBIT.Experiment);
-        model.add(experimentResource, LDCBench.seed, "100", XSDinteger);
-        model.add(experimentResource, LDCBench.triplesPerNode, "5", XSDinteger);
-        model.add(experimentResource, LDCBench.averageNodeDelay, "5000", XSDlong);
-        model.add(experimentResource, LDCBench.averageRdfGraphDegree, "2", XSDinteger);
-        model.add(experimentResource, LDCBench.dereferencingHttpNodeWeight, "1", XSDfloat);
-        model.add(experimentResource, LDCBench.ckanNodeWeight, "0.01", XSDfloat);
-        model.add(experimentResource, LDCBench.sparqlNodeWeight, "0.01", XSDfloat);
-
-        return model;
+        return ModelsHandler.readModelFromFile("test-benchmark-parameters.ttl");
     }
 
     public Model createSystemParameters() throws IOException {
-        Model model = createDefaultModel();
-        Resource experimentResource = org.hobbit.vocab.HobbitExperiments.New;
-        model.add(experimentResource, RDF.type, HOBBIT.Experiment);
-        model.add(experimentResource, model.createProperty(BENCHMARK_URI+"#systemParam123"),"100");
-        return model;
+        return ModelsHandler.readModelFromFile("test-system-parameters.ttl");
     }
 }

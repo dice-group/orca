@@ -6,9 +6,10 @@ test:
 publish: images push-images push-hobbit
 
 images:
-	mvn -DskipDefaultTest -DfailIfNoTests=false -Dtest=ImageBuilder package
+	mvn -DskipTests package
 
 push-images:
+	# mvn -DskipTests deploy
 	docker push $(IMAGE_BASE)benchmark-controller
 	docker push $(IMAGE_BASE)datagen
 	docker push $(IMAGE_BASE)eval-module
@@ -25,7 +26,7 @@ push-hobbit: add-hobbit-remote
 	git push --verbose hobbit master:master
 
 test-benchmark:
-	mvn -DfailIfNoTests=false -Dtest=BenchmarkTest#checkHealth test
+	mvn -DfailIfNoTests=false -Dtest=BenchmarkTest#executeBenchmark test
 
 test-benchmark-dockerized:
-	mvn -DskipDefaultTest -DfailIfNoTests=false -Dtest=ImageBuilder verify
+	mvn -DskipTestPhase -DfailIfNoTests=false -Dtest=BenchmarkIT#executeBenchmark verify

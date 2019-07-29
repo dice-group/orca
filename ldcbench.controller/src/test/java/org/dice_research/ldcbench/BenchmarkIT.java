@@ -3,6 +3,7 @@ package org.dice_research.ldcbench;
 import java.io.IOException;
 import static org.apache.jena.datatypes.xsd.XSDDatatype.*;
 import org.apache.jena.rdf.model.*;
+import org.hobbit.sdk.utils.ModelsHandler;
 import org.junit.Test;
 
 import org.dice_research.ldcbench.vocab.LDCBench;
@@ -13,16 +14,12 @@ import org.dice_research.ldcbench.vocab.LDCBench;
 
 public class BenchmarkIT extends BenchmarkTestBase {
     @Test
-    public void checkHealthDockerized() throws Exception {
-        checkHealth(true);
+    public void executeBenchmark() throws Exception {
+        executeBenchmark(true);
     }
 
     @Override
     public Model createBenchmarkParameters() throws IOException {
-        Model model = super.createBenchmarkParameters();
-        Resource experimentResource = org.hobbit.vocab.HobbitExperiments.New;
-        model.add(experimentResource, LDCBench.numberOfNodes, "4", XSDinteger);
-        model.add(experimentResource, LDCBench.averageNodeGraphDegree, "3", XSDinteger);
-        return model;
+        return ModelsHandler.readModelFromFile("integration-benchmark-parameters.ttl");
     }
 }

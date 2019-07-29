@@ -213,4 +213,9 @@ public class GrphBasedGraph implements GraphBuilder {
         // There is nothing we can reuse so create a new array
         externalNodes.put(n, new int[] { graphId, externalId });
     }
+
+    @Override
+    public String toString() {
+        return graph.toString();
+    }
 }

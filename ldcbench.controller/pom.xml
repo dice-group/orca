@@ -115,34 +115,65 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>dockerfile-maven-plugin</artifactId>
+        <version>${dockerfile-maven-version}</version>
+        <executions>
+          <execution>
+            <id>dockerfile-controller</id>
+            <goals>
+              <goal>build</goal>
+              <goal>push</goal>
+            </goals>
+            <configuration>
+              <dockerfile>Dockerfile.controller</dockerfile>
+              <repository>git.project-hobbit.eu:4567/ldcbench/ldcbench/benchmark-controller</repository>
+            </configuration>
+          </execution>
+          <execution>
+            <id>dockerfile-datagen</id>
+            <goals>
+              <goal>build</goal>
+              <goal>push</goal>
+            </goals>
+            <configuration>
+              <dockerfile>Dockerfile.datagen</dockerfile>
+              <repository>git.project-hobbit.eu:4567/ldcbench/ldcbench/datagen</repository>
+            </configuration>
+          </execution>
+          <execution>
+            <id>dockerfile-eval-module</id>
+            <goals>
+              <goal>build</goal>
+              <goal>push</goal>
+            </goals>
+            <configuration>
+              <dockerfile>Dockerfile.eval-module</dockerfile>
+              <repository>git.project-hobbit.eu:4567/ldcbench/ldcbench/eval-module</repository>
+            </configuration>
+          </execution>
+          <execution>
+            <id>dockerfile-system-adapter</id>
+            <goals>
+              <goal>build</goal>
+              <goal>push</goal>
+            </goals>
+            <configuration>
+              <dockerfile>Dockerfile.system-adapter</dockerfile>
+              <repository>git.project-hobbit.eu:4567/ldcbench/ldcbench/system-adapter</repository>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <skip>${skipTestPhase}</skip>
           <systemPropertyVariables>
             <sdkJarFilePath>${project.build.directory}/${project.artifactId}-shaded.jar</sdkJarFilePath>
           </systemPropertyVariables>
         </configuration>
-        <executions>
-          <execution>
-            <id>default-test</id>
-            <phase>test</phase>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <configuration>
-              <skip>${skipDefaultTest}</skip>
-            </configuration>
-          </execution>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <configuration>
-              <test>ImageBuilder#buildImages</test>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
