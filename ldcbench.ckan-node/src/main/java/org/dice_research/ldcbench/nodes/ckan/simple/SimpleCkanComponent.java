@@ -101,7 +101,16 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
         dataset.setName(uri.replaceAll("[^A-Za-z0-9_-]", "_"));
         dataset.setOwnerOrg(Constants.ORGANIZATION);
         dataset.setAuthor(Constants.AUTHOR);
-        ckanDataSets.add(ckanDao.insertDataSource(dataset));
+        CkanDataset insertedDataset = ckanDao.insertDataSource(dataset);
+        ckanDataSets.add(insertedDataset);
+        LOGGER.info("Added {} to CKAN as {}. URI is {}.", uri, insertedDataset.getId(), resourceUriTemplate + insertedDataset.getId());
+        /*
+        CKAN will have triples:
+        ?dataset a dcat:Dataset.
+        ?dataset dcat:landingPage "URL as a string".
+        ?dataset dcterms:identifier "dataset ID".
+        ?dataset dcterms:title "<see above>".
+        */
     }
 
     private void addCloudNode(int node) throws Exception {
@@ -115,7 +124,6 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
         while (!success) {
             try {
                 addDataSource(tripleCreator.createNode(0, -1, -2, false).toString());
-                LOGGER.info("Datasource added!");
                 success = true;
             } catch (CkanException ce) {
                 if (ce.getMessage().contains("Solr returned an error")) {
