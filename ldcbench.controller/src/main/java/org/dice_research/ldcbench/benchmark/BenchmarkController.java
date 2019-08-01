@@ -511,9 +511,16 @@ public class BenchmarkController extends AbstractBenchmarkController {
             ByteBuffer buffer = ByteBuffer.wrap(data);
             String containerName = RabbitMQUtils.readString(buffer);
             int exitCode = buffer.get();
-            // FIXME Handle the crash of a container during the crawling phase
             if (nodeContainerMap.containsKey(containerName)) {
                 nodeContainerMap.get(containerName).setTerminated(true);
+                // FIXME: only do this when container terminates unexpectedly
+                containerCrashed(containerName);
+            }
+            if (dataGenContainerIds.contains(containerName)) {
+                // FIXME: only do this when container terminates unexpectedly
+                if (exitCode != 0) {
+                    containerCrashed(containerName);
+                }
             }
         }
         }
