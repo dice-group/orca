@@ -14,6 +14,8 @@ import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.rdf.SimpleCachingTripleCreator;
 import org.dice_research.ldcbench.rdf.TripleCreator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of the {@link GraphValidator} interface querying the crawled
@@ -23,6 +25,7 @@ import org.dice_research.ldcbench.rdf.TripleCreator;
  *
  */
 public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SparqlBasedValidator.class);
 
     /**
      * Query execution factory used for the communication with the SPARQL endpoint.
@@ -99,11 +102,19 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
         Query q = QueryFactory.create();
         q.setQueryAskType();
         ElementTriplesBlock triples = new ElementTriplesBlock();
-        triples.addTriple(creator.createTriple(edge[0], edge[1], edge[2], graph.getExternalNodeId(edge[2]),
-                graph.getGraphId(edge[2])));
+        Triple triple = creator.createTriple(edge[0], edge[1], edge[2],
+                graph.getExternalNodeId(edge[2]), graph.getGraphId(edge[2]));
+        triples.addTriple(triple);
         q.setQueryPattern(triples);
         try (QueryExecution qe = qef.createQueryExecution(q)) {
-            return qe.execAsk();
+            boolean result = qe.execAsk();
+            if (!result) {
+                LOGGER.debug("Didn't get expected triple: {}", triple);
+            }
+            return result;
+        } catch (Exception e) {
+            LOGGER.error("Failure when executing query: {}", q.toString().replace("\n", ""));
+            throw e;
         }
     }
 
