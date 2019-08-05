@@ -34,12 +34,13 @@ public class LDCBench {
     public static final Property averageRdfGraphDegree = property("averageRdfGraphDegree");
     public static final Property ckanNodeWeight = property("ckanNodeWeight");
     public static final Property dereferencingHttpNodeWeight = property("dereferencingHttpNodeWeight");
-    public static final Property sparqlNodeWeight = property("sparqlNodeWeight");
     public static final Property graphVisualization = property("graphVisualization");
-    public static final Property seed = property("seed");
+    public static final Property httpDumpNodeWeight = property("httpDumpNodeWeight");
     public static final Property numberOfNodes = property("numberOfNodes");
     public static final Property recall = property("recall");
     public static final Property runtime = property("runtime");
+    public static final Property seed = property("seed");
+    public static final Property sparqlNodeWeight = property("sparqlNodeWeight");
     public static final Property tripleCountOverTime = property("tripleCountOverTime");
     public static final Property triplesEvaluated = property("triplesEvaluated");
     public static final Property triplesPerNode = property("triplesPerNode");

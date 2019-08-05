@@ -60,7 +60,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private List<Future<String>> nodeContainers = new ArrayList<>();
 
     private Class<?>[] possibleNodeManagerClasses = { DereferencingHttpNodeManager.class, CkanNodeManager.class,
-            SparqlNodeManager.class, };
+            SparqlNodeManager.class, HttpDumpNodeManager.class };
 
     private boolean sdk;
     private boolean dockerized;
@@ -247,7 +247,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                     ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                     ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay,
-                    ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345), };
+                    ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345),
+                    ApiConstants.ENV_NODE_TYPE_KEY + "=" + nodeManagers.get(i).get};
 
             nodeContainers.add(createContainerAsync(nodeManagers.get(i).getImageName(),
                     Constants.CONTAINER_TYPE_BENCHMARK, envVariables));

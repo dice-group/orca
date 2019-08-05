@@ -34,20 +34,22 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
     protected Connection connection;
 
     @Override
-    public void initBeforeDataGeneration() throws Exception {}
+    public void initBeforeDataGeneration() throws Exception {
+        // check whether this node contains dump files
+        boolean dumpFileNode = EnvVariables.getBoolean("LDCBENCH_USE_DUMP_FILE",false);        
+        if(dumpFileNode) {
+            LOGGER.debug("Init as HTTP dump file node.");
+            this.resourceUriTemplate = "";
+            this.accessUriTemplate = "";
+        } else {
+            LOGGER.debug("Init as dereferencing HTTP node.");
+        }
+    }
 
     @Override
     public void initAfterDataGeneration() throws Exception {
         // Create the container based on the information that has been received
-        container = new CrawleableResourceContainer(new GraphBasedResource(
-                cloudNodeId,
-                Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
-                Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                graphs.toArray(new Graph[graphs.size()]), (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
-                        && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
-                new String[] {
-                // "application/rdf+xml", "text/plain", "*/*"
-                }));
+        container = createContainer();
         graphs = null;
         // Start server
         server = new ContainerServer(container);
@@ -55,6 +57,18 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
         SocketAddress address = new InetSocketAddress(
                 EnvVariables.getInt(ApiConstants.ENV_HTTP_PORT_KEY, DEFAULT_PORT, LOGGER));
         connection.connect(address);
+    }
+
+    protected Container createContainer() {
+        // Create the container based on the information that has been received
+        return new CrawleableResourceContainer(new GraphBasedResource(cloudNodeId,
+                Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+                Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
+                graphs.toArray(new Graph[graphs.size()]), (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
+                        && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
+                new String[] {
+                // "application/rdf+xml", "text/plain", "*/*"
+                }));
     }
 
     protected Model readModel(String modelFile, String modelLang) {
