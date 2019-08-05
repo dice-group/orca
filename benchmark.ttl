@@ -26,6 +26,14 @@
 
 :Api a hobbit:API .
 
+
+:numberOfWorkers a hobbit:Parameter, hobbit:ConfigurableParameter;
+    rdfs:label "Number of workers"@en;
+    rdfs:comment "Number of workers."@en;
+    rdfs:range xsd:integer;
+    hobbit:defaultValue "1"^^xsd:integer .
+
+
 :seed a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Seed"@en;
   rdfs:comment "The seed of the random number generators used by this bechmark."@en;
