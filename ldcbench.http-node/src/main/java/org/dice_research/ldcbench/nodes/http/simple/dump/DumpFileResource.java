@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench.nodes.http.simple;
+package org.dice_research.ldcbench.nodes.http.simple.dump;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -11,7 +11,8 @@ import java.util.function.Predicate;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.riot.Lang;
 import org.dice_research.ldcbench.graph.Graph;
-import org.dice_research.ldcbench.nodes.http.dump.DumpFileBuilder;
+import org.dice_research.ldcbench.nodes.http.simple.AbstractCrawleableResource;
+import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpException;
 import org.dice_research.ldcbench.nodes.http.utils.NullValueHelper;
 import org.simpleframework.http.Request;
 import org.slf4j.Logger;

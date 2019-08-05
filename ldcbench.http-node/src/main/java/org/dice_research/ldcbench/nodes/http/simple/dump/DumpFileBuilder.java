@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench.nodes.http.dump;
+package org.dice_research.ldcbench.nodes.http.simple.dump;
 
 import java.io.File;
 import java.io.FileNotFoundException;
