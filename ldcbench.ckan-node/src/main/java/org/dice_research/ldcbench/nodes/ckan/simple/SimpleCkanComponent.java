@@ -21,6 +21,7 @@ import eu.trentorise.opendata.jackan.CheckedCkanClient;
 import eu.trentorise.opendata.jackan.exceptions.CkanException;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanDatasetBase;
+import eu.trentorise.opendata.jackan.model.CkanResource;
 
 /**
  *
@@ -96,11 +97,19 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
     private void addDataSource(String uri) {
         LOGGER.info("Adding {} to CKAN...", uri);
         CkanDatasetBase dataset = new CkanDatasetBase();
-        dataset.setUrl(uri);
+//        dataset.setUrl(uri);
         dataset.setTitle(uri);
         dataset.setName(uri.replaceAll("[^A-Za-z0-9_-]", "_"));
         dataset.setOwnerOrg(Constants.ORGANIZATION);
         dataset.setAuthor(Constants.AUTHOR);
+        
+        List<CkanResource> listResources = new ArrayList<CkanResource>();
+        CkanResource ckanRes = new CkanResource();
+        ckanRes.setName("dist-" + uri);
+        ckanRes.setUrl(uri);
+        listResources.add(ckanRes);
+        
+        dataset.setResources(listResources);
         ckanDataSets.add(ckanDao.insertDataSource(dataset));
     }
 
