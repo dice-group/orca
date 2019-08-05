@@ -101,15 +101,6 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
         dataset.setName(uri.replaceAll("[^A-Za-z0-9_-]", "_"));
         dataset.setOwnerOrg(Constants.ORGANIZATION);
         dataset.setAuthor(Constants.AUTHOR);
-        CkanDataset insertedDataset = ckanDao.insertDataSource(dataset);
-        ckanDataSets.add(insertedDataset);
-        LOGGER.info("Added {} to CKAN as {}. URI is {}.", uri, insertedDataset.getId(), resourceUriTemplate + insertedDataset.getId());
-        /*
-        CKAN will have triples:
-        ?dataset a dcat:Dataset.
-        ?dataset dcterms:identifier "dataset ID".
-        ?dataset dcterms:title "<see above>".
-        */
 
         List<CkanResource> listResources = new ArrayList<CkanResource>();
         CkanResource ckanRes = new CkanResource();
