@@ -448,7 +448,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         dotlangLines.add("{rank=min; S [label=seed, style=dotted]}");
         dotlangLines.add(String.format("{rank=same; %s}", seedNodes.stream().map(String::valueOf).collect(Collectors.joining(" "))));
-        seedNodes.stream().map(i -> String.format("S -> %d [style=dotted]", i)).forEach(dotlangLines::add);
+        seedNodes.stream().map(i -> String.format("S -> %d [tooltip=\"%s\", style=dotted]", i, getSeedForNode(i))).forEach(dotlangLines::add);
 
         final int amountOfColors = 9;
         // https://www.graphviz.org/doc/info/colors.html
@@ -456,8 +456,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
         for (int i = 0; i < nodesAmount; i++) {
             Resource nodeResource = resultModel.createResource(experimentUri + "_Node_" + i);
             double recall = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.recall));
+            String tooltip = String.format("%d: %s", i, nodeMetadata[i].getContainer());
             String fillColor = Double.isNaN(recall) ? "" : "/" + colorScheme + "/" + String.valueOf((int) Math.floor(recall * 8) + 1);
-            dotlangLines.add(String.format("%d [label=<%s<BR/>%s>, fillcolor=\"%s\", style=filled]", i, nodeManagers.get(i).getLabel(), Double.isNaN(recall) ? "&empty;" : String.format("%.2f", recall), fillColor));
+            dotlangLines.add(String.format("%d [label=<%s<BR/>%s>, tooltip=\"%s\", fillcolor=\"%s\", style=filled]", i, nodeManagers.get(i).getLabel(), Double.isNaN(recall) ? "&empty;" : String.format("%.2f", recall), tooltip, fillColor));
             resultModel.removeAll(nodeResource, null, null);
         }
 
@@ -510,9 +511,16 @@ public class BenchmarkController extends AbstractBenchmarkController {
             ByteBuffer buffer = ByteBuffer.wrap(data);
             String containerName = RabbitMQUtils.readString(buffer);
             int exitCode = buffer.get();
-            // FIXME Handle the crash of a container during the crawling phase
             if (nodeContainerMap.containsKey(containerName)) {
                 nodeContainerMap.get(containerName).setTerminated(true);
+                // FIXME: only do this when container terminates unexpectedly
+                containerCrashed(containerName);
+            }
+            if (dataGenContainerIds.contains(containerName)) {
+                // FIXME: only do this when container terminates unexpectedly
+                if (exitCode != 0) {
+                    containerCrashed(containerName);
+                }
             }
         }
         }
