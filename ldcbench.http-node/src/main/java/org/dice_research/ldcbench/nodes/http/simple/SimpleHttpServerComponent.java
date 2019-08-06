@@ -5,13 +5,16 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFLanguages;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
@@ -47,7 +50,7 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
             String hostname = InetAddress.getLocalHost().getHostName();
             LOGGER.info("Retrieved my own name as: \"{}\"", hostname);
             this.resourceUriTemplate = "http://" + hostname + "/dumpFile.ttl.gz#%s-%s/%s-%s";
-            this.accessUriTemplate = "http://" + hostname + "/dumpFile.ttl.gz";
+            this.accessUriTemplate = "http://" + hostname + "/dumpFile.ttl.gz#%s-%s/%s-%s";
         } else {
             LOGGER.debug("Init as dereferencing HTTP node.");
         }
@@ -74,15 +77,20 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
                     graphs.toArray(new Graph[graphs.size()]), (r -> true), Lang.TTL, true);
         } else {
+            // Create list of available content types
+            Set<String> contentTypes = new HashSet<String>();
+            for (Lang lang : RDFLanguages.getRegisteredLanguages()) {
+                contentTypes.add(lang.getContentType().toString());
+                contentTypes.addAll(lang.getAltContentTypes());
+            }
             // Create the container based on the information that has been received
             resource = new GraphBasedResource(cloudNodeId,
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                    graphs.toArray(new Graph[graphs.size()]), (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
+                    graphs.toArray(new Graph[graphs.size()]),
+                    (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
                             && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
-                    new String[] {
-                    // "application/rdf+xml", "text/plain", "*/*"
-                    });
+                    contentTypes.toArray(new String[contentTypes.size()]));
         }
         Objects.requireNonNull(resource, "Couldn't create crawleable resource. Exiting.");
         return new CrawleableResourceContainer(resource);

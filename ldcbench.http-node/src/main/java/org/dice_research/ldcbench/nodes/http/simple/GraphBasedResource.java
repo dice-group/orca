@@ -45,7 +45,7 @@ public class GraphBasedResource extends AbstractNegotiatingResource {
     protected boolean handleRequest(String target, MediaType responseType, Response response, OutputStream out) throws SimpleHttpException {
         Lang lang = RDFLanguages.contentTypeToLang(responseType.toString());
         if(lang == null) {
-        lang = RDFLanguages.contentTypeToLang(responseType.getType());
+            lang = RDFLanguages.contentTypeToLang(responseType.getType());
         }
         if(lang == null) {
             LOGGER.error("Couldn't identify negotiated content type. This shouldn't happen!");

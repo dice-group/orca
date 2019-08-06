@@ -33,7 +33,10 @@ public class ContentNegotiationTest extends AbstractNegotiatingResource {
                 MediaType.parseMediaType("application/rdf+xml") });
         // 1 type requested but does not match any available type
         data.add(new Object[] { new String[] { "application/rdf+xml" }, new String[] { "text/plain" }, null });
-        
+        // No type is requested --> select the first available type
+        data.add(new Object[] { new String[] { "text/plain" }, new String[] {},
+                MediaType.parseMediaType("text/plain") });
+
         return data;
     }
 
