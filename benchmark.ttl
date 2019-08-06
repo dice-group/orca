@@ -11,7 +11,6 @@
   hobbit:version "v1.0"@en;
   hobbit:hasParameter
     :seed,
-    :numberOfNodes,
     :triplesPerNode,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
@@ -25,13 +24,6 @@
   hobbit:hasAPI :Api .
 
 :Api a hobbit:API .
-
-
-:numberOfWorkers a hobbit:Parameter, hobbit:ConfigurableParameter;
-    rdfs:label "Number of workers"@en;
-    rdfs:comment "Number of workers."@en;
-    rdfs:range xsd:integer;
-    hobbit:defaultValue "1"^^xsd:integer .
 
 
 :seed a hobbit:Parameter, hobbit:ConfigurableParameter;
