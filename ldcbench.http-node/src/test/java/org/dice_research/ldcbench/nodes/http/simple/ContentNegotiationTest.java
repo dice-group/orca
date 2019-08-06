@@ -3,8 +3,12 @@ package org.dice_research.ldcbench.nodes.http.simple;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFLanguages;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -36,6 +40,18 @@ public class ContentNegotiationTest extends AbstractNegotiatingResource {
         // No type is requested --> select the first available type
         data.add(new Object[] { new String[] { "text/plain" }, new String[] {},
                 MediaType.parseMediaType("text/plain") });
+
+        // Check the process with the RDF languages of Jena (as requested types)
+        Set<String> jenaContentTypes = new HashSet<String>();
+        for (Lang lang : RDFLanguages.getRegisteredLanguages()) {
+            if (!RDFLanguages.RDFNULL.equals(lang)) {
+                jenaContentTypes.add(lang.getContentType().getContentType());
+                jenaContentTypes.addAll(lang.getAltContentTypes());
+            }
+        }
+        data.add(new Object[] { new String[] { "application/rdf+xml" },
+                jenaContentTypes.toArray(new String[jenaContentTypes.size()]),
+                MediaType.parseMediaType("application/rdf+xml") });
 
         return data;
     }

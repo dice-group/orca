@@ -80,8 +80,10 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
             // Create list of available content types
             Set<String> contentTypes = new HashSet<String>();
             for (Lang lang : RDFLanguages.getRegisteredLanguages()) {
-                contentTypes.add(lang.getContentType().toString());
-                contentTypes.addAll(lang.getAltContentTypes());
+                if (!RDFLanguages.RDFNULL.equals(lang)) {
+                    contentTypes.add(lang.getContentType().getContentType());
+                    contentTypes.addAll(lang.getAltContentTypes());
+                }
             }
             // Create the container based on the information that has been received
             resource = new GraphBasedResource(cloudNodeId,
