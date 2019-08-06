@@ -109,7 +109,10 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
         listResources.add(ckanRes);
 
         dataset.setResources(listResources);
-        ckanDataSets.add(ckanDao.insertDataSource(dataset));
+
+        CkanDataset insertedDataset = ckanDao.insertDataSource(dataset);
+        LOGGER.info("Inserted CKAN dataset ID: {}", insertedDataset.getId());
+        ckanDataSets.add(insertedDataset);
     }
 
     private void addCloudNode(int node) throws Exception {
