@@ -29,7 +29,7 @@ public abstract class AbstractNegotiatingResource extends AbstractCrawleableReso
         while (iterator.hasNext()) {
             typeString = iterator.next();
             try {
-                requestedType = new MediaType(typeString);
+                requestedType = MediaType.parseMediaType(typeString);
                 for (MediaType availableType : availableContentTypes) {
                     if (requestedType.includes(availableType)) {
                         return availableType;
