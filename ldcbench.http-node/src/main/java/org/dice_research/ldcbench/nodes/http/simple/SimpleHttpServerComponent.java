@@ -2,15 +2,16 @@ package org.dice_research.ldcbench.nodes.http.simple;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
@@ -43,8 +44,10 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
         dumpFileNode = EnvVariables.getBoolean("LDCBENCH_USE_DUMP_FILE", false);
         if (dumpFileNode) {
             LOGGER.debug("Init as HTTP dump file node.");
-            this.resourceUriTemplate = "http://" + myself + "/dumpFile.ttl#%s-%s/%s-%s";
-            this.accessUriTemplate = "http://" + myself + "/dumpFile.ttl#%s-%s/%s-%s";
+            String hostname = InetAddress.getLocalHost().getHostName();
+            LOGGER.info("Retrieved my own name as: \"{}\"", hostname);
+            this.resourceUriTemplate = "http://" + hostname + "/dumpFile.ttl.gz#%s-%s/%s-%s";
+            this.accessUriTemplate = "http://" + hostname + "/dumpFile.ttl.gz";
         } else {
             LOGGER.debug("Init as dereferencing HTTP node.");
         }
@@ -69,7 +72,7 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
             resource = DumpFileResource.create(cloudNodeId,
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                    graphs.toArray(new Graph[graphs.size()]), (r -> true), new String[] {});
+                    graphs.toArray(new Graph[graphs.size()]), (r -> true), Lang.TTL, true);
         } else {
             // Create the container based on the information that has been received
             resource = new GraphBasedResource(cloudNodeId,
