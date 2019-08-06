@@ -19,6 +19,7 @@
     :dereferencingHttpNodeWeight,
     :ckanNodeWeight,
     :sparqlNodeWeight,
+    :httpDumpNodeWeight,
     :graphVisualization,
     :triplesEvaluated;
   hobbit:measuresKPI :truePositives, :recall, :runtime;
