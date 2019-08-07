@@ -8,6 +8,7 @@ experiments:New a hobbit:Experiment;
   :averageNodeDelay 5000;
   :averageRdfGraphDegree 2;
   :dereferencingHttpNodeWeight 1;
+  :httpDumpNodeWeight 1;
   :ckanNodeWeight 0.01;
   :sparqlNodeWeight 0.01;
   :numberOfNodes 4;
