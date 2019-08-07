@@ -60,7 +60,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private List<Future<String>> nodeContainers = new ArrayList<>();
 
     private Class<?>[] possibleNodeManagerClasses = { DereferencingHttpNodeManager.class, CkanNodeManager.class,
-            SparqlNodeManager.class, };
+            SparqlNodeManager.class, HttpDumpNodeManager.class };
 
     private boolean sdk;
     private boolean dockerized;
@@ -197,34 +197,36 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         String[] envVariables;
         LOGGER.debug("Starting all cloud nodes...");
-        float nodeWeight[] = new float[possibleNodeManagerClasses.length];
+        ArrayList<Float> nodeWeights = new ArrayList<>();
         float totalNodeWeight = 0;
         ArrayList<Class<?>> nodeManagerClasses = new ArrayList<>();
         for (int i = 0; i < possibleNodeManagerClasses.length; i++) {
             Property param = (Property) possibleNodeManagerClasses[i].getDeclaredMethod("getBenchmarkParameter").invoke(null);
-            Literal value = RdfHelper.getLiteral(benchmarkParamModel, null, param);
-            nodeWeight[i] = value != null ? value.getFloat() : 1;
-            if (nodeWeight[i] != 0) {
-                totalNodeWeight += nodeWeight[i];
+            Literal literal = RdfHelper.getLiteral(benchmarkParamModel, null, param);
+            float value = literal != null ? literal.getFloat() : 1;
+            if (value != 0) {
+                totalNodeWeight += value;
+                nodeWeights.add(value);
                 nodeManagerClasses.add(possibleNodeManagerClasses[i]);
             }
         }
         // create at least one node per any included node type
         int[] typecounts = new int[nodeManagerClasses.size()];
         for (int i = 0; i < nodeManagerClasses.size(); i++) {
-            if (nodeWeight[i] != 0) {
+            if (nodeWeights.get(i) != 0) {
+                LOGGER.info("adding required node of type {}", i);
                 typecounts[i] += 1;
             }
         }
         // create other nodes according to the weights provided
         for (int i = 0; i < nodeManagerClasses.size(); i++) {
-            nodeWeight[i] /= totalNodeWeight;
+            nodeWeights.set(i, nodeWeights.get(i) / totalNodeWeight);
         }
         for (int i = IntStream.of(typecounts).sum(); i < nodesAmount; i++) {
             float sample = random.nextFloat();
             float current = 0;
             for (int j = 0; j < nodeManagerClasses.size(); j++) {
-                current += nodeWeight[j];
+                current += nodeWeights.get(j);
                 if (sample <= current || j == nodeManagerClasses.size() - 1) {
                     typecounts[j] += 1;
                     break;
@@ -247,7 +249,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                     ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                     ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay,
-                    ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345), };
+                    ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345)};
 
             nodeContainers.add(createContainerAsync(nodeManagers.get(i).getImageName(),
                     Constants.CONTAINER_TYPE_BENCHMARK, envVariables));
@@ -448,7 +450,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         dotlangLines.add("{rank=min; S [label=seed, style=dotted]}");
         dotlangLines.add(String.format("{rank=same; %s}", seedNodes.stream().map(String::valueOf).collect(Collectors.joining(" "))));
-        seedNodes.stream().map(i -> String.format("S -> %d [style=dotted]", i)).forEach(dotlangLines::add);
+        seedNodes.stream().map(i -> String.format("S -> %d [tooltip=\"%s\", style=dotted]", i, getSeedForNode(i))).forEach(dotlangLines::add);
 
         final int amountOfColors = 9;
         // https://www.graphviz.org/doc/info/colors.html
@@ -456,8 +458,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
         for (int i = 0; i < nodesAmount; i++) {
             Resource nodeResource = resultModel.createResource(experimentUri + "_Node_" + i);
             double recall = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.recall));
+            String tooltip = String.format("%d: %s", i, nodeMetadata[i].getContainer());
             String fillColor = Double.isNaN(recall) ? "" : "/" + colorScheme + "/" + String.valueOf((int) Math.floor(recall * 8) + 1);
-            dotlangLines.add(String.format("%d [label=<%s<BR/>%s>, fillcolor=\"%s\", style=filled]", i, nodeManagers.get(i).getLabel(), Double.isNaN(recall) ? "&empty;" : String.format("%.2f", recall), fillColor));
+            dotlangLines.add(String.format("%d [label=<%s<BR/>%s>, tooltip=\"%s\", fillcolor=\"%s\", style=filled]", i, nodeManagers.get(i).getLabel(), Double.isNaN(recall) ? "&empty;" : String.format("%.2f", recall), tooltip, fillColor));
             resultModel.removeAll(nodeResource, null, null);
         }
 
@@ -510,9 +513,16 @@ public class BenchmarkController extends AbstractBenchmarkController {
             ByteBuffer buffer = ByteBuffer.wrap(data);
             String containerName = RabbitMQUtils.readString(buffer);
             int exitCode = buffer.get();
-            // FIXME Handle the crash of a container during the crawling phase
             if (nodeContainerMap.containsKey(containerName)) {
                 nodeContainerMap.get(containerName).setTerminated(true);
+                // FIXME: only do this when container terminates unexpectedly
+                containerCrashed(containerName);
+            }
+            if (dataGenContainerIds.contains(containerName)) {
+                // FIXME: only do this when container terminates unexpectedly
+                if (exitCode != 0) {
+                    containerCrashed(containerName);
+                }
             }
         }
         }

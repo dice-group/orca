@@ -1,11 +1,14 @@
 package org.dice_research.ldcbench.nodes.http.simple;
 
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Predicate;
 
-import org.apache.jena.riot.Lang;
+import org.dice_research.ldcbench.nodes.http.utils.NullValueHelper;
 import org.simpleframework.http.Request;
+import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
+import org.springframework.http.MediaType;
 
 /**
  * 
@@ -23,15 +26,16 @@ public class StringResource extends AbstractCrawleableResource implements Crawle
     }
 
     public StringResource(Predicate<Request> predicate, String content, String contentType) {
-        super(predicate, new String[] {contentType});
+        super(predicate, contentType);
         this.content = content;
     }
 
     @Override
-    public boolean handleRequest(String target, Lang lang, String charsetName, OutputStream out)
+    protected boolean handleRequest(String target, MediaType responseType, Response response, OutputStream out)
             throws SimpleHttpException {
         try {
-            out.write(content.getBytes(charsetName));
+            out.write(content
+                    .getBytes(NullValueHelper.valueOrDefault(responseType.getCharset(), StandardCharsets.UTF_8)));
         } catch (Exception e) {
             new SimpleHttpException("Error while writing content.", e, Status.INTERNAL_SERVER_ERROR);
         }

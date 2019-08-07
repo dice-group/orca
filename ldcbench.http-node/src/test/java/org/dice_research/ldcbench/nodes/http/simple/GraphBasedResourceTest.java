@@ -2,7 +2,6 @@ package org.dice_research.ldcbench.nodes.http.simple;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 import org.apache.jena.rdf.model.Model;
@@ -115,7 +114,7 @@ public class GraphBasedResourceTest {
 
         // request data from resource
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        resource.handleRequest(getUri("resource", 0, 0), lang, StandardCharsets.UTF_8.name(), out);
+        resource.handleRequest(getUri("resource", 0, 0), lang, out);
 
         // parse the received data
         Model receivedModel = ModelFactory.createDefaultModel();
