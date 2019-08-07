@@ -197,34 +197,36 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         String[] envVariables;
         LOGGER.debug("Starting all cloud nodes...");
-        float nodeWeight[] = new float[possibleNodeManagerClasses.length];
+        ArrayList<Float> nodeWeights = new ArrayList<>();
         float totalNodeWeight = 0;
         ArrayList<Class<?>> nodeManagerClasses = new ArrayList<>();
         for (int i = 0; i < possibleNodeManagerClasses.length; i++) {
             Property param = (Property) possibleNodeManagerClasses[i].getDeclaredMethod("getBenchmarkParameter").invoke(null);
-            Literal value = RdfHelper.getLiteral(benchmarkParamModel, null, param);
-            nodeWeight[i] = value != null ? value.getFloat() : 1;
-            if (nodeWeight[i] != 0) {
-                totalNodeWeight += nodeWeight[i];
+            Literal literal = RdfHelper.getLiteral(benchmarkParamModel, null, param);
+            float value = literal != null ? literal.getFloat() : 1;
+            if (value != 0) {
+                totalNodeWeight += value;
+                nodeWeights.add(value);
                 nodeManagerClasses.add(possibleNodeManagerClasses[i]);
             }
         }
         // create at least one node per any included node type
         int[] typecounts = new int[nodeManagerClasses.size()];
         for (int i = 0; i < nodeManagerClasses.size(); i++) {
-            if (nodeWeight[i] != 0) {
+            if (nodeWeights.get(i) != 0) {
+                LOGGER.info("adding required node of type {}", i);
                 typecounts[i] += 1;
             }
         }
         // create other nodes according to the weights provided
         for (int i = 0; i < nodeManagerClasses.size(); i++) {
-            nodeWeight[i] /= totalNodeWeight;
+            nodeWeights.set(i, nodeWeights.get(i) / totalNodeWeight);
         }
         for (int i = IntStream.of(typecounts).sum(); i < nodesAmount; i++) {
             float sample = random.nextFloat();
             float current = 0;
             for (int j = 0; j < nodeManagerClasses.size(); j++) {
-                current += nodeWeight[j];
+                current += nodeWeights.get(j);
                 if (sample <= current || j == nodeManagerClasses.size() - 1) {
                     typecounts[j] += 1;
                     break;
