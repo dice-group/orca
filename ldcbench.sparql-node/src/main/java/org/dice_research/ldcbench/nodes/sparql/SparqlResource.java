@@ -1,5 +1,6 @@
 package org.dice_research.ldcbench.nodes.sparql;
 
+import org.dice_research.ldcbench.nodes.utils.TripleIterator;
 import java.net.URI;
 import java.util.function.Predicate;
 
@@ -34,7 +35,7 @@ public class SparqlResource extends GraphBasedResource {
             sink.openSinkForUri(uri);
 
             int ids[] = parseIds(uriTemplate);
-            TripleIterator iterator = new TripleIterator(this, nodeId, ids[1]);
+            TripleIterator iterator = new TripleIterator(graphs, domainId, resourceUriTemplates, accessUriTemplates, ids[0], ids[1]);
         	LOGGER.info("Starting storing triples for sparqlResource");
             while (iterator.hasNext()) {
             	Triple t = iterator.next();
