@@ -11,6 +11,7 @@
   hobbit:version "v1.0"@en;
   hobbit:hasParameter
     :seed,
+    :numberOfNodes,
     :triplesPerNode,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
