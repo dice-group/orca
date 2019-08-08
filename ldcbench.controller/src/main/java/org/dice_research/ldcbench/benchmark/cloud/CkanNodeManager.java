@@ -40,6 +40,6 @@ public class CkanNodeManager extends AbstractNodeManager {
 
     @Override
     public String getLabel() {
-        return "ckan";
+        return "CKAN";
     }
 }

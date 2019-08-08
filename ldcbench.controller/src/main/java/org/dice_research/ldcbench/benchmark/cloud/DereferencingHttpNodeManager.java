@@ -37,6 +37,6 @@ public class DereferencingHttpNodeManager extends AbstractNodeManager {
 
     @Override
     public String getLabel() {
-        return "http";
+        return "HTTP deref.";
     }
 }

@@ -37,6 +37,6 @@ public class HttpDumpNodeManager extends AbstractNodeManager {
 
     @Override
     public String getLabel() {
-        return "dump";
+        return "HTTP dump";
     }
 }
