@@ -23,6 +23,7 @@
     :graphVisualization,
     :triplesEvaluated;
   hobbit:measuresKPI
+    :tripleCountOverTime,
     :truePositives,
     :macroRecall,
     :microRecall,
