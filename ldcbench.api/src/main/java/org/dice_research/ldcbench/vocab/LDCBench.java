@@ -37,7 +37,8 @@ public class LDCBench {
     public static final Property graphVisualization = property("graphVisualization");
     public static final Property httpDumpNodeWeight = property("httpDumpNodeWeight");
     public static final Property numberOfNodes = property("numberOfNodes");
-    public static final Property recall = property("recall");
+    public static final Property macroRecall = property("macroRecall");
+    public static final Property microRecall = property("microRecall");
     public static final Property runtime = property("runtime");
     public static final Property seed = property("seed");
     public static final Property sparqlNodeWeight = property("sparqlNodeWeight");

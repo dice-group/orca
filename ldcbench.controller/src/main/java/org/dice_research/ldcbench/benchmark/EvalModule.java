@@ -229,7 +229,7 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         model.add(experimentResource, RDF.type, HOBBIT.Experiment);
         model.add(model.createLiteralStatement(experimentResource, LDCBench.triplesEvaluated, result.checkedTriples));
         model.add(model.createLiteralStatement(experimentResource, LDCBench.truePositives, result.truePositives));
-        model.add(model.createLiteralStatement(experimentResource, LDCBench.recall, result.recall));
+        model.add(model.createLiteralStatement(experimentResource, LDCBench.microRecall, result.recall));
         // Add runtime if > 0
         long runtime = endTimeStamp - startTimeStamp;
         if (runtime > 0) {
@@ -237,13 +237,18 @@ public class EvalModule extends AbstractCommandReceivingComponent {
         }
 
         // Add results from all nodes
+        double macroRecall = 0;
         for (Map.Entry<Integer, EvaluationResult> entry : results.entrySet()) {
             if (entry.getKey() != CrawledDataEvaluator.TOTAL_EVALUATION_RESULTS) {
                 Resource nodeResource = model.createResource(experimentUri + "_Node_" + entry.getKey());
+                double recall = entry.getValue().recall;
+                macroRecall += recall;
                 //model.add(model.createStatement(experimentResource, model.createProperty(LDCBench.getURI(), "node"), nodeResource));
-                model.add(model.createLiteralStatement(nodeResource, LDCBench.recall, entry.getValue().recall));
+                model.add(model.createLiteralStatement(nodeResource, LDCBench.microRecall, recall));
             }
         }
+        macroRecall /= (results.size() - 1);
+        model.add(model.createLiteralStatement(experimentResource, LDCBench.macroRecall, macroRecall));
 
         // Transform the data of the triple counter into RDF
         if ((countingTimerTask != null) && (countingTimerTask.getTimestamps().size() > 1)

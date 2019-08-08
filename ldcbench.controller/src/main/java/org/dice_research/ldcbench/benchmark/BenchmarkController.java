@@ -457,7 +457,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         final String colorScheme = "rdylgn" + amountOfColors;
         for (int i = 0; i < nodesAmount; i++) {
             Resource nodeResource = resultModel.createResource(experimentUri + "_Node_" + i);
-            double recall = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.recall));
+            double recall = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.microRecall));
             String tooltip = String.format("%d: %s", i, nodeMetadata[i].getContainer());
             String fillColor = Double.isNaN(recall) ? "" : "/" + colorScheme + "/" + String.valueOf((int) Math.floor(recall * 8) + 1);
             dotlangLines.add(String.format("%d [label=<%s<BR/>%s>, tooltip=\"%s\", fillcolor=\"%s\", style=filled]", i, nodeManagers.get(i).getLabel(), Double.isNaN(recall) ? "&empty;" : String.format("%.2f", recall), tooltip, fillColor));
