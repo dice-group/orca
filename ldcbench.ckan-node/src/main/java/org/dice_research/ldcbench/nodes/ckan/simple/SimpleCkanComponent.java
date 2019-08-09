@@ -110,9 +110,13 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
 
         dataset.setResources(listResources);
 
+        try {
         CkanDataset insertedDataset = ckanDao.insertDataSource(dataset);
         LOGGER.info("Inserted CKAN dataset ID: {}", insertedDataset.getId());
         ckanDataSets.add(insertedDataset);
+        }catch(CkanException e ) {
+            LOGGER.error("Could not insert dataset on ckan: " + uri, e);
+        }
     }
 
     private void addCloudNode(int node) throws Exception {

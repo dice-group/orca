@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.trentorise.opendata.jackan.CheckedCkanClient;
+import eu.trentorise.opendata.jackan.exceptions.CkanException;
 import eu.trentorise.opendata.jackan.model.CkanDataset;
 import eu.trentorise.opendata.jackan.model.CkanDatasetBase;
 import eu.trentorise.opendata.jackan.model.CkanOrganization;
@@ -39,7 +40,7 @@ public class CkanDAO {
 	 * @return returns the created dataset
 	 */
 	
-	public CkanDataset insertDataSource(CkanDatasetBase dataset) {
+	public CkanDataset insertDataSource(CkanDatasetBase dataset) throws CkanException {
 		return ckanClient.createDataset(dataset);
 	}
 	
