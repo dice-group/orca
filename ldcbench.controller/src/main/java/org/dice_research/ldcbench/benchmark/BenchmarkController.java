@@ -33,6 +33,8 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.benchmark.cloud.*;
+import org.dice_research.ldcbench.benchmark.node.NodeSizeDeterminer;
+import org.dice_research.ldcbench.benchmark.node.NodeSizeDeterminerFactory;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.generate.SeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
@@ -96,7 +98,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private void createDataGenerator(String generatorImageName, String[] envVariables) {
         String variables[] = envVariables != null ? Arrays.copyOf(envVariables, envVariables.length + 1)
                 : new String[1];
-
         variables[variables.length - 1] = Constants.GENERATOR_ID_KEY + "=" + (dataGenContainers.size() + 1);
         Future<String> container = createContainerAsync(generatorImageName, Constants.CONTAINER_TYPE_BENCHMARK,
                 variables);
@@ -154,12 +155,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // You might want to load parameters from the benchmarks parameter model
         int seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getInt();
         nodesAmount = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfNodes).getInt();
-        int triplesPerNode = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.triplesPerNode).getInt();
         long averageNodeDelay = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeDelay).getLong();
         int averageNodeGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeGraphDegree)
                 .getInt();
         int averageRdfGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageRdfGraphDegree)
                 .getInt();
+        NodeSizeDeterminer nodeSizeDeterminer = NodeSizeDeterminerFactory.create(benchmarkParamModel, seed - 1);
 
         Random random = new Random(seed);
 
@@ -322,7 +323,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                         DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
                         DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, },
-                        nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree, triplesPerNode));
+                        nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree, nodeSizeDeterminer.getNodeSize()));
                 createDataGenerator(DATAGEN_IMAGE_NAME, envVariables);
                 // FIXME: HOBBIT SDK workaround (setting environment for "containers")
                 if (sdk) {

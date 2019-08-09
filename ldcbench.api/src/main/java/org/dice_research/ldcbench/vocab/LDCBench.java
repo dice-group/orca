@@ -28,10 +28,14 @@ public class LDCBench {
         return ResourceFactory.createProperty(uri, local);
     }
 
+    public static final Resource ExponentialDistNodeSize = resource("ExponentialDistNodeSize");
+    public static final Resource StaticNodeSize = resource("StaticNodeSize");
+
     // Properties sorted alphabetically
     public static final Property averageNodeDelay = property("averageNodeDelay");
     public static final Property averageNodeGraphDegree = property("averageNodeGraphDegree");
     public static final Property averageRdfGraphDegree = property("averageRdfGraphDegree");
+    public static final Property averageTriplesPerNode = property("averageTriplesPerNode");
     public static final Property ckanNodeWeight = property("ckanNodeWeight");
     public static final Property dereferencingHttpNodeWeight = property("dereferencingHttpNodeWeight");
     public static final Property graphVisualization = property("graphVisualization");
@@ -39,12 +43,12 @@ public class LDCBench {
     public static final Property numberOfNodes = property("numberOfNodes");
     public static final Property macroRecall = property("macroRecall");
     public static final Property microRecall = property("microRecall");
+    public static final Property nodeSizeDeterminer = property("nodeSizeDeterminer");
     public static final Property runtime = property("runtime");
     public static final Property seed = property("seed");
     public static final Property sparqlNodeWeight = property("sparqlNodeWeight");
     public static final Property tripleCountOverTime = property("tripleCountOverTime");
     public static final Property triplesEvaluated = property("triplesEvaluated");
-    public static final Property triplesPerNode = property("triplesPerNode");
     public static final Property truePositives = property("truePositives");
 
 }
