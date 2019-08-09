@@ -25,6 +25,7 @@ public class DereferencingHttpNodeManager extends AbstractNodeManager {
         String[] env = new String[]{
             DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageRdfGraphDegree,
             DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,
+            "LDCBENCH_USE_DUMP_FILE=" + Boolean.FALSE.toString()
         };
         return env;
     }
@@ -36,6 +37,6 @@ public class DereferencingHttpNodeManager extends AbstractNodeManager {
 
     @Override
     public String getLabel() {
-        return "http";
+        return "HTTP deref.";
     }
 }

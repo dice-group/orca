@@ -11,6 +11,7 @@
   hobbit:version "v1.0"@en;
   hobbit:hasParameter
     :seed,
+    :numberOfNodes,
     :triplesPerNode,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
@@ -18,9 +19,15 @@
     :dereferencingHttpNodeWeight,
     :ckanNodeWeight,
     :sparqlNodeWeight,
+    :httpDumpNodeWeight,
     :graphVisualization,
     :triplesEvaluated;
-  hobbit:measuresKPI :truePositives, :recall, :runtime;
+  hobbit:measuresKPI
+    :tripleCountOverTime,
+    :truePositives,
+    :macroRecall,
+    :microRecall,
+    :runtime;
   hobbit:hasAPI :Api .
 
 :Api a hobbit:API .
@@ -89,6 +96,13 @@
   rdfs:range xsd:float;
   hobbit:defaultValue "1"^^xsd:float .
 
+:httpDumpNodeWeight a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Weight of HTTP dump file node occurrence"@en;
+  rdfs:comment "0 would mean no such nodes. Otherwise at least one node would be created."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:float;
+  hobbit:defaultValue "1"^^xsd:float .
+
 :graphVisualization a hobbit:Parameter ;
   rdfs:label "Cloud graph visualization"@en;
   rdfs:comment "Cloud graph visualization, in DOT language."@en;
@@ -107,8 +121,14 @@
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:long .
 
-:recall a hobbit:KPI ;
-  rdfs:label "Recall"@en;
+:macroRecall a hobbit:KPI ;
+  rdfs:label "Macro-recall"@en;
+  rdfs:comment "The average of correctly retrieved triples divided by the number of triples that were expected to be returned over all nodes."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:double .
+
+:microRecall a hobbit:KPI ;
+  rdfs:label "Micro-recall"@en;
   rdfs:comment "The number of correctly retrieved triples divided by the number of triples that were expected to be returned."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:double .

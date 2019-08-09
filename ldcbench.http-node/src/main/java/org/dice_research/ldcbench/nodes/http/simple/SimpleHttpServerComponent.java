@@ -2,16 +2,23 @@ package org.dice_research.ldcbench.nodes.http.simple;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFLanguages;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
+import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileResource;
 import org.dice_research.ldcbench.rdf.UriHelper;
 import org.hobbit.core.components.Component;
 import org.hobbit.utils.EnvVariables;
@@ -32,22 +39,27 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
     protected Container container;
     protected Server server;
     protected Connection connection;
+    protected boolean dumpFileNode;
 
     @Override
-    public void initBeforeDataGeneration() throws Exception {}
+    public void initBeforeDataGeneration() throws Exception {
+        // check whether this node contains dump files
+        dumpFileNode = EnvVariables.getBoolean("LDCBENCH_USE_DUMP_FILE", false);
+        if (dumpFileNode) {
+            LOGGER.debug("Init as HTTP dump file node.");
+            String hostname = InetAddress.getLocalHost().getHostName();
+            LOGGER.info("Retrieved my own name as: \"{}\"", hostname);
+            this.resourceUriTemplate = "http://" + hostname + "/dumpFile.ttl.gz#%s-%s/%s-%s";
+            this.accessUriTemplate = "http://" + hostname + "/dumpFile.ttl.gz#%s-%s/%s-%s";
+        } else {
+            LOGGER.debug("Init as dereferencing HTTP node.");
+        }
+    }
 
     @Override
     public void initAfterDataGeneration() throws Exception {
         // Create the container based on the information that has been received
-        container = new CrawleableResourceContainer(new GraphBasedResource(
-                cloudNodeId,
-                Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
-                Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                graphs.toArray(new Graph[graphs.size()]), (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
-                        && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
-                new String[] {
-                // "application/rdf+xml", "text/plain", "*/*"
-                }));
+        container = createContainer();
         graphs = null;
         // Start server
         server = new ContainerServer(container);
@@ -55,6 +67,35 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
         SocketAddress address = new InetSocketAddress(
                 EnvVariables.getInt(ApiConstants.ENV_HTTP_PORT_KEY, DEFAULT_PORT, LOGGER));
         connection.connect(address);
+    }
+
+    protected Container createContainer() {
+        CrawleableResource resource = null;
+        if (dumpFileNode) {
+            resource = DumpFileResource.create(cloudNodeId,
+                    Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+                    Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
+                    graphs.toArray(new Graph[graphs.size()]), (r -> true), Lang.TTL, true);
+        } else {
+            // Create list of available content types
+            Set<String> contentTypes = new HashSet<String>();
+            for (Lang lang : RDFLanguages.getRegisteredLanguages()) {
+                if (!RDFLanguages.RDFNULL.equals(lang)) {
+                    contentTypes.add(lang.getContentType().getContentType());
+                    contentTypes.addAll(lang.getAltContentTypes());
+                }
+            }
+            // Create the container based on the information that has been received
+            resource = new GraphBasedResource(cloudNodeId,
+                    Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+                    Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
+                    graphs.toArray(new Graph[graphs.size()]),
+                    (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
+                            && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
+                    contentTypes.toArray(new String[contentTypes.size()]));
+        }
+        Objects.requireNonNull(resource, "Couldn't create crawleable resource. Exiting.");
+        return new CrawleableResourceContainer(resource);
     }
 
     protected Model readModel(String modelFile, String modelLang) {

@@ -1,41 +1,40 @@
 package org.dice_research.ldcbench.nodes.http.simple;
 
 import java.io.OutputStream;
-import java.util.Iterator;
 import java.util.function.Predicate;
 
-import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.system.StreamOps;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
 import org.apache.jena.sparql.graph.GraphFactory;
 import org.dice_research.ldcbench.graph.Graph;
-import org.dice_research.ldcbench.nodes.http.utils.NullValueHelper;
-import org.dice_research.ldcbench.rdf.SimpleCachingTripleCreator;
-import org.dice_research.ldcbench.rdf.TripleCreator;
+import org.dice_research.ldcbench.nodes.utils.TripleIterator;
 import org.dice_research.ldcbench.rdf.UriHelper;
 import org.simpleframework.http.Request;
+import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 
-public class GraphBasedResource extends AbstractCrawleableResource {
+public class GraphBasedResource extends AbstractNegotiatingResource {
 
-    protected static final Lang DEFAULT_LANG = Lang.TURTLE;
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(GraphBasedResource.class);
+    
     protected final int domainId;
     protected final String[] resourceUriTemplates;
     protected final String[] accessUriTemplates;
     protected final Graph[] graphs;
     protected boolean failIfContentTypeMismatch = false;
-    protected Lang defaultLang = DEFAULT_LANG;
 
-    public GraphBasedResource(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs, Predicate<Request> predicate,
-            String[] contentTypes) {
-        super(predicate, NullValueHelper.valueOrDefault(DEFAULT_LANG.getContentType().getCharset(), DEFAULT_CHARSET),
-                DEFAULT_LANG.getContentType().getContentType(), new String[0], contentTypes);
+    public GraphBasedResource(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs,
+            Predicate<Request> predicate, String[] contentTypes) {
+        super(predicate, contentTypes);
         this.domainId = domainId;
         this.resourceUriTemplates = resourceUriTemplates;
         this.accessUriTemplates = accessUriTemplates;
@@ -43,7 +42,18 @@ public class GraphBasedResource extends AbstractCrawleableResource {
     }
 
     @Override
-    public boolean handleRequest(String target, Lang lang, String charset, OutputStream out)
+    protected boolean handleRequest(String target, MediaType responseType, Response response, OutputStream out) throws SimpleHttpException {
+        Lang lang = RDFLanguages.contentTypeToLang(responseType.toString());
+        if(lang == null) {
+            lang = RDFLanguages.contentTypeToLang(responseType.getType());
+        }
+        if(lang == null) {
+            LOGGER.error("Couldn't identify negotiated content type. This shouldn't happen!");
+        }
+        return handleRequest(target, lang, out);
+    }
+
+    public boolean handleRequest(String target, Lang lang, OutputStream out)
             throws SimpleHttpException {
         // Lang lang = RDFLanguages.contentTypeToLang(contentType);
         // if ((lang == null) && (failIfContentTypeMismatch)) {
@@ -55,11 +65,12 @@ public class GraphBasedResource extends AbstractCrawleableResource {
         // lang = defaultLang;
         // }
         // parse target
-        
+
         // TODO add a prefix map
-        
+
         int ids[] = parseIds(target);
-        TripleIterator iterator = new TripleIterator(this, ids[0], ids[1]);
+        TripleIterator iterator = new TripleIterator(graphs, domainId, resourceUriTemplates, accessUriTemplates, ids[0],
+                ids[1]);
 
         try {
             streamData(iterator, out, lang);
@@ -122,45 +133,4 @@ public class GraphBasedResource extends AbstractCrawleableResource {
         }
     }
 
-    public void setDefaultLang(Lang defaultLang) {
-        this.defaultLang = defaultLang;
-        setDefaultCharset(NullValueHelper.valueOrDefault(defaultLang.getContentType().getCharset(), DEFAULT_CHARSET));
-        setDefaultContentType(defaultLang.getContentType().getContentType());
-    }
-
-    public class TripleIterator implements Iterator<Triple> {
-
-        protected GraphBasedResource parent;
-        protected int datasetId;
-        protected int nodeId;
-        protected int[] targets;
-        protected int[] edgeTypes;
-        protected int nextTargetId = 0;
-        protected TripleCreator tripleCreator;
-
-        public TripleIterator(GraphBasedResource parent, int datasetId, int nodeId) {
-            this.parent = parent;
-            this.datasetId = datasetId;
-            this.nodeId = nodeId;
-            targets = parent.graphs[datasetId].outgoingEdgeTargets(nodeId);
-            edgeTypes = parent.graphs[datasetId].outgoingEdgeTypes(nodeId);
-            tripleCreator = new SimpleCachingTripleCreator(parent.domainId, resourceUriTemplates, accessUriTemplates);
-        }
-
-        @Override
-        public boolean hasNext() {
-            return nextTargetId < targets.length;
-        }
-
-        @Override
-        public Triple next() {
-            int targetId = nextTargetId++;
-            return createTriple(targets[targetId], edgeTypes[targetId]);
-        }
-
-        private Triple createTriple(int targetId, int propertyId) {
-            return tripleCreator.createTriple(nodeId, propertyId, targetId,
-                    parent.graphs[datasetId].getExternalNodeId(targetId), parent.graphs[datasetId].getGraphId(targetId));
-        }
-    }
 }

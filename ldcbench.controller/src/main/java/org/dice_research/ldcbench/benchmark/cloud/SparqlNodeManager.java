@@ -40,6 +40,6 @@ public class SparqlNodeManager extends AbstractNodeManager {
 
     @Override
     public String getLabel() {
-        return "sparql";
+        return "SPARQL";
     }
 }

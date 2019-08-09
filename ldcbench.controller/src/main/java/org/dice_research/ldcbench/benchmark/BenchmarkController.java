@@ -60,7 +60,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private List<Future<String>> nodeContainers = new ArrayList<>();
 
     private Class<?>[] possibleNodeManagerClasses = { DereferencingHttpNodeManager.class, CkanNodeManager.class,
-            SparqlNodeManager.class, };
+            SparqlNodeManager.class, HttpDumpNodeManager.class };
 
     private boolean sdk;
     private boolean dockerized;
@@ -103,24 +103,27 @@ public class BenchmarkController extends AbstractBenchmarkController {
         dataGenContainers.add(container);
     }
 
-    private void waitForDataGenToBeCreated() throws InterruptedException, ExecutionException {
-        LOGGER.info("Waiting for {} Data Generators to be created.", dataGenContainers.size());
-        for (Future<String> container : dataGenContainers) {
+    private Set<String> waitForDataGenToBeCreated(Set<Future<String>> containers) throws InterruptedException, ExecutionException {
+        Set<String> containerIds = new HashSet<>();
+        LOGGER.info("Waiting for {} Data Generators to be created.", containers.size());
+        for (Future<String> container : containers) {
             String containerId = container.get();
             if (containerId != null) {
-                dataGenContainerIds.add(containerId);
+                containerIds.add(containerId);
             } else {
                 String errorMsg = "Couldn't create generator component. Aborting.";
                 LOGGER.error(errorMsg);
                 throw new IllegalStateException(errorMsg);
             }
         }
+        return containerIds;
     }
 
-    private void waitForNodesToBeCreated() throws InterruptedException, ExecutionException {
-        LOGGER.info("Waiting for {} nodes to be created.", nodeContainers.size());
-        for (int i = 0; i < nodeContainers.size(); i++) {
-            String containerId = nodeContainers.get(i).get();
+    private NodeMetadata[] waitForNodesToBeCreated(List<Future<String>> containers) throws InterruptedException, ExecutionException {
+        NodeMetadata[] nodeMetadata = new NodeMetadata[containers.size()];
+        LOGGER.info("Waiting for {} nodes to be created.", containers.size());
+        for (int i = 0; i < containers.size(); i++) {
+            String containerId = containers.get(i).get();
             if (containerId != null) {
                 nodeMetadata[i] = new NodeMetadata();
                 nodeMetadata[i].setContainer(containerId);
@@ -133,6 +136,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 throw new IllegalStateException(errorMsg);
             }
         }
+        return nodeMetadata;
     }
 
     @Override
@@ -197,34 +201,36 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         String[] envVariables;
         LOGGER.debug("Starting all cloud nodes...");
-        float nodeWeight[] = new float[possibleNodeManagerClasses.length];
+        ArrayList<Float> nodeWeights = new ArrayList<>();
         float totalNodeWeight = 0;
         ArrayList<Class<?>> nodeManagerClasses = new ArrayList<>();
         for (int i = 0; i < possibleNodeManagerClasses.length; i++) {
             Property param = (Property) possibleNodeManagerClasses[i].getDeclaredMethod("getBenchmarkParameter").invoke(null);
-            Literal value = RdfHelper.getLiteral(benchmarkParamModel, null, param);
-            nodeWeight[i] = value != null ? value.getFloat() : 1;
-            if (nodeWeight[i] != 0) {
-                totalNodeWeight += nodeWeight[i];
+            Literal literal = RdfHelper.getLiteral(benchmarkParamModel, null, param);
+            float value = literal != null ? literal.getFloat() : 1;
+            if (value != 0) {
+                totalNodeWeight += value;
+                nodeWeights.add(value);
                 nodeManagerClasses.add(possibleNodeManagerClasses[i]);
             }
         }
         // create at least one node per any included node type
         int[] typecounts = new int[nodeManagerClasses.size()];
         for (int i = 0; i < nodeManagerClasses.size(); i++) {
-            if (nodeWeight[i] != 0) {
+            if (nodeWeights.get(i) != 0) {
+                LOGGER.info("adding required node of type {}", i);
                 typecounts[i] += 1;
             }
         }
         // create other nodes according to the weights provided
         for (int i = 0; i < nodeManagerClasses.size(); i++) {
-            nodeWeight[i] /= totalNodeWeight;
+            nodeWeights.set(i, nodeWeights.get(i) / totalNodeWeight);
         }
         for (int i = IntStream.of(typecounts).sum(); i < nodesAmount; i++) {
             float sample = random.nextFloat();
             float current = 0;
             for (int j = 0; j < nodeManagerClasses.size(); j++) {
-                current += nodeWeight[j];
+                current += nodeWeights.get(j);
                 if (sample <= current || j == nodeManagerClasses.size() - 1) {
                     typecounts[j] += 1;
                     break;
@@ -240,25 +246,29 @@ public class BenchmarkController extends AbstractBenchmarkController {
             }
         }
 
-        nodeMetadata = new NodeMetadata[nodesAmount];
-        for (int i = 0; i < nodesAmount; i++) {
-            envVariables = new String[] { ApiConstants.ENV_DOCKERIZED_KEY + "=" + dockerized,
-                    ApiConstants.ENV_NODE_ID_KEY + "=" + i,
-                    ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
-                    ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
-                    ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay,
-                    ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345), };
+        nodeMetadata = new NodeMetadata[0];
+        int batchSize = 10;
+        for (int batch = 0; batch < (float)nodesAmount / batchSize; batch++) {
+            for (int i = batch * batchSize; i < (batch + 1) * batchSize && i < nodesAmount; i++) {
+                LOGGER.info("Creating node {}...", i);
+                envVariables = new String[] { ApiConstants.ENV_DOCKERIZED_KEY + "=" + dockerized,
+                        ApiConstants.ENV_NODE_ID_KEY + "=" + i,
+                        ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
+                        ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
+                        ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay,
+                        ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345), };
 
-            nodeContainers.add(createContainerAsync(nodeManagers.get(i).getImageName(),
-                    Constants.CONTAINER_TYPE_BENCHMARK, envVariables));
+                nodeContainers.add(createContainerAsync(nodeManagers.get(i).getImageName(),
+                        Constants.CONTAINER_TYPE_BENCHMARK, envVariables));
 
-            // FIXME: HOBBIT SDK workaround (setting environment for "containers")
-            if (sdk) {
-                Thread.sleep(2000);
+                // FIXME: HOBBIT SDK workaround (setting environment for "containers")
+                if (sdk) {
+                    Thread.sleep(2000);
+                }
             }
-        }
 
-        waitForNodesToBeCreated();
+            nodeMetadata = waitForNodesToBeCreated(nodeContainers);
+        }
 
         String evalDataQueueName = getRandomNameForRabbitMQ();
         LOGGER.debug("Creating evaluation module...");
@@ -300,26 +310,27 @@ public class BenchmarkController extends AbstractBenchmarkController {
         }
 
         // RDF graph generators
-        for (int i = 0; i < nodesAmount; i++) {
-            LOGGER.info("Requesting creation of {}/{} RDF graph generator...", i + 1, nodesAmount);
-            envVariables = ArrayUtils.addAll(new String[] { DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + 0, // HOBBIT
-                                                                                                             // SDK
-                                                                                                             // workaround
-                    Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
-                    DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.RDF_GRAPH_GENERATOR,
-                    DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(1 + i),
-                    DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
-                    ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
-                    DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, },
-                    nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree, triplesPerNode));
-            createDataGenerator(DATAGEN_IMAGE_NAME, envVariables);
-            // FIXME: HOBBIT SDK workaround (setting environment for "containers")
-            if (sdk) {
-                Thread.sleep(2000);
+        for (int batch = 0; batch < (float)nodesAmount / batchSize; batch++) {
+            for (int i = batch * batchSize; i < (batch + 1) * batchSize && i < nodesAmount; i++) {
+                LOGGER.info("Creating RDF graph generator {}...", i);
+                envVariables = ArrayUtils.addAll(new String[] { DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + 0, // HOBBIT
+                                                                                                                 // SDK
+                                                                                                                 // workaround
+                        Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
+                        DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.RDF_GRAPH_GENERATOR,
+                        DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(1 + i),
+                        DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
+                        ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
+                        DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, },
+                        nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree, triplesPerNode));
+                createDataGenerator(DATAGEN_IMAGE_NAME, envVariables);
+                // FIXME: HOBBIT SDK workaround (setting environment for "containers")
+                if (sdk) {
+                    Thread.sleep(2000);
+                }
             }
+            waitForDataGenToBeCreated(dataGenContainers);
         }
-
-        waitForDataGenToBeCreated();
 
         LOGGER.debug("Creating queues for sending data and tasks to the system...");
         systemDataSender = DataSenderImpl.builder().queue(getFactoryForOutgoingDataQueues(),
@@ -455,7 +466,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         final String colorScheme = "rdylgn" + amountOfColors;
         for (int i = 0; i < nodesAmount; i++) {
             Resource nodeResource = resultModel.createResource(experimentUri + "_Node_" + i);
-            double recall = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.recall));
+            double recall = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.microRecall));
             String tooltip = String.format("%d: %s", i, nodeMetadata[i].getContainer());
             String fillColor = Double.isNaN(recall) ? "" : "/" + colorScheme + "/" + String.valueOf((int) Math.floor(recall * 8) + 1);
             dotlangLines.add(String.format("%d [label=<%s<BR/>%s>, tooltip=\"%s\", fillcolor=\"%s\", style=filled]", i, nodeManagers.get(i).getLabel(), Double.isNaN(recall) ? "&empty;" : String.format("%.2f", recall), tooltip, fillColor));
