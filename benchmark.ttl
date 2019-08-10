@@ -12,7 +12,7 @@
   hobbit:hasParameter
     :seed,
     :numberOfNodes,
-    :triplesPerNode,
+    :averageTriplesPerNode,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
     :averageNodeDelay,
@@ -21,7 +21,8 @@
     :sparqlNodeWeight,
     :httpDumpNodeWeight,
     :graphVisualization,
-    :triplesEvaluated;
+    :triplesEvaluated,
+    :nodeSizeDeterminer;
   hobbit:measuresKPI
     :tripleCountOverTime,
     :truePositives,
@@ -47,9 +48,9 @@
   rdfs:range xsd:integer;
   hobbit:defaultValue "10"^^xsd:integer .
 
-:triplesPerNode a hobbit:Parameter, hobbit:ConfigurableParameter;
-  rdfs:label "Triples per node"@en;
-  rdfs:comment ""@en;
+:averageTriplesPerNode a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Average triples per node"@en;
+  rdfs:comment "The average number of triples the single nodes will have."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:integer;
   hobbit:defaultValue "100"^^xsd:integer .
@@ -109,11 +110,28 @@
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:string .
 
-:triplesEvaluated a hobbit:Parameter ;
+:triplesEvaluated a hobbit:Parameter, hobbit:FeatureParameter ;
   rdfs:label "Triples evaluated"@en;
   rdfs:comment "The number of triples checked during the evaluation."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:long .
+
+:nodeSizeDeterminer a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Node size definition"@en;
+  rdfs:comment "The method how the size of a single node is defined."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range :NodeSizeDeterminer;
+  hobbit:defaultValue :ExponentialDistNodeSize .
+
+:NodeSizeDeterminer a rdfs:Class .
+
+:StaticNodeSize a :NodeSizeDeterminer;
+	rdfs:label "Static node size"@en;
+	rdfs:comment "Every node has the size defined by the average node size parameter."@en .
+
+:ExponentialDistNodeSize a :NodeSizeDeterminer;
+	rdfs:label "Exponential distribution-based"@en;
+	rdfs:comment "The distribution of node sizes will follow an exponential distribution."@en .
 
 :truePositives a hobbit:KPI ;
   rdfs:label "True positives"@en;

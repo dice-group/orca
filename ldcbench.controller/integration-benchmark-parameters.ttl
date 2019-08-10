@@ -4,7 +4,8 @@
 
 experiments:New a hobbit:Experiment;
   :seed 100;
-  :triplesPerNode 5;
+  :nodeSizeDeterminer :ExponentialDistNodeSize;
+  :averageTriplesPerNode 5;
   :averageNodeDelay 5000;
   :averageRdfGraphDegree 2;
   :dereferencingHttpNodeWeight 1;
