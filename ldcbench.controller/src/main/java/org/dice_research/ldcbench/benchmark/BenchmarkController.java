@@ -68,6 +68,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private boolean dockerized;
     private int nodesAmount;
 
+    private String sparqlContainer;
     private String sparqlUrl;
     private String sparqlUrlAuth;
     private String[] sparqlCredentials;
@@ -352,6 +353,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         if (sparqlHostname == null) {
             throw new IllegalStateException("Couldn't create SPARQL endpoint. Aborting.");
         }
+        sparqlContainer = sparqlHostname;
         sparqlHostname += ":" + defaultPort;
         if (!dockerized) {
             sparqlHostname = "localhost:" + exposedPort;
@@ -524,15 +526,21 @@ public class BenchmarkController extends AbstractBenchmarkController {
             String containerName = RabbitMQUtils.readString(buffer);
             int exitCode = buffer.get();
             if (nodeContainerMap.containsKey(containerName)) {
+                LOGGER.error("Node container {} terminated with exitCode={}.", containerName, exitCode);
                 nodeContainerMap.get(containerName).setTerminated(true);
                 // FIXME: only do this when container terminates unexpectedly
                 containerCrashed(containerName);
             }
             if (dataGenContainerIds.contains(containerName)) {
+                LOGGER.error("Data generator container {} terminated with exitCode={}.", containerName,exitCode);
                 // FIXME: only do this when container terminates unexpectedly
                 if (exitCode != 0) {
                     containerCrashed(containerName);
                 }
+            }
+            if (containerName.equals(sparqlContainer)) {
+                LOGGER.error("Sparql container {} terminated with exitCode={}.", containerName,exitCode);
+                containerCrashed(containerName);
             }
         }
         }
