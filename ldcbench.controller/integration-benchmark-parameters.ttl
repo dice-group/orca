@@ -4,7 +4,9 @@
 
 experiments:New a hobbit:Experiment;
   :seed 100;
-  :nodeSizeDeterminer :ExponentialDistNodeSize;
+  ## FIXME: this generates nodes with invalid parameters
+  #:nodeSizeDeterminer :ExponentialDistNodeSize;
+  :nodeSizeDeterminer :StaticNodeSize;
   :averageTriplesPerNode 5;
   :averageNodeDelay 5000;
   :averageRdfGraphDegree 2;
