@@ -11,15 +11,15 @@ public class RandomLOD2File {
 	RandomCloudGraph rg;
 	GrphBasedGraph g;
 
-//	int N=28;
-//	int[] typecounts= {14,8,6};
-//    int[][] typeconn= {{1,1,0},{0,1,1},{1,1,1}};
-//    double degree=46.0/N;
-//
-    int N=1096;
-    int[] typecounts= {500,400,100,96};
-    int[][] typeconn= {{1,1,0,0},{0,1,1,0},{0,0,1,1},{1,1,1,1}};
-    double degree=15655.0/N;
+	int N=28;
+	int[] typecounts= {14,8,6};
+    int[][] typeconn= {{1,1,0},{0,1,1},{1,1,1}};
+    double degree=2*46.0/N;
+
+//    int N=1096;
+//    int[] typecounts= {500,400,100,96};
+//    int[][] typeconn= {{1,1,0,0},{0,1,1,0},{0,0,1,1},{1,1,1,1}};
+//    double degree=2*15655.0/N;
 
     g = new GrphBasedGraph();
 	rg = new RandomCloudGraph("RandomLOD",typecounts,100,typeconn);

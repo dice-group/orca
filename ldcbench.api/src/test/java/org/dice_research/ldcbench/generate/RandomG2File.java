@@ -34,7 +34,8 @@ public class RandomG2File {
 
 //		rg.generateGraph(N,degree,123L,g);
 		//g.getNumberOfNodes();
-		rg.generateGraph(5.0, 100, 496, g);
+		rg.generateGraph(10.0, 100, 496, g);
+//		rg.generateGraph( 40000,2.5, 123, g);
 		N=g.getNumberOfNodes();
 		System.out.println("N="+N);
 		//public void saveToFile(String fname) {

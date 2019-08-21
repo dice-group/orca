@@ -56,7 +56,7 @@ public void generateGraph(int numberOfNodes, double avgDegree, long seed, GraphB
 
 @Override
 public void generateGraph(double avgDegree, int numberOfEdges, long seed, GraphBuilder builder) {
-	this.generateGraph((int)Math.ceil(numberOfEdges/avgDegree), avgDegree, seed,builder);
+	this.generateGraph((int)Math.ceil(numberOfEdges/avgDegree/2), avgDegree, seed,builder);
 }
 
 //--------------------------------------------------------------------------------------------
@@ -65,8 +65,8 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 	/* nodes are numbered from 1 to N */
 	/* TreeSet is faster practically than HashSet */
 
-	if (degree < 1) {
-		throw new IllegalArgumentException("Degree must be more than 1.");
+	if (degree < (2-2/N)) {
+		throw new IllegalArgumentException("Degree must be more than (2-2/N).");
 	}
 
 	if (degree > (N-1)) {// max links created at any step is N-1
@@ -77,14 +77,14 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 	long t0 = System.currentTimeMillis();
 	long ti0 = System.currentTimeMillis();
 
-	int nE=(int) Math.ceil(N*degree);
+	int nE=(int) Math.ceil(N*degree/2);
 	int[] subj = new int[nE];
 	int[] obj = new int[nE];
 	int[] inDeg = new int[N + 1];
 	int[] typewt = new int[N + 1];
 	Arrays.fill(inDeg, 1);
 	inDeg[0] = 0;// reserved
-	int m = (int) Math.floor(degree);// average degree of graph
+	int m = (int) Math.floor(degree/2);// average degree of graph
 
 	Random generator=new Random(seed);
 	/* -init:until the number of nodes to connect to for each type is at least d (check if <=d =>conn2all),
@@ -135,9 +135,12 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 		}
 
 		int m1,mi,mo;//number of inlinks and number of out links mi+mo=m1
-		m1= 1+ generator.nextInt(2*m);// to use uniform distribution from 1 to 2m
+		m1= 1+ generator.nextInt(2*m-1);// to use uniform distribution from 1 to 2m
 		if(m1 >= node) m1=node-1;
-		if(m1 > 2*m) m1=2*m;
+		if(node==N) {//last node
+			m1=nE-indexToEdgeList;
+		}
+		//if(m1 > 2*m) m1=2*m;
 
 		if((N-node)>=(nE-indexToEdgeList-m1+1)) m1=1;// to have the same number of nodes
 

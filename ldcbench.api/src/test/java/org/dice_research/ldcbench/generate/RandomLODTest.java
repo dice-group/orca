@@ -32,7 +32,7 @@ public class RandomLODTest {
 	}
     @Test
 	public void LOD2017() {
-    	double degree=15654.0/N;
+    	double degree=2*15654.0/N;
 		//rg.generateGraph(5.0,200000,123L,g);
 		rg.generateGraph(N,degree,123L,g);
 		assertEquals("Number of nodes", N, g.getNumberOfNodes());

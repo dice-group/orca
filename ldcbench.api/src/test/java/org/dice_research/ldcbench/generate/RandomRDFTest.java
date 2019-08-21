@@ -38,15 +38,15 @@ public class RandomRDFTest {
 
     @Test
     public void RealDegree() {
-        rg.generateGraph(N, 1.5, 123L, g);
-        assertEquals("Number of edges", 60000, g.getNumberOfEdges());
+        rg.generateGraph(N, 2.5, 123L, g);
+        assertEquals("Number of edges", N*2.5/2, g.getNumberOfEdges());
     }
 
     @Test
     public void IntDegree() {
-        rg.generateGraph(5.0, 200000, 10L, g);
-//        assertEquals("Number of nodes", 40000, g.getNumberOfNodes());
-        assertEquals("Number of nodes", 36395, g.getNumberOfNodes());//when using uniform degree
+        rg.generateGraph(10.0, 200000, 10L, g);
+        assertEquals("Number of nodes", 40000, g.getNumberOfNodes());
+//        assertEquals("Number of nodes", 36395, g.getNumberOfNodes());//when using uniform degree
         assertEquals("Number of edges", 200000, g.getNumberOfEdges());
 
         // g.print();
@@ -65,7 +65,7 @@ public class RandomRDFTest {
     public void EmptyNodeExample() {
         // With these numbers it was observed that node 19 has neither incoming nor
         // outgoing edges. This should not be possible.
-        rg.generateGraph(5.0, 100, 496, g);
+        rg.generateGraph(10.0, 100, 496, g);
 //        g.print();
         assertEquals("Number of edges", 100, g.getNumberOfEdges());
         int nodeCnt=g.getNumberOfNodes();
