@@ -1,46 +1,49 @@
 package org.dice_research.ldcbench;
 
-import java.util.Arrays;
-import static org.apache.jena.datatypes.xsd.XSDDatatype.*;
+import static org.dice_research.ldcbench.Constants.BENCHMARK_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.CKANNODE_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.DATAGEN_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.EVALMODULE_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.HTTPNODE_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.SPARQLNODE_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.SYSTEM_IMAGE_NAME;
+import static org.hobbit.core.Constants.BENCHMARK_PARAMETERS_MODEL_KEY;
+import static org.hobbit.core.Constants.HOBBIT_EXPERIMENT_URI_KEY;
+import static org.hobbit.core.Constants.HOBBIT_SESSION_ID_KEY;
+import static org.hobbit.core.Constants.RABBIT_MQ_HOST_NAME_KEY;
+import static org.hobbit.core.Constants.SYSTEM_PARAMETERS_MODEL_KEY;
+
+import java.io.IOException;
+import java.util.Date;
+
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
+import org.dice_research.ldcbench.benchmark.BenchmarkController;
+import org.dice_research.ldcbench.benchmark.DataGenerator;
+import org.dice_research.ldcbench.benchmark.EvalModule;
+import org.dice_research.ldcbench.builders.CkanNodeBuilder;
+import org.dice_research.ldcbench.builders.ExampleDockersBuilder;
+import org.dice_research.ldcbench.builders.SimpleHttpNodeBuilder;
+import org.dice_research.ldcbench.builders.SparqlNodeBuilder;
+import org.dice_research.ldcbench.nodes.ckan.simple.SimpleCkanComponent;
+import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpServerComponent;
+import org.dice_research.ldcbench.nodes.sparql.simple.SimpleSparqlComponent;
+import org.dice_research.ldcbench.system.SystemAdapter;
 import org.hobbit.core.components.Component;
 import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.sdk.docker.AbstractDockerizer;
 import org.hobbit.sdk.docker.RabbitMqDockerizer;
-import org.hobbit.sdk.docker.builders.hobbit.*;
-
-import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpServerComponent;
-import org.dice_research.ldcbench.nodes.ckan.simple.SimpleCkanComponent;
-import org.dice_research.ldcbench.nodes.sparql.simple.SimpleSparqlComponent;
-import org.dice_research.ldcbench.benchmark.*;
-import org.dice_research.ldcbench.builders.*;
-import org.dice_research.ldcbench.system.SystemAdapter;
-import org.dice_research.ldcbench.vocab.LDCBench;
+import org.hobbit.sdk.docker.builders.hobbit.BenchmarkDockerBuilder;
+import org.hobbit.sdk.docker.builders.hobbit.DataGenDockerBuilder;
+import org.hobbit.sdk.docker.builders.hobbit.EvalModuleDockerBuilder;
+import org.hobbit.sdk.docker.builders.hobbit.SystemAdapterDockerBuilder;
 import org.hobbit.sdk.utils.CommandQueueListener;
 import org.hobbit.sdk.utils.ComponentsExecutor;
 import org.hobbit.sdk.utils.ModelsHandler;
-import org.hobbit.sdk.utils.MultiThreadedImageBuilder;
 import org.hobbit.sdk.utils.commandreactions.CommandReactionsBuilder;
-import org.hobbit.vocab.HOBBIT;
 import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Date;
-
-import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
-import static org.hobbit.core.Constants.*;
-
-import static org.hobbit.sdk.Constants.BENCHMARK_URI;
-import static org.hobbit.sdk.Constants.GIT_USERNAME;
-import static org.dice_research.ldcbench.Constants.*;
 
 /**
  * @author Pavel Smirnov
@@ -170,7 +173,7 @@ public class BenchmarkTestBase {
         if (componentsExecutor.anyExceptions()) {
             LOGGER.error("Some components didn't execute cleanly");
             for (Throwable e : componentsExecutor.getExceptions()) {
-                LOGGER.error("- {}", e.toString());
+                LOGGER.error("Component didn't execute cleanly", e);
             }
             Assert.fail();
         }

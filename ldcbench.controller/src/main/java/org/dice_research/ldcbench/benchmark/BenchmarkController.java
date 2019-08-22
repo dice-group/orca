@@ -57,6 +57,8 @@ import com.rabbitmq.client.Consumer;
 public class BenchmarkController extends AbstractBenchmarkController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkController.class);
+    
+    public static final String DEFAULT_EVAL_STORAGE_IMAGE = AbstractBenchmarkController.DEFAULT_EVAL_STORAGE_IMAGE;
 
     private Set<Future<String>> dataGenContainers = new HashSet<>();
     private List<Future<String>> nodeContainers = new ArrayList<>();
@@ -365,7 +367,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     protected void createEmptyServer() {
         LOGGER.info("Creating empty-server");
-        createContainer("git.project-hobbit.eu:4567/ldcbench/ldcbench/empty-server", Constants.CONTAINER_TYPE_BENCHMARK,
+        createContainer(EMPTY_SERVER_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK,
                 null, new String[] { "purl.org", "www.openlinksw.com", "www.w3.org", "www.w2.org", });
     }
 

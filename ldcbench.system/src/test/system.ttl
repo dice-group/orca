@@ -1,0 +1,12 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix hobbit: <http://w3id.org/hobbit/vocab#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+@prefix : <https://github.com/dice-group/ldcbench#> .
+
+:exampleSystem a hobbit:SystemInstance;
+  rdfs:label "LDC-Bench Example System"@en;
+  rdfs:comment "Example system for LDC-Bench"@en;
+  hobbit:implementsAPI :api;
+  hobbit:imageName "git.project-hobbit.eu:4567/ldcbench/ldcbench/system-adapter" .

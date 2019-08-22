@@ -10,41 +10,28 @@
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../ldcbench.parent</relativePath>
   </parent>
-  <artifactId>ldcbench.ckan-node</artifactId>
+  <artifactId>ldcbench.data-generator</artifactId>
   <packaging>jar</packaging>
 
   <dependencies>
-    <!-- JACKAN library -->
-
-    <dependency>
-      <groupId>eu.trentorise.opendata</groupId>
-      <artifactId>jackan</artifactId>
-      <version>0.4.2</version>
-    </dependency>
-
     <dependency>
       <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.api</artifactId>
     </dependency>
-
-    <dependency>
-      <groupId>org.dice_research</groupId>
-      <artifactId>ldcbench.nodes</artifactId>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/postgresql/postgresql -->
-    <!-- https://mvnrepository.com/artifact/postgresql/postgresql -->
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>42.2.5.jre7</version>
-      <scope>compile</scope>
-    </dependency>
-
     <!-- HOBBIT core library -->
     <dependency>
       <groupId>org.hobbit</groupId>
       <artifactId>core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
     <!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
     <!-- slf4j: Logging API -->
@@ -72,12 +59,6 @@
       <scope>test</scope>
     </dependency>
     <!-- ~~~~~~~~~~~~~~~~~~~ End Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
-    <!-- java.lang.NoClassDefFoundError: com/fasterxml/jackson/databind/deser/std/ReferenceTypeDeserializer -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.9.9</version>
-    </dependency>
   </dependencies>
 
   <build>
