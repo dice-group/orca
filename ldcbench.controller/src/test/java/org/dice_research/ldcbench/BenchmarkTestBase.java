@@ -168,6 +168,9 @@ public class BenchmarkTestBase {
 
         commandQueueListener.waitForTermination();
 
+        // FIXME: This allows the terminating components to successfully send things to RabbitMQ
+        Thread.sleep(10000);
+
         rabbitMqDockerizer.stop();
 
         if (componentsExecutor.anyExceptions()) {
