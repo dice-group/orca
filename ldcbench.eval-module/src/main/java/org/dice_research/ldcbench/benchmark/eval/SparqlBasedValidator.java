@@ -115,7 +115,7 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
         }
         q.setQueryPattern(pattern);
         try (QueryExecution qe = qef.createQueryExecution(q)) {
-            boolean result = qe.execAsk();
+            boolean result = execAskQuery(qe, 5, 5000);
             if (!result) {
                 LOGGER.debug("Didn't get expected pattern: {}", pattern.toString().replace("\n", " "));
             }
@@ -124,6 +124,21 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
             LOGGER.error("Failure when executing query: {}", q.toString().replace("\n", " "));
             throw e;
         }
+    }
+
+    private boolean execAskQuery(QueryExecution qe, int tries, long sleepMillis) {
+        for (int i = 0; i < tries - 1; i++) {
+            try {
+                return qe.execAsk();
+            } catch (Exception e) {
+                LOGGER.error("Failure when executing query (will try again): {}", qe.getQuery().toString().replace("\n", " "));
+                try {
+                    Thread.sleep(sleepMillis);
+                } catch (InterruptedException ie) {
+                }
+            }
+        }
+        return qe.execAsk();
     }
 
     @Override
