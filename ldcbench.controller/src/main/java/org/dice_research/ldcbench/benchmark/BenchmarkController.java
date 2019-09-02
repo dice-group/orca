@@ -114,6 +114,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
             String containerId = container.get();
             if (containerId != null) {
                 containerIds.add(containerId);
+                // add to the set in AbstractBenchmarkController
+                dataGenContainerIds.add(containerId);
             } else {
                 String errorMsg = "Couldn't create generator component. Aborting.";
                 LOGGER.error(errorMsg);
@@ -433,7 +435,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
         getSeedURIs(nodeGraph);
         LOGGER.info("Seed URIs: {}", seedURIs);
 
-        LOGGER.debug("Waiting for the data generators to finish...");
         waitForDataGenToFinish();
 
         LOGGER.debug("Waiting for nodes to be ready...");
