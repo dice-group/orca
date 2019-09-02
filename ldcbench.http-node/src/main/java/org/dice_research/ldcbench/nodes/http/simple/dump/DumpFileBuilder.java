@@ -6,7 +6,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.zip.GZIPOutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.system.StreamOps;
@@ -14,6 +17,9 @@ import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.utils.TripleIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * A simple class which builds a dump file from the given graph by serializing
@@ -25,7 +31,10 @@ import org.dice_research.ldcbench.nodes.utils.TripleIterator;
 public class DumpFileBuilder {
 
     public static final Lang DEFAULT_LANG = Lang.TTL;
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(DumpFileBuilder.class);
 
+    protected final String defaultCompressionType = "java.util.zip.GZIPOutputStream";
     protected final int domainId;
     protected final String[] resourceUriTemplates;
     protected final String[] accessUriTemplates;
@@ -48,14 +57,15 @@ public class DumpFileBuilder {
         this.useCompression = useCompression;
     }
 
-    public File build() throws IOException {
+    public File build() throws IOException, NoSuchMethodException, SecurityException,  java.lang.ReflectiveOperationException {
         try (OutputStream out = generateOutputStream(lang, useCompression)) {
             streamData(out, lang);
         }
         return dumpFile;
     }
 
-    private OutputStream generateOutputStream(Lang lang, boolean useCompression) throws FileNotFoundException, IOException {
+    @SuppressWarnings("resource")
+    private OutputStream generateOutputStream(Lang lang, boolean useCompression) throws FileNotFoundException, IOException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 //        StringBuilder fileNameBuilder = new StringBuilder();
 //        fileNameBuilder.append("");
 //        List<String> fileExt = lang.getFileExtensions();
@@ -67,9 +77,48 @@ public class DumpFileBuilder {
         OutputStream out = new FileOutputStream(dumpFile);
         out = new BufferedOutputStream(out);
         if(useCompression) {
-            out = new GZIPOutputStream(out); 
+            Class<?> outputstream = randomCompressionType();
+            
+//            out = new GZIPOutputStream(out);
+              out = (OutputStream) ((Object) outputstream.getClass().getDeclaredConstructor(OutputStream.class).newInstance(out));
         }
         return out;
+    }
+    
+    public Class<?> randomCompressionType() {
+        List<Class<?>> allowdCompressionTypesList = getAllowedCompressionTypes();
+        Random rand = new Random();
+        return allowdCompressionTypesList.get(rand.nextInt(allowdCompressionTypesList.size()));
+        
+    }
+    
+    public static void main(String[] args) {
+        DumpFileBuilder fb = new DumpFileBuilder(1 , null, null, null);
+        System.out.println(fb.randomCompressionType());
+    }
+    
+    private List<Class<?>> getAllowedCompressionTypes(){
+        
+        List<Class<?>> listAllowedCompressionTypes = new ArrayList<Class<?>>();
+        try {
+
+            listAllowedCompressionTypes.add(Class.forName("java.util.zip.GZIPOutputStream"));
+            listAllowedCompressionTypes.add(Class.forName("java.util.zip.ZipOutputStream"));
+            listAllowedCompressionTypes.add(Class.forName("org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream"));
+
+
+        } catch (ClassNotFoundException e) {
+            LOGGER.info(e.getMessage());
+            LOGGER.info("Using the Default Compression Type");
+            try {
+                listAllowedCompressionTypes.add(Class.forName(defaultCompressionType));
+            } catch (ClassNotFoundException e1) {
+                e1.printStackTrace();
+            }
+        }
+        
+        return listAllowedCompressionTypes;
+        
     }
 
     private void streamData(OutputStream out, Lang lang) {

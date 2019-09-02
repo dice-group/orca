@@ -33,6 +33,13 @@ public class DumpFileResource extends AbstractCrawleableResource {
             return new DumpFileResource(predicate, builder.buildContentType(), dumpFile);
         } catch (IOException e) {
             LOGGER.error("Couldn't create dump file.", e);
+        } catch (NoSuchMethodException e) {
+            LOGGER.error("Couldn't create dump file.", e);
+        } catch (SecurityException e) {
+            LOGGER.error("Couldn't create dump file.", e);
+        } catch (ReflectiveOperationException e) {
+            LOGGER.error("Couldn't create dump file.", e);
+
         }
         return null;
     }

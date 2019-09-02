@@ -19,6 +19,7 @@ import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
 import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileResource;
+import org.dice_research.ldcbench.nodes.utils.LangUtils;
 import org.dice_research.ldcbench.rdf.UriHelper;
 import org.hobbit.core.components.Component;
 import org.hobbit.utils.EnvVariables;
@@ -35,6 +36,7 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServerComponent.class);
 
     private static final int DEFAULT_PORT = 80;
+        
 
     protected Container container;
     protected Server server;
@@ -72,10 +74,11 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
     protected Container createContainer() {
         CrawleableResource resource = null;
         if (dumpFileNode) {
+            Lang lang = LangUtils.getRandomLang();
             resource = DumpFileResource.create(cloudNodeId,
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                    graphs.toArray(new Graph[graphs.size()]), (r -> true), Lang.TTL, true);
+                    graphs.toArray(new Graph[graphs.size()]), (r -> true), lang, true);
         } else {
             // Create list of available content types
             Set<String> contentTypes = new HashSet<String>();
