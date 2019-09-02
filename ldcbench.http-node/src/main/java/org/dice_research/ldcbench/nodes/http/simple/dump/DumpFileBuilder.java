@@ -85,16 +85,11 @@ public class DumpFileBuilder {
         return out;
     }
     
-    public Class<?> randomCompressionType() {
+    private Class<?> randomCompressionType() {
         List<Class<?>> allowdCompressionTypesList = getAllowedCompressionTypes();
         Random rand = new Random();
         return allowdCompressionTypesList.get(rand.nextInt(allowdCompressionTypesList.size()));
         
-    }
-    
-    public static void main(String[] args) {
-        DumpFileBuilder fb = new DumpFileBuilder(1 , null, null, null);
-        System.out.println(fb.randomCompressionType());
     }
     
     private List<Class<?>> getAllowedCompressionTypes(){
