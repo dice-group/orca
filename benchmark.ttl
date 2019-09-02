@@ -7,7 +7,7 @@
 :Benchmark a hobbit:Benchmark;
   rdfs:label "LDC-Bench"@en;
   rdfs:comment "Linked Data Crawler Benchmark"@en;
-  hobbit:imageName "git.project-hobbit.eu:4567/ldcbench/ldcbench/benchmark-controller";
+  hobbit:imageName "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.controller";
   hobbit:version "v1.0"@en;
   hobbit:hasParameter
     :seed,

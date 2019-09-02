@@ -9,4 +9,4 @@
   rdfs:label "LDC-Bench Example System"@en;
   rdfs:comment "Example system for LDC-Bench"@en;
   hobbit:implementsAPI :api;
-  hobbit:imageName "git.project-hobbit.eu:4567/ldcbench/ldcbench/system-adapter" .
+  hobbit:imageName "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.system" .
