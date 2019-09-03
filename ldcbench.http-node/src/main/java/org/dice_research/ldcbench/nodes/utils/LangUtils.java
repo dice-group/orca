@@ -42,9 +42,9 @@ public class LangUtils {
      * 
      * @return a random Lang Type
      */
-    public static Lang getRandomLang() {
+    public static Lang getRandomLang(int seed) {
         List<Lang> langlist = getAllowedLangs();
-        Random rand = new Random();
+        Random rand = new Random(seed);
         int langPos = rand.nextInt(langlist.size());
         return langlist.get(langPos);
     }

@@ -25,9 +25,9 @@ public class DumpFileResource extends AbstractCrawleableResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(DumpFileResource.class);
 
     public static DumpFileResource create(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates,
-            Graph[] graphs, Predicate<Request> predicate, Lang lang, boolean useCompression) {
+            Graph[] graphs, Predicate<Request> predicate, Lang lang, boolean useCompression,int seed) {
         DumpFileBuilder builder = new DumpFileBuilder(domainId, resourceUriTemplates, accessUriTemplates, graphs,
-                lang, useCompression);
+                lang, useCompression,seed);
         try {
             File dumpFile = builder.build();
             return new DumpFileResource(predicate, builder.buildContentType(), dumpFile);

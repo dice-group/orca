@@ -42,11 +42,13 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
     protected Server server;
     protected Connection connection;
     protected boolean dumpFileNode;
+    protected int seed;
 
     @Override
     public void initBeforeDataGeneration() throws Exception {
         // check whether this node contains dump files
         dumpFileNode = EnvVariables.getBoolean("LDCBENCH_USE_DUMP_FILE", false);
+        seed = EnvVariables.getInt("LDCBENCH_DATAGENERATOR_SEED");
         if (dumpFileNode) {
             LOGGER.debug("Init as HTTP dump file node.");
             String hostname = InetAddress.getLocalHost().getHostName();
@@ -74,11 +76,11 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
     protected Container createContainer() {
         CrawleableResource resource = null;
         if (dumpFileNode) {
-            Lang lang = LangUtils.getRandomLang();
+            Lang lang = LangUtils.getRandomLang(seed);
             resource = DumpFileResource.create(cloudNodeId,
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                    graphs.toArray(new Graph[graphs.size()]), (r -> true), lang, true);
+                    graphs.toArray(new Graph[graphs.size()]), (r -> true), lang, true,seed);
         } else {
             // Create list of available content types
             Set<String> contentTypes = new HashSet<String>();

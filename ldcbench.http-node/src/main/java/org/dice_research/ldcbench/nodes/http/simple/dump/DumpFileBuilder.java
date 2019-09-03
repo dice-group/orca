@@ -42,13 +42,16 @@ public class DumpFileBuilder {
     protected final Lang lang;
     protected final boolean useCompression;
     protected File dumpFile;
+    private Random rand;
 
-    public DumpFileBuilder(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs) {
-        this(domainId, resourceUriTemplates, accessUriTemplates, graphs, DEFAULT_LANG, false);
+
+    public DumpFileBuilder(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs,int seed) {
+        this(domainId, resourceUriTemplates, accessUriTemplates, graphs, DEFAULT_LANG, false,seed);
     }
 
     public DumpFileBuilder(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs,
-            Lang lang, boolean useCompression) {
+            Lang lang, boolean useCompression, int seed) {
+        rand = new Random(seed);
         this.domainId = domainId;
         this.resourceUriTemplates = resourceUriTemplates;
         this.accessUriTemplates = accessUriTemplates;
@@ -87,7 +90,6 @@ public class DumpFileBuilder {
     
     private Class<?> randomCompressionType() {
         List<Class<?>> allowdCompressionTypesList = getAllowedCompressionTypes();
-        Random rand = new Random();
         return allowdCompressionTypesList.get(rand.nextInt(allowdCompressionTypesList.size()));
         
     }
