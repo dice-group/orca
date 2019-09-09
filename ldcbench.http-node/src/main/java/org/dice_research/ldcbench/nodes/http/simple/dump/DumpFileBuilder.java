@@ -56,11 +56,11 @@ public class DumpFileBuilder {
 
     public DumpFileBuilder(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs,
             long seed) {
-        this(domainId, resourceUriTemplates, accessUriTemplates, graphs, DEFAULT_LANG, false, seed);
+        this(domainId, resourceUriTemplates, accessUriTemplates, graphs, DEFAULT_LANG, seed);
     }
 
     public DumpFileBuilder(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs,
-            Lang lang, boolean useCompression, long seed) {
+            Lang lang, long seed) {
         rand = new Random(seed);
         this.domainId = domainId;
         this.resourceUriTemplates = resourceUriTemplates;
@@ -74,15 +74,15 @@ public class DumpFileBuilder {
     }
 
     public File build()
-            throws IOException, NoSuchMethodException, SecurityException, java.lang.ReflectiveOperationException {
-        try (OutputStream out = generateOutputStream(lang)) {
+            throws IOException, NoSuchMethodException, SecurityException, ReflectiveOperationException {
+        try (OutputStream out = generateOutputStream()) {
             streamData(out, lang);
         }
         return dumpFile;
     }
 
     @SuppressWarnings("resource")
-    private OutputStream generateOutputStream(Lang lang)
+    private OutputStream generateOutputStream()
             throws FileNotFoundException, IOException, NoSuchMethodException, SecurityException, InstantiationException,
             IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         // StringBuilder fileNameBuilder = new StringBuilder();

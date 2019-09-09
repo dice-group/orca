@@ -260,7 +260,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                         ApiConstants.ENV_NODE_ID_KEY + "=" + i,
                         ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                         ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
-                        DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(1 + i),
+                        DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsLong(1 + i),
                         ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay,
                         ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345), };
 
@@ -299,7 +299,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         LOGGER.info("Creating node graph generator...");
         envVariables = new String[] {
                 DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
-                DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(nodesAmount),
+                DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsLong(nodesAmount),
                 DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
                 DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageNodeGraphDegree,
                 DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
@@ -323,7 +323,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                                                                                                                  // workaround
                         Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
                         DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.RDF_GRAPH_GENERATOR,
-                        DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(1 + i + nodesAmount),
+                        DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsLong(1 + i + nodesAmount),
                         DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
                         DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, },

@@ -1,6 +1,8 @@
 package org.dice_research.ldcbench.generate;
 
-import java.util.function.IntUnaryOperator;
+import java.util.function.LongUnaryOperator;
+
+import org.dice_research.ldcbench.graph.GraphBuilder;
 
 /**
  * A class that is able to generate a sequence of independent random seeds
@@ -8,8 +10,8 @@ import java.util.function.IntUnaryOperator;
  * FIXME: This implementation is probably not the right way to do it.
  *
  */
-public class SeedGenerator implements IntUnaryOperator {
-    private int seed;
+public class SeedGenerator implements LongUnaryOperator {
+    private long seed;
     private int quadCoef = 31;
 
     /**
@@ -18,7 +20,7 @@ public class SeedGenerator implements IntUnaryOperator {
      * @param seed
      *            the single original seed
      */
-    public SeedGenerator(int seed) {
+    public SeedGenerator(long seed) {
         this.seed = seed;
     }
 
@@ -31,7 +33,7 @@ public class SeedGenerator implements IntUnaryOperator {
      * @return seed
      *            the i-th seed in the sequence.
      */
-     public int applyAsInt(int i) {
+     public long applyAsLong(long i) {
          return seed + quadCoef * (i + 1) * (i + 1);
      }
 }
