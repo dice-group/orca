@@ -16,6 +16,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.dice_research.ldcbench.ApiConstants;
+import org.dice_research.ldcbench.generate.SeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
 import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileResource;
@@ -42,13 +43,14 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
     protected Server server;
     protected Connection connection;
     protected boolean dumpFileNode;
-    protected int seed;
+    protected SeedGenerator seedGenerator;
 
     @Override
     public void initBeforeDataGeneration() throws Exception {
         // check whether this node contains dump files
         dumpFileNode = EnvVariables.getBoolean("LDCBENCH_USE_DUMP_FILE", false);
-        seed = EnvVariables.getInt("LDCBENCH_DATAGENERATOR_SEED");
+        long seed = EnvVariables.getLong("LDCBENCH_DATAGENERATOR_SEED");
+        seedGenerator = new SeedGenerator(seed);
         if (dumpFileNode) {
             LOGGER.debug("Init as HTTP dump file node.");
             String hostname = InetAddress.getLocalHost().getHostName();
@@ -76,11 +78,11 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
     protected Container createContainer() {
         CrawleableResource resource = null;
         if (dumpFileNode) {
-            Lang lang = LangUtils.getRandomLang(seed);
+            Lang lang = LangUtils.getRandomLang(seedGenerator.applyAsLong(0));
             resource = DumpFileResource.create(cloudNodeId,
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                    graphs.toArray(new Graph[graphs.size()]), (r -> true), lang, true,seed);
+                    graphs.toArray(new Graph[graphs.size()]), (r -> true), lang, seedGenerator.applyAsLong(1));
         } else {
             // Create list of available content types
             Set<String> contentTypes = new HashSet<String>();
