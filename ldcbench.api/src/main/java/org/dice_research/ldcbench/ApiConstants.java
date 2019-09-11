@@ -20,6 +20,8 @@ public class ApiConstants {
     public static final byte CRAWLING_STARTED_SIGNAL = 126;
     public static final byte CRAWLING_FINISHED_SIGNAL = 127;
     public static final byte DATAGENERATOR_READY_SIGNAL = 125;
+    public static final byte NODE_START_SIGNAL = -3;
+    public static final byte NODE_ACK_SIGNAL = -4;
     public static final byte NODE_INIT_SIGNAL = -1;
     public static final byte NODE_READY_SIGNAL = 124;
     public static final byte NODE_URI_TEMPLATE = -2;

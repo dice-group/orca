@@ -4,6 +4,8 @@ import java.util.stream.Collectors;
 import static org.dice_research.ldcbench.Constants.*;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -79,6 +81,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     private ArrayList<AbstractNodeManager> nodeManagers = new ArrayList<>();
 
+    private ArrayList<Semaphore> nodeStarted = new ArrayList<>();
     private Semaphore nodesInitSemaphore = new Semaphore(0);
     private Semaphore nodesReadySemaphore = new Semaphore(0);
     private Semaphore nodeGraphMutex = new Semaphore(0);
@@ -125,25 +128,27 @@ public class BenchmarkController extends AbstractBenchmarkController {
         return containerIds;
     }
 
-    private NodeMetadata[] waitForNodesToBeCreated(List<Future<String>> containers) throws InterruptedException, ExecutionException {
-        NodeMetadata[] nodeMetadata = new NodeMetadata[containers.size()];
+    private void waitForNodesToBeCreated(List<Future<String>> containers) throws Exception {
         LOGGER.info("Waiting for {} nodes to be created.", containers.size());
         for (int i = 0; i < containers.size(); i++) {
-            String containerId = containers.get(i).get();
-            if (containerId != null) {
-                nodeMetadata[i] = new NodeMetadata();
-                nodeMetadata[i].setContainer(containerId);
-                String defaultUriTemplate = "http://default.invalid/";
-                nodeMetadata[i].setResourceUriTemplate(defaultUriTemplate);
-                nodeMetadata[i].setAccessUriTemplate(defaultUriTemplate);
-                nodeContainerMap.put(containerId, nodeMetadata[i]);
-            } else {
-                String errorMsg = "Couldn't create generator component. Aborting.";
-                LOGGER.error(errorMsg);
-                throw new IllegalStateException(errorMsg);
+            if (nodeMetadata[i] == null) {
+                String containerId = containers.get(i).get();
+                if (containerId != null) {
+                    nodeMetadata[i] = new NodeMetadata();
+                    nodeMetadata[i].setContainer(containerId);
+                    String defaultUriTemplate = "http://default.invalid/";
+                    nodeMetadata[i].setResourceUriTemplate(defaultUriTemplate);
+                    nodeMetadata[i].setAccessUriTemplate(defaultUriTemplate);
+                    nodeContainerMap.put(containerId, nodeMetadata[i]);
+                    nodeStarted.get(i).acquire();
+                    sendToCmdQueue(ApiConstants.NODE_ACK_SIGNAL, RabbitMQUtils.writeLong(i));
+                } else {
+                    String errorMsg = "Couldn't create generator component. Aborting.";
+                    LOGGER.error(errorMsg);
+                    throw new IllegalStateException(errorMsg);
+                }
             }
         }
-        return nodeMetadata;
     }
 
     @Override
@@ -253,11 +258,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
             }
         }
 
-        nodeMetadata = new NodeMetadata[0];
+        nodeMetadata = new NodeMetadata[nodesAmount];
         int batchSize = 10;
         for (int batch = 0; batch < (float)nodesAmount / batchSize; batch++) {
             for (int i = batch * batchSize; i < (batch + 1) * batchSize && i < nodesAmount; i++) {
                 LOGGER.info("Creating node {}...", i);
+                nodeStarted.add(new Semaphore(0));
                 envVariables = new String[] { ApiConstants.ENV_DOCKERIZED_KEY + "=" + dockerized,
                         ApiConstants.ENV_NODE_ID_KEY + "=" + i,
                         ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
@@ -274,7 +280,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 }
             }
 
-            nodeMetadata = waitForNodesToBeCreated(nodeContainers);
+            waitForNodesToBeCreated(nodeContainers);
         }
 
         String evalDataQueueName = getRandomNameForRabbitMQ();
@@ -505,6 +511,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
             nodeMetadata[node].setAccessUriTemplate(RabbitMQUtils.readString(buffer));
             LOGGER.debug("Resource URI template {} for node {}.", nodeMetadata[node].getResourceUriTemplate(), node);
             LOGGER.debug("Access URI template {} for node {}.", nodeMetadata[node].getAccessUriTemplate(), node);
+            break;
+        }
+        case ApiConstants.NODE_START_SIGNAL: {
+            nodeStarted.get((int)RabbitMQUtils.readLong(data)).release();
             break;
         }
         case ApiConstants.NODE_INIT_SIGNAL: {

@@ -65,7 +65,7 @@ public class SimpleSparqlComponent extends AbstractNodeComponent implements Comp
         sink.openSinkForUri(uri);
 
         SimpleTripleCreator tripleCreator = new SimpleTripleCreator(
-            cloudNodeId,
+            cloudNodeId.get(),
             Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
             Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
         );

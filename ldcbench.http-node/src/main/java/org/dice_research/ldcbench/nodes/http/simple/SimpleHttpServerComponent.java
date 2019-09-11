@@ -74,10 +74,10 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
         connection.connect(address);
     }
 
-    protected Container createContainer() {
+    protected Container createContainer() throws Exception {
         CrawleableResource resource = null;
         if (dumpFileNode) {
-            resource = DumpFileResource.create(cloudNodeId,
+            resource = DumpFileResource.create(cloudNodeId.get(),
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
                     graphs.toArray(new Graph[graphs.size()]), (r -> true), Lang.TTL, true);
@@ -91,7 +91,7 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
                 }
             }
             // Create the container based on the information that has been received
-            resource = new GraphBasedResource(cloudNodeId,
+            resource = new GraphBasedResource(cloudNodeId.get(),
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
                     graphs.toArray(new Graph[graphs.size()]),

@@ -3,8 +3,10 @@ package org.dice_research.ldcbench.nodes.components;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 
+import com.google.common.util.concurrent.SettableFuture;
 import org.apache.commons.io.IOUtils;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.data.NodeMetadata;
@@ -25,7 +27,8 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractNodeComponent.class);
 
     protected Semaphore dataGenerationFinished = new Semaphore(0);
-    protected int cloudNodeId;
+    protected Semaphore nodeAcked = new Semaphore(0);
+    protected SettableFuture<Integer> cloudNodeId = SettableFuture.create();
     protected boolean dockerized;
 
     /**
@@ -45,7 +48,7 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
     public void init() throws Exception {
         super.init();
 
-        cloudNodeId = EnvVariables.getInt(ApiConstants.ENV_NODE_ID_KEY, LOGGER);
+        cloudNodeId.set(EnvVariables.getInt(ApiConstants.ENV_NODE_ID_KEY, LOGGER));
         dockerized = EnvVariables.getBoolean(ApiConstants.ENV_DOCKERIZED_KEY, true, LOGGER);
 
         // initialize exchange with BC
@@ -68,12 +71,15 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
         Thread receiverThread = new Thread(graphHandler);
         receiverThread.start();
 
+        sendToCmdQueue(ApiConstants.NODE_START_SIGNAL, RabbitMQUtils.writeLong(cloudNodeId.get()));
+
         initBeforeDataGeneration();
 
         if (resourceUriTemplate == null || accessUriTemplate == null) {
             throw new IllegalStateException("URI templates are not set.");
         }
 
+        nodeAcked.acquire();
         sendToCmdQueue(ApiConstants.NODE_URI_TEMPLATE, RabbitMQUtils.writeByteArrays(new byte[][] {
             RabbitMQUtils.writeString(Integer.toString(cloudNodeId.get())),
             RabbitMQUtils.writeString(resourceUriTemplate),
@@ -124,6 +130,14 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
         case Commands.DATA_GENERATION_FINISHED:
             LOGGER.debug("Received DATA_GENERATION_FINISHED");
             dataGenerationFinished.release();
+        break; case ApiConstants.NODE_ACK_SIGNAL:
+            try {
+                if (RabbitMQUtils.readLong(data) == cloudNodeId.get()) {
+                    nodeAcked.release();
+                }
+            } catch (ExecutionException | InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
         }
     }
 
