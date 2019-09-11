@@ -1,8 +1,23 @@
 package org.dice_research.ldcbench.system;
 
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResIterator;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.modify.request.QuadDataAcc;
+import org.apache.jena.sparql.modify.request.UpdateDataInsert;
+import org.apache.jena.update.UpdateExecutionFactory;
+import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
 import org.hobbit.core.components.AbstractSystemAdapter;
 import org.hobbit.core.rabbit.RabbitMQUtils;
@@ -10,14 +25,19 @@ import org.hobbit.vocab.HOBBIT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+import javax.json.Json;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 
 public class SystemAdapter extends AbstractSystemAdapter {
     private static final Logger logger = LoggerFactory.getLogger(SystemAdapter.class);
@@ -49,22 +69,58 @@ public class SystemAdapter extends AbstractSystemAdapter {
         String sparqlUrl = RabbitMQUtils.readString(buffer);
         String sparqlUser = RabbitMQUtils.readString(buffer);
         String sparqlPwd = RabbitMQUtils.readString(buffer);
-        String[] seedURIs = RabbitMQUtils.readString(buffer).split("\n");
+        ArrayList<String> seedURIs = new ArrayList<>(Arrays.asList(RabbitMQUtils.readString(buffer).split("\n")));
 
         logger.info("SPARQL endpoint: " + sparqlUrl);
         assert sparqlUrl.length() > 0;
-        logger.info("Seed URIs: {}.", Arrays.toString(seedURIs));
-        assert seedURIs.length > 0;
+        logger.info("Seed URIs: {}.", seedURIs);
+        assert seedURIs.size() > 0;
         logger.info("SPARQL endpoint username: {}.", sparqlUser);
         assert sparqlUser.length() > 0;
         assert sparqlPwd.length() > 0;
 
-        for (String uri : seedURIs) {
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(sparqlUser, sparqlPwd));
+        HttpClient httpClient = HttpClients.custom()
+            .setDefaultCredentialsProvider(credsProvider)
+            .build();
+        Node graph = NodeFactory.createURI("http://localhost:8890/sparql");
+
+        while (seedURIs.size() != 0) {
+            String uri = seedURIs.remove(0);
+
             try {
-                URLConnection connection = new URL(uri).openConnection();
-                connection.getContent();
-            } catch (IOException e) {
-                logger.error("Failed to fetch {}.", uri, e);
+                if (uri.matches(".*:5000/")) {
+                    logger.info("Accessing CKAN {}...", uri);
+                    try (InputStream listStream = new URL(uri + "api/3/action/package_list").openStream()) {
+                        JsonReader jr = Json.createReader(listStream);
+                        for (JsonValue id : jr.readObject().getJsonArray("result")) {
+                            try (InputStream showStream = new URL(uri + "api/3/action/package_show?id=" + ((JsonString)id).getString()).openStream()) {
+                                String resourceUrl = Json.createReader(showStream).readObject().getJsonObject("result").getJsonArray("resources").getJsonObject(0).getString("url");
+                                logger.info("CKAN resource: {}", resourceUrl);
+                                seedURIs.add(resourceUrl);
+                            }
+                        }
+                    }
+                } else {
+                    logger.info("Crawling {}...", uri);
+                    Model model = ModelFactory.createDefaultModel();
+                    model.read(uri);
+                    logger.info("Model from {}: {}", uri, model.toString());
+
+                    UpdateExecutionFactory.createRemoteForm(
+                        new UpdateRequest(new UpdateDataInsert(new QuadDataAcc(
+                            model.listStatements().toList().stream()
+                            .map(stmt -> stmt.asTriple())
+                            .map(tri -> new Quad(graph, tri))
+                            .collect(Collectors.toList())
+                        ))),
+                        sparqlUrl,
+                        httpClient
+                    ).execute();
+                }
+            } catch (Exception e) {
+                logger.error("Failed to crawl {}.", uri, e);
             }
         }
 
