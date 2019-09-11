@@ -36,6 +36,7 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
 
     private static final int DEFAULT_PORT = 80;
 
+    protected int port;
     protected Container container;
     protected Server server;
     protected Connection connection;
@@ -43,17 +44,22 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
 
     @Override
     public void initBeforeDataGeneration() throws Exception {
+        port = EnvVariables.getInt(ApiConstants.ENV_HTTP_PORT_KEY, DEFAULT_PORT, LOGGER);
+
+        String hostname = InetAddress.getLocalHost().getHostName();
+        LOGGER.info("Retrieved my own name as: \"{}\"", hostname);
+        String authority = hostname + (port == 80 ? "" : ":" + port);
+
         // check whether this node contains dump files
         dumpFileNode = EnvVariables.getBoolean("LDCBENCH_USE_DUMP_FILE", false);
         if (dumpFileNode) {
             LOGGER.debug("Init as HTTP dump file node.");
-            String hostname = InetAddress.getLocalHost().getHostName();
-            LOGGER.info("Retrieved my own name as: \"{}\"", hostname);
-            this.resourceUriTemplate = "http://" + hostname + "/dumpFile.ttl.gz#%s-%s/%s-%s";
-            this.accessUriTemplate = "http://" + hostname + "/dumpFile.ttl.gz#%s-%s/%s-%s";
+            accessUriTemplate = "http://" + authority + "/dumpFile.ttl.gz#%s-%s/%s-%s";
         } else {
             LOGGER.debug("Init as dereferencing HTTP node.");
+            accessUriTemplate = "http://" + authority + "/%s-%s/%s-%s";
         }
+        resourceUriTemplate = accessUriTemplate;
     }
 
     @Override
@@ -64,8 +70,7 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
         // Start server
         server = new ContainerServer(container);
         connection = new SocketConnection(server);
-        SocketAddress address = new InetSocketAddress(
-                EnvVariables.getInt(ApiConstants.ENV_HTTP_PORT_KEY, DEFAULT_PORT, LOGGER));
+        SocketAddress address = new InetSocketAddress(port);
         connection.connect(address);
     }
 

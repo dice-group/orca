@@ -133,8 +133,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
             if (containerId != null) {
                 nodeMetadata[i] = new NodeMetadata();
                 nodeMetadata[i].setContainer(containerId);
-                nodeMetadata[i].setResourceUriTemplate("http://" + containerId + "/%s-%s/%s-%s");
-                nodeMetadata[i].setAccessUriTemplate("http://" + containerId + "/%s-%s/%s-%s");
+                String defaultUriTemplate = "http://default.invalid/";
+                nodeMetadata[i].setResourceUriTemplate(defaultUriTemplate);
+                nodeMetadata[i].setAccessUriTemplate(defaultUriTemplate);
                 nodeContainerMap.put(containerId, nodeMetadata[i]);
             } else {
                 String errorMsg = "Couldn't create generator component. Aborting.";

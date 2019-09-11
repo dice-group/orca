@@ -29,7 +29,7 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
     protected boolean dockerized;
 
     /**
-     * If set to non-null during initBeforeDataGeneration, would be used as a hostname
+     * Must be set during initBeforeDataGeneration, would be used as a hostname
      * by which this node should be accessed by the benchmarked system
      * instead of node container's hostname.
      */
@@ -70,14 +70,15 @@ abstract public class AbstractNodeComponent extends AbstractCommandReceivingComp
 
         initBeforeDataGeneration();
 
-        if (resourceUriTemplate != null && accessUriTemplate != null) {
-            sendToCmdQueue(ApiConstants.NODE_URI_TEMPLATE, RabbitMQUtils.writeByteArrays(new byte[][] {
-                RabbitMQUtils.writeString(Integer.toString(cloudNodeId)),
-                RabbitMQUtils.writeString(resourceUriTemplate),
-                RabbitMQUtils.writeString(accessUriTemplate),
-            }));
+        if (resourceUriTemplate == null || accessUriTemplate == null) {
+            throw new IllegalStateException("URI templates are not set.");
         }
 
+        sendToCmdQueue(ApiConstants.NODE_URI_TEMPLATE, RabbitMQUtils.writeByteArrays(new byte[][] {
+            RabbitMQUtils.writeString(Integer.toString(cloudNodeId.get())),
+            RabbitMQUtils.writeString(resourceUriTemplate),
+            RabbitMQUtils.writeString(accessUriTemplate),
+        }));
         LOGGER.debug("{} initialized.", this);
         sendToCmdQueue(ApiConstants.NODE_INIT_SIGNAL);
 
