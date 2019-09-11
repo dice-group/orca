@@ -48,7 +48,7 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
 
         String hostname = InetAddress.getLocalHost().getHostName();
         LOGGER.info("Retrieved my own name as: \"{}\"", hostname);
-        String authority = hostname + (port == 80 ? "" : ":" + port);
+        String authority = (dockerized ? hostname : "localhost") + (port == 80 ? "" : ":" + port);
 
         // check whether this node contains dump files
         dumpFileNode = EnvVariables.getBoolean("LDCBENCH_USE_DUMP_FILE", false);
