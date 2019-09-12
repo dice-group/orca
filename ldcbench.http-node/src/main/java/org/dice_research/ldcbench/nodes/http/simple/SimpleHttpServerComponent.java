@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -77,12 +78,14 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
     }
 
     protected Container createContainer() throws Exception {
+        Graph[] graphsArray = graphs.toArray(new Graph[graphs.size()]);
+        ArrayList<CrawleableResource> resources = new ArrayList<>();
         CrawleableResource resource = null;
         if (dumpFileNode) {
             resource = DumpFileResource.create(cloudNodeId.get(),
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                    graphs.toArray(new Graph[graphs.size()]), (r -> true), Lang.TTL, true);
+                    graphsArray, (r -> true), Lang.TTL, true);
         } else {
             // Create list of available content types
             Set<String> contentTypes = new HashSet<String>();
@@ -96,13 +99,14 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
             resource = new GraphBasedResource(cloudNodeId.get(),
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                    graphs.toArray(new Graph[graphs.size()]),
+                    graphsArray,
                     (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
                             && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
                     contentTypes.toArray(new String[contentTypes.size()]));
         }
         Objects.requireNonNull(resource, "Couldn't create crawleable resource. Exiting.");
-        return new CrawleableResourceContainer(resource);
+        resources.add(resource);
+        return new CrawleableResourceContainer(resources.toArray(new CrawleableResource[]{}));
     }
 
     protected Model readModel(String modelFile, String modelLang) {
