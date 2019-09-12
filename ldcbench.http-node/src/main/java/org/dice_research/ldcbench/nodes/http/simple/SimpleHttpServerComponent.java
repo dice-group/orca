@@ -37,6 +37,7 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
     private static final int DEFAULT_PORT = 80;
 
     protected int port;
+    protected String pathTemplate;
     protected Container container;
     protected Server server;
     protected Connection connection;
@@ -54,11 +55,12 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
         dumpFileNode = EnvVariables.getBoolean("LDCBENCH_USE_DUMP_FILE", false);
         if (dumpFileNode) {
             LOGGER.debug("Init as HTTP dump file node.");
-            accessUriTemplate = "http://" + authority + "/dumpFile.ttl.gz#%s-%s/%s-%s";
+            pathTemplate = "/dumpFile.ttl.gz#%s-%s/%s-%s";
         } else {
             LOGGER.debug("Init as dereferencing HTTP node.");
-            accessUriTemplate = "http://" + authority + "/%s-%s/%s-%s";
+            pathTemplate = "/%s-%s/%s-%s";
         }
+        accessUriTemplate = "http://" + authority + pathTemplate;
         resourceUriTemplate = accessUriTemplate;
     }
 
