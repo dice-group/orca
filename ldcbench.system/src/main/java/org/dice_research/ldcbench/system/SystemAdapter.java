@@ -124,8 +124,11 @@ public class SystemAdapter extends AbstractSystemAdapter {
             }
         }
 
-//        Thread.sleep(6000000);
-        
+        // try {
+        //     Thread.sleep(6000000);
+        // } catch (InterruptedException e) {
+        // }
+
         logger.info("Dummy system terminates.");
         terminate(null);
     }
