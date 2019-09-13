@@ -1,19 +1,19 @@
 package org.dice_research.ldcbench.benchmark;
 
-import java.util.stream.Collectors;
-import static org.dice_research.ldcbench.Constants.*;
+import static org.dice_research.ldcbench.Constants.DATAGEN_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.EMPTY_SERVER_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.EVALMODULE_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.VOS_PASSWORD;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.net.URL;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -34,11 +35,16 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.dice_research.ldcbench.ApiConstants;
-import org.dice_research.ldcbench.benchmark.cloud.*;
+import org.dice_research.ldcbench.benchmark.cloud.AbstractNodeManager;
+import org.dice_research.ldcbench.benchmark.cloud.CkanNodeManager;
+import org.dice_research.ldcbench.benchmark.cloud.DereferencingHttpNodeManager;
+import org.dice_research.ldcbench.benchmark.cloud.HttpDumpNodeManager;
+import org.dice_research.ldcbench.benchmark.cloud.SparqlNodeManager;
 import org.dice_research.ldcbench.benchmark.node.NodeSizeDeterminer;
 import org.dice_research.ldcbench.benchmark.node.NodeSizeDeterminerFactory;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.generate.SeedGenerator;
+import org.dice_research.ldcbench.generate.SequentialSeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.vocab.LDCBench;
@@ -48,8 +54,8 @@ import org.hobbit.core.components.AbstractBenchmarkController;
 import org.hobbit.core.rabbit.DataSender;
 import org.hobbit.core.rabbit.DataSenderImpl;
 import org.hobbit.core.rabbit.RabbitMQUtils;
-import org.hobbit.utils.rdf.RdfHelper;
 import org.hobbit.utils.EnvVariables;
+import org.hobbit.utils.rdf.RdfHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +65,7 @@ import com.rabbitmq.client.Consumer;
 public class BenchmarkController extends AbstractBenchmarkController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkController.class);
-    
+
     public static final String DEFAULT_EVAL_STORAGE_IMAGE = AbstractBenchmarkController.DEFAULT_EVAL_STORAGE_IMAGE;
 
     private Set<Future<String>> dataGenContainers = new HashSet<>();
@@ -110,7 +116,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
         dataGenContainers.add(container);
     }
 
-    private Set<String> waitForDataGenToBeCreated(Set<Future<String>> containers) throws InterruptedException, ExecutionException {
+    private Set<String> waitForDataGenToBeCreated(Set<Future<String>> containers)
+            throws InterruptedException, ExecutionException {
         Set<String> containerIds = new HashSet<>();
         LOGGER.info("Waiting for {} Data Generators to be created.", containers.size());
         for (Future<String> container : containers) {
@@ -164,16 +171,30 @@ public class BenchmarkController extends AbstractBenchmarkController {
         createEmptyServer();
 
         // You might want to load parameters from the benchmarks parameter model
-        int seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getInt();
+        long seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getLong();
         nodesAmount = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfNodes).getInt();
         long averageNodeDelay = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeDelay).getLong();
         int averageNodeGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeGraphDegree)
                 .getInt();
         int averageRdfGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageRdfGraphDegree)
                 .getInt();
-        NodeSizeDeterminer nodeSizeDeterminer = NodeSizeDeterminerFactory.create(benchmarkParamModel, seed - 1);
 
-        Random random = new Random(seed);
+        /*
+         * Determine the number of components which will make use of a random number
+         * generator: Benchmark Controller, all Data Generators, all Nodes, Evaluation
+         * module
+         */
+        int componentCount = (2 * nodesAmount) + 3;
+        int componentId = 0;
+
+        // Create a seed generator for the benchmark controller. Do not send these seeds
+        // to other components!
+        SeedGenerator localSeedGenerator = new SequentialSeedGenerator(seed, componentId, componentCount);
+        ++componentId;
+
+        NodeSizeDeterminer nodeSizeDeterminer = NodeSizeDeterminerFactory.create(benchmarkParamModel,
+                localSeedGenerator.getNextSeed());
+        Random random = new Random(localSeedGenerator.getNextSeed());
 
         // Create the other components
         dataGeneratorsChannel = cmdQueueFactory.getConnection().createChannel();
@@ -217,7 +238,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
         float totalNodeWeight = 0;
         ArrayList<Class<?>> nodeManagerClasses = new ArrayList<>();
         for (int i = 0; i < possibleNodeManagerClasses.length; i++) {
-            Property param = (Property) possibleNodeManagerClasses[i].getDeclaredMethod("getBenchmarkParameter").invoke(null);
+            Property param = (Property) possibleNodeManagerClasses[i].getDeclaredMethod("getBenchmarkParameter")
+                    .invoke(null);
             Literal literal = RdfHelper.getLiteral(benchmarkParamModel, null, param);
             float value = literal != null ? literal.getFloat() : 1;
             if (value != 0) {
@@ -260,7 +282,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         nodeMetadata = new NodeMetadata[nodesAmount];
         int batchSize = 10;
-        for (int batch = 0; batch < (float)nodesAmount / batchSize; batch++) {
+        for (int batch = 0; batch < (float) nodesAmount / batchSize; batch++) {
             for (int i = batch * batchSize; i < (batch + 1) * batchSize && i < nodesAmount; i++) {
                 LOGGER.info("Creating node {}...", i);
                 nodeStarted.add(new Semaphore(0));
@@ -269,7 +291,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
                         ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                         ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                         ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay,
-                        ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345), };
+                        ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345),
+                        ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
+                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId, };
 
                 nodeContainers.add(createContainerAsync(nodeManagers.get(i).getImageName(),
                         Constants.CONTAINER_TYPE_BENCHMARK, envVariables));
@@ -288,7 +312,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
         createEvaluationModule(EVALMODULE_IMAGE_NAME,
                 new String[] { ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
-                        ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=" + sparqlUrl });
+                        ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=" + sparqlUrl,
+                        ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
+                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId,  });
 
         LOGGER.debug("Waiting for all cloud nodes and evaluation module to initialize...");
         nodesInitSemaphore.acquire(nodesAmount + 1);
@@ -301,21 +327,27 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         LOGGER.debug("Creating data generators...");
 
-        SeedGenerator seedGenerator = new SeedGenerator(seed);
-
         // Node graph generator
         LOGGER.info("Creating node graph generator...");
-        envVariables = new String[] {
-                DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
-                DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(0),
+        envVariables = new String[] { DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
+                ApiConstants.ENV_SEED_KEY + "=" + seed, 
                 DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
                 DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageNodeGraphDegree,
                 DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
-                //DataGenerator.ENV_NODETYPES_KEY + "=" + nodetypes.stream().map(String::valueOf).collect(Collectors.joining(",")),
-                DataGenerator.ENV_NODETYPES_KEY + "=" + Stream.of(ArrayUtils.toObject(typecounts)).map(String::valueOf).collect(Collectors.joining(",")),
-                DataGenerator.ENV_ISHUB_KEY + "=" + Stream.of(ArrayUtils.toObject(getIsHub(nodeManagerClasses))).map(String::valueOf).collect(Collectors.joining(",")),
-                DataGenerator.ENV_TYPECONNECTIVITY_KEY + "=" + Arrays.stream(getTypeConnectivity(nodeManagerClasses)).map(Arrays::stream).map(s -> s.mapToObj(String::valueOf).collect(Collectors.joining(","))).collect(Collectors.joining(";")),
-        };
+                // DataGenerator.ENV_NODETYPES_KEY + "=" +
+                // nodetypes.stream().map(String::valueOf).collect(Collectors.joining(",")),
+                DataGenerator.ENV_NODETYPES_KEY + "="
+                        + Stream.of(ArrayUtils.toObject(typecounts)).map(String::valueOf)
+                                .collect(Collectors.joining(",")),
+                DataGenerator.ENV_ISHUB_KEY + "="
+                        + Stream.of(ArrayUtils.toObject(getIsHub(nodeManagerClasses))).map(String::valueOf)
+                                .collect(Collectors.joining(",")),
+                DataGenerator.ENV_TYPECONNECTIVITY_KEY + "="
+                        + Arrays.stream(getTypeConnectivity(nodeManagerClasses)).map(Arrays::stream)
+                                .map(s -> s.mapToObj(String::valueOf).collect(Collectors.joining(",")))
+                                .collect(Collectors.joining(";")),
+                ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
+                ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId, };
         createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
         // FIXME: HOBBIT SDK workaround (setting environment for "containers")
         if (sdk) {
@@ -323,19 +355,23 @@ public class BenchmarkController extends AbstractBenchmarkController {
         }
 
         // RDF graph generators
-        for (int batch = 0; batch < (float)nodesAmount / batchSize; batch++) {
+        for (int batch = 0; batch < (float) nodesAmount / batchSize; batch++) {
             for (int i = batch * batchSize; i < (batch + 1) * batchSize && i < nodesAmount; i++) {
                 LOGGER.info("Creating RDF graph generator {}...", i);
                 envVariables = ArrayUtils.addAll(new String[] { DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + 0, // HOBBIT
                                                                                                                  // SDK
                                                                                                                  // workaround
                         Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
-                        DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.RDF_GRAPH_GENERATOR,
-                        DataGenerator.ENV_SEED_KEY + "=" + seedGenerator.applyAsInt(1 + i),
+                        DataGenerator.ENV_TYPE_KEY + "=" + 
+                        DataGenerator.Types.RDF_GRAPH_GENERATOR,
+                        ApiConstants.ENV_SEED_KEY + "=" + seed, 
                         DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
-                        DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange, },
-                        nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree, nodeSizeDeterminer.getNodeSize()));
+                        DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
+                        ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
+                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId, },
+                        nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree,
+                                nodeSizeDeterminer.getNodeSize()));
                 createDataGenerator(DATAGEN_IMAGE_NAME, envVariables);
                 // FIXME: HOBBIT SDK workaround (setting environment for "containers")
                 if (sdk) {
@@ -376,8 +412,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     protected void createEmptyServer() {
         LOGGER.info("Creating empty-server");
-        createContainer(EMPTY_SERVER_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK,
-                null, new String[] { "purl.org", "www.openlinksw.com", "www.w3.org", "www.w2.org", });
+        createContainer(EMPTY_SERVER_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK, null,
+                new String[] { "purl.org", "www.openlinksw.com", "www.w3.org", "www.w2.org", });
     }
 
     protected String getSeedForNode(int node) {
@@ -408,7 +444,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
         }
     }
 
-    protected int[][] getTypeConnectivity(ArrayList<Class<?>> nodeManagerClasses) throws IllegalAccessException, InstantiationException {
+    protected int[][] getTypeConnectivity(ArrayList<Class<?>> nodeManagerClasses)
+            throws IllegalAccessException, InstantiationException {
         // Build node type -> connectivity matrix for node graph generator.
         int[][] typeconnectivity = new int[nodeManagerClasses.size()][nodeManagerClasses.size()];
         for (int i = 0; i < nodeManagerClasses.size(); i++) {
@@ -420,7 +457,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
         return typeconnectivity;
     }
 
-    protected boolean[] getIsHub(ArrayList<Class<?>> nodeManagerClasses) throws IllegalAccessException, InstantiationException {
+    protected boolean[] getIsHub(ArrayList<Class<?>> nodeManagerClasses)
+            throws IllegalAccessException, InstantiationException {
         boolean[] ishub = new boolean[nodeManagerClasses.size()];
         for (int i = 0; i < nodeManagerClasses.size(); i++) {
             AbstractNodeManager manager = (AbstractNodeManager) nodeManagerClasses.get(i).newInstance();
@@ -471,18 +509,24 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // this.resultModel.add(...);
 
         dotlangLines.add("{rank=min; S [label=seed, style=dotted]}");
-        dotlangLines.add(String.format("{rank=same; %s}", seedNodes.stream().map(String::valueOf).collect(Collectors.joining(" "))));
-        seedNodes.stream().map(i -> String.format("S -> %d [tooltip=\"%s\", style=dotted]", i, getSeedForNode(i))).forEach(dotlangLines::add);
+        dotlangLines.add(String.format("{rank=same; %s}",
+                seedNodes.stream().map(String::valueOf).collect(Collectors.joining(" "))));
+        seedNodes.stream().map(i -> String.format("S -> %d [tooltip=\"%s\", style=dotted]", i, getSeedForNode(i)))
+                .forEach(dotlangLines::add);
 
         final int amountOfColors = 9;
         // https://www.graphviz.org/doc/info/colors.html
         final String colorScheme = "rdylgn" + amountOfColors;
         for (int i = 0; i < nodesAmount; i++) {
             Resource nodeResource = resultModel.createResource(experimentUri + "_Node_" + i);
-            double recall = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.microRecall));
+            double recall = Double
+                    .parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.microRecall));
             String tooltip = String.format("%d: %s", i, nodeMetadata[i].getContainer());
-            String fillColor = Double.isNaN(recall) ? "" : "/" + colorScheme + "/" + String.valueOf((int) Math.floor(recall * 8) + 1);
-            dotlangLines.add(String.format("%d [label=<%s<BR/>%s>, tooltip=\"%s\", fillcolor=\"%s\", style=filled]", i, nodeManagers.get(i).getLabel(), Double.isNaN(recall) ? "&empty;" : String.format("%.2f", recall), tooltip, fillColor));
+            String fillColor = Double.isNaN(recall) ? ""
+                    : "/" + colorScheme + "/" + String.valueOf((int) Math.floor(recall * 8) + 1);
+            dotlangLines.add(String.format("%d [label=<%s<BR/>%s>, tooltip=\"%s\", fillcolor=\"%s\", style=filled]", i,
+                    nodeManagers.get(i).getLabel(), Double.isNaN(recall) ? "&empty;" : String.format("%.2f", recall),
+                    tooltip, fillColor));
             resultModel.removeAll(nodeResource, null, null);
         }
 
@@ -514,7 +558,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
             break;
         }
         case ApiConstants.NODE_START_SIGNAL: {
-            nodeStarted.get((int)RabbitMQUtils.readLong(data)).release();
+            nodeStarted.get((int) RabbitMQUtils.readLong(data)).release();
             break;
         }
         case ApiConstants.NODE_INIT_SIGNAL: {
@@ -546,14 +590,14 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 containerCrashed(containerName);
             }
             if (dataGenContainerIds.contains(containerName)) {
-                LOGGER.error("Data generator container {} terminated with exitCode={}.", containerName,exitCode);
+                LOGGER.error("Data generator container {} terminated with exitCode={}.", containerName, exitCode);
                 // FIXME: only do this when container terminates unexpectedly
                 if (exitCode != 0) {
                     containerCrashed(containerName);
                 }
             }
             if (containerName.equals(sparqlContainer)) {
-                LOGGER.error("Sparql container {} terminated with exitCode={}.", containerName,exitCode);
+                LOGGER.error("Sparql container {} terminated with exitCode={}.", containerName, exitCode);
                 containerCrashed(containerName);
             }
         }
