@@ -175,7 +175,7 @@ public class DataGenerator extends AbstractDataGenerator {
 
         generatorId = getGeneratorId();
         type = Types.valueOf(EnvVariables.getString(ENV_TYPE_KEY));
-        LOGGER = LoggerFactory.getLogger(DataGenerator.class + "#" + (type == Types.NODE_GRAPH_GENERATOR ? "nodeGraph" : "rdfGraph" + generatorId));
+        LOGGER = LoggerFactory.getLogger(DataGenerator.class + "#" + (type == Types.NODE_GRAPH_GENERATOR ? "nodeGraph" : "rdfGraph" + (generatorId - 1)));
 
         long seed = EnvVariables.getLong(ApiConstants.ENV_SEED_KEY);
         int numberOfComponents = EnvVariables.getInt(ApiConstants.ENV_COMPONENT_COUNT_KEY);
