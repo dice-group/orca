@@ -1,8 +1,6 @@
 package org.dice_research.ldcbench.graph;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -121,5 +119,28 @@ public class GrphBasedGraphTest {
         assertTrue("Node added successfully", ((GrphBasedGraph) g).addNode(0));
         assertFalse("Duplicate node wasn't added", ((GrphBasedGraph) g).addNode(0));
         assertEquals("Number of nodes", 1, g.getNumberOfNodes());
+    }
+
+    @Test
+    public void testCloningConstructor() {
+        int n1 = g.addNode();
+        int n2 = g.addNode();
+        int n3 = g.addNode();
+        g.addEdge(n1, n2, 0);
+        g.addEdge(n2, n3, 1);
+        g.setEntranceNodes(new int[]{n1, n3});
+        g.setGraphIdOfNode(n2, 2, 3);
+        GrphBasedGraph g2 = new GrphBasedGraph(g);
+        assertEquals("Number of nodes", 3, g2.getNumberOfNodes());
+        assertEquals("Number of edges", 2, g2.getNumberOfEdges());
+        assertTrue("Source and target for an edge", n2 == g2.outgoingEdgeTargets(n1)[0]);
+        assertEquals("Edge type", 0, g2.outgoingEdgeTypes(n1)[0]);
+        assertTrue("Source and target for an edge", n3 == g2.outgoingEdgeTargets(n2)[0]);
+        assertEquals("Edge type", 1, g2.outgoingEdgeTypes(n2)[0]);
+        assertEquals("Internal node graph", Graph.INTERNAL_NODE_GRAPH_ID, g2.getGraphId(n1));
+        assertEquals("Internal node graph", Graph.INTERNAL_NODE_GRAPH_ID, g2.getGraphId(n3));
+        assertEquals("External node graph", 2, g2.getGraphId(n2));
+        assertEquals("External node id", 3, g2.getExternalNodeId(n2));
+        assertArrayEquals("Entrance nodes", new int[]{n1, n3}, g2.getEntranceNodes());
     }
 }
