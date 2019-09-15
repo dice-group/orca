@@ -1,10 +1,14 @@
 package org.dice_research.ldcbench.nodes.http.simple;
 
+import java.util.Random;
+import org.dice_research.ldcbench.graph.GraphBuilder;
+import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
@@ -20,6 +24,7 @@ import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
 import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileResource;
+import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.rdf.UriHelper;
 import org.hobbit.core.components.Component;
 import org.hobbit.utils.EnvVariables;
@@ -81,12 +86,39 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
         Graph[] graphsArray = graphs.toArray(new Graph[graphs.size()]);
         ArrayList<CrawleableResource> resources = new ArrayList<>();
         CrawleableResource resource = null;
+        String[] resourceUriTemplates = Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new);
+        String[] accessUriTemplates = Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new);
         if (dumpFileNode) {
             resource = DumpFileResource.create(cloudNodeId.get(),
-                    Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
-                    Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
+                    resourceUriTemplates,
+                    accessUriTemplates,
                     graphsArray, (r -> true), Lang.TTL, true);
         } else {
+            SimpleTripleCreator tripleCreator = new SimpleTripleCreator(cloudNodeId.get(), resourceUriTemplates, accessUriTemplates);
+            HashSet<String> disallowedPaths = new HashSet<>();
+            Random random = new Random(0);
+            for (Graph g : graphs) {
+                GraphBuilder gb = new GrphBasedGraph(g);
+                int nodes = gb.getNumberOfNodes();
+                int disallowedAmount = nodes / 10 + 1;
+                LOGGER.debug("Adding {} disallowed resources...", disallowedAmount);
+                for (int i = 0; i < disallowedAmount; i++) {
+                    int linkingNode = random.nextInt(nodes);
+                    // Make sure it's an internal node (belonging to this graph).
+                    // Otherwise, the link will not be available for crawling.
+                    while (gb.getGraphId(linkingNode) != Graph.INTERNAL_NODE_GRAPH_ID) {
+                        linkingNode = (linkingNode + 1) % nodes;
+                    }
+                    int disallowedNode = gb.addNode();
+                    gb.addEdge(linkingNode, disallowedNode, 0);
+                    String path = new URL(tripleCreator.createNode(disallowedNode, -1, -1, false).toString()).getPath();
+                    disallowedPaths.add(path);
+                    LOGGER.debug("Added a disallowed resource {}.", path);
+                }
+            }
+            resources.add(new RobotsResource(disallowedPaths));
+            resources.add(new DisallowedResource(disallowedPaths));
+
             // Create list of available content types
             Set<String> contentTypes = new HashSet<String>();
             for (Lang lang : RDFLanguages.getRegisteredLanguages()) {
@@ -97,8 +129,8 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
             }
             // Create the container based on the information that has been received
             resource = new GraphBasedResource(cloudNodeId.get(),
-                    Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
-                    Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
+                    resourceUriTemplates,
+                    accessUriTemplates,
                     graphsArray,
                     (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
                             && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
