@@ -292,16 +292,20 @@ public class BenchmarkController extends AbstractBenchmarkController {
             for (int i = batch * batchSize; i < (batch + 1) * batchSize && i < nodesAmount; i++) {
                 LOGGER.info("Creating node {}...", i);
                 nodeStarted.add(new Semaphore(0));
-                envVariables = new String[] { ApiConstants.ENV_DOCKERIZED_KEY + "=" + dockerized,
-                        ApiConstants.ENV_SEED_KEY + "=" + seed,
-                        ApiConstants.ENV_NODE_ID_KEY + "=" + i,
-                        ApiConstants.ENV_NODE_URI_KEY + "=" + getNodeURI(i),
-                        ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
-                        ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
-                        ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay,
-                        ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345),
-                        ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
-                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId, };
+
+                envVariables = ArrayUtils.addAll(new String[] {
+                    ApiConstants.ENV_DOCKERIZED_KEY + "=" + dockerized,
+                            ApiConstants.ENV_SEED_KEY + "=" + seed,
+                            ApiConstants.ENV_NODE_ID_KEY + "=" + i,
+                            ApiConstants.ENV_NODE_URI_KEY + "=" + getNodeURI(i),
+                            ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
+                            ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
+                            ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay,
+                            ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345),
+                            ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
+                            ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId,
+                        },
+                        nodeManagers.get(i).getNodeEnvironment());
 
                 nodeContainers.add(createContainerAsync(nodeManagers.get(i).getImageName(),
                         Constants.CONTAINER_TYPE_BENCHMARK, envVariables));

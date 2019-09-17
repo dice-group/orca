@@ -7,6 +7,10 @@ public abstract class AbstractNodeManager {
 
     public abstract boolean canBeHub();
 
+    public String[] getNodeEnvironment() {
+        return new String[]{};
+    };
+
     public abstract String[] getDataGeneratorEnvironment(long averageRdfGraphDegree, long triplesPerNode);
 
     public abstract String getImageName();

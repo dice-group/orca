@@ -21,11 +21,17 @@ public class HttpDumpNodeManager extends AbstractNodeManager {
     }
 
     @Override
+    public String[] getNodeEnvironment() {
+        return new String[]{
+            "LDCBENCH_USE_DUMP_FILE=" + Boolean.TRUE.toString()
+        };
+    };
+
+    @Override
     public String[] getDataGeneratorEnvironment(long averageRdfGraphDegree, long triplesPerNode) {
         String[] env = new String[]{
             DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageRdfGraphDegree,
             DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,
-            "LDCBENCH_USE_DUMP_FILE=" + Boolean.TRUE.toString()
         };
         return env;
     }
