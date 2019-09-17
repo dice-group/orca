@@ -63,7 +63,7 @@ public class DumpFileBuilder {
 //            fileNameBuilder.append('.');
 //            fileNameBuilder.append(fileExt.get(0));
 //        }
-        dumpFile = File.createTempFile("", ".dump");
+        dumpFile = File.createTempFile("ldcbench", ".dump");
         OutputStream out = new FileOutputStream(dumpFile);
         out = new BufferedOutputStream(out);
         if(useCompression) {
