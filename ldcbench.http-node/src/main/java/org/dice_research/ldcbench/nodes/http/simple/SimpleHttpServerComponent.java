@@ -18,14 +18,16 @@ import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.graph.Graph;
-import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
+import org.dice_research.ldcbench.nodes.components.NodeComponent;
 import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileResource;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.rdf.UriHelper;
+import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.core.components.Component;
 import org.hobbit.utils.EnvVariables;
 import org.simpleframework.http.core.Container;
@@ -36,7 +38,7 @@ import org.simpleframework.transport.connect.SocketConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SimpleHttpServerComponent extends AbstractNodeComponent implements Component {
+public class SimpleHttpServerComponent extends NodeComponent implements Component {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServerComponent.class);
 
@@ -48,6 +50,7 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
     protected Server server;
     protected Connection connection;
     protected boolean dumpFileNode;
+    protected DisallowedResource disallowedResource = null;
 
     @Override
     public void initBeforeDataGeneration() throws Exception {
@@ -82,6 +85,14 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
         connection.connect(address);
     }
 
+    @Override
+    public void addResults(Model model, Resource root) {
+        if (disallowedResource != null) {
+            model.addLiteral(root, LDCBench.numberOfDisallowedResources, disallowedResource.getTotalAmount());
+            model.addLiteral(root, LDCBench.ratioOfRequestedDisallowedResources, ((double)disallowedResource.getRequestedAmount())/((double)disallowedResource.getTotalAmount()));
+        }
+    }
+
     protected Container createContainer() throws Exception {
         Graph[] graphsArray = graphs.toArray(new Graph[graphs.size()]);
         ArrayList<CrawleableResource> resources = new ArrayList<>();
@@ -96,9 +107,9 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
         } else {
             SimpleTripleCreator tripleCreator = new SimpleTripleCreator(cloudNodeId.get(), resourceUriTemplates, accessUriTemplates);
             HashSet<String> disallowedPaths = new HashSet<>();
-            Random random = new Random(0);
-            for (Graph g : graphs) {
-                GraphBuilder gb = new GrphBasedGraph(g);
+            Random random = new Random(seedGenerator.getNextSeed());
+            for (int g = 0; g < graphs.size(); g++) {
+                GraphBuilder gb = new GrphBasedGraph(graphs.get(g));
                 int nodes = gb.getNumberOfNodes();
                 int disallowedAmount = nodes / 10 + 1;
                 LOGGER.debug("Adding {} disallowed resources...", disallowedAmount);
@@ -115,9 +126,11 @@ public class SimpleHttpServerComponent extends AbstractNodeComponent implements 
                     disallowedPaths.add(path);
                     LOGGER.debug("Added a disallowed resource {}.", path);
                 }
+                graphsArray[g] = gb.build();
             }
             resources.add(new RobotsResource(disallowedPaths));
-            resources.add(new DisallowedResource(disallowedPaths));
+            disallowedResource = new DisallowedResource(disallowedPaths);
+            resources.add(disallowedResource);
 
             // Create list of available content types
             Set<String> contentTypes = new HashSet<String>();

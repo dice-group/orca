@@ -10,7 +10,7 @@ import static org.hobbit.core.Constants.CONTAINER_TYPE_BENCHMARK;
 import org.apache.jena.graph.Triple;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.graph.Graph;
-import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
+import org.dice_research.ldcbench.nodes.components.NodeComponent;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.sink.Sink;
 import org.dice_research.ldcbench.sink.SparqlBasedSink;
@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 
-public class SimpleSparqlComponent extends AbstractNodeComponent implements Component {
+public class SimpleSparqlComponent extends NodeComponent implements Component {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleSparqlComponent.class);
 

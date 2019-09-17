@@ -44,6 +44,8 @@ public class LDCBench {
     public static final Property macroRecall = property("macroRecall");
     public static final Property microRecall = property("microRecall");
     public static final Property nodeSizeDeterminer = property("nodeSizeDeterminer");
+    public static final Property numberOfDisallowedResources = property("numberOfDisallowedResources");
+    public static final Property ratioOfRequestedDisallowedResources = property("ratioOfRequestedDisallowedResources");
     public static final Property runtime = property("runtime");
     public static final Property seed = property("seed");
     public static final Property sparqlNodeWeight = property("sparqlNodeWeight");

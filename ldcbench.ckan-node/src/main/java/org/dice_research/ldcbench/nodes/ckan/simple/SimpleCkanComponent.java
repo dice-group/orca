@@ -13,7 +13,7 @@ import org.apache.commons.io.IOUtils;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.ckan.Constants;
 import org.dice_research.ldcbench.nodes.ckan.dao.CkanDAO;
-import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
+import org.dice_research.ldcbench.nodes.components.NodeComponent;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.hobbit.core.components.Component;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ import eu.trentorise.opendata.jackan.model.CkanResource;
  *
  */
 
-public class SimpleCkanComponent extends AbstractNodeComponent implements Component {
+public class SimpleCkanComponent extends NodeComponent implements Component {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleCkanComponent.class);
 

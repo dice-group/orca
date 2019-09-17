@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.dice_research.ldcbench.ApiConstants;
@@ -90,6 +91,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private ArrayList<Semaphore> nodeStarted = new ArrayList<>();
     private Semaphore nodesInitSemaphore = new Semaphore(0);
     private Semaphore nodesReadySemaphore = new Semaphore(0);
+    private Semaphore nodesResultSemaphore = null;
     private Semaphore nodeGraphMutex = new Semaphore(0);
 
     protected Channel dataGeneratorsChannel;
@@ -102,6 +104,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private Graph nodeGraph;
 
     protected List<String> dotlangLines = Collections.synchronizedList(new ArrayList<>());
+
+    private String getNodeURI(int nodeIndex) {
+        return experimentUri + "_Node_" + nodeIndex;
+    }
 
     private String getRandomNameForRabbitMQ() {
         return java.util.UUID.randomUUID().toString();
@@ -287,7 +293,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 LOGGER.info("Creating node {}...", i);
                 nodeStarted.add(new Semaphore(0));
                 envVariables = new String[] { ApiConstants.ENV_DOCKERIZED_KEY + "=" + dockerized,
+                        ApiConstants.ENV_SEED_KEY + "=" + seed,
                         ApiConstants.ENV_NODE_ID_KEY + "=" + i,
+                        ApiConstants.ENV_NODE_URI_KEY + "=" + getNodeURI(i),
                         ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                         ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                         ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay,
@@ -499,8 +507,13 @@ public class BenchmarkController extends AbstractBenchmarkController {
         LOGGER.debug("Waiting for the system to finish...");
         waitForSystemToFinish();
 
+        // Create a model so we can store information about nodes.
+        resultModel = ModelFactory.createDefaultModel();
+        nodesResultSemaphore = new Semaphore(0);
         sendToCmdQueue(ApiConstants.CRAWLING_FINISHED_SIGNAL, RabbitMQUtils.writeLong(new Date().getTime()));
 
+        nodesResultSemaphore.acquire(nodesAmount);
+        nodesResultSemaphore = null;
         waitForEvalComponentsToFinish();
 
         // the evaluation module should have sent an RDF model containing the
@@ -517,15 +530,27 @@ public class BenchmarkController extends AbstractBenchmarkController {
         final int amountOfColors = 9;
         // https://www.graphviz.org/doc/info/colors.html
         final String colorScheme = "rdylgn" + amountOfColors;
+        long disallowedTotal = 0;
+        long disallowedRequested = 0;
         for (int i = 0; i < nodesAmount; i++) {
-            Resource nodeResource = resultModel.createResource(experimentUri + "_Node_" + i);
+            Resource nodeResource = resultModel.createResource(getNodeURI(i));
             double recall = Double
                     .parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.microRecall));
-            String tooltip = String.format("%d: %s", i, nodeMetadata[i].getContainer());
+            long numberOfDisallowed = 0;
+            double ratioReqDisallowed = 0;
+            String numberOfDisallowedString = RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.numberOfDisallowedResources);
+            if (numberOfDisallowedString != null) {
+                numberOfDisallowed = Long.parseLong(numberOfDisallowedString);
+                disallowedTotal += numberOfDisallowed;
+                ratioReqDisallowed = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.ratioOfRequestedDisallowedResources));
+                disallowedRequested += numberOfDisallowed * ratioReqDisallowed;
+            }
+            String tooltip = String.format("%d: %s\nDisallowed requested: %f, total: %d", i, nodeMetadata[i].getContainer(), ratioReqDisallowed, numberOfDisallowed);
             String fillColor = Double.isNaN(recall) ? ""
                     : "/" + colorScheme + "/" + String.valueOf((int) Math.floor(recall * 8) + 1);
-            dotlangLines.add(String.format("%d [label=<%s<BR/>%s>, tooltip=\"%s\", fillcolor=\"%s\", style=filled]", i,
+            dotlangLines.add(String.format("%d [label=<%s<BR/>%s%s>, tooltip=\"%s\", fillcolor=\"%s\", style=filled]", i,
                     nodeManagers.get(i).getLabel(), Double.isNaN(recall) ? "&empty;" : String.format("%.2f", recall),
+                    ratioReqDisallowed > 0 ? "!" : "",
                     tooltip, fillColor));
             resultModel.removeAll(nodeResource, null, null);
         }
@@ -535,6 +560,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
         String dotlang = String.join("\n", dotlangLines);
 
         Resource experimentResource = resultModel.getResource(experimentUri);
+        resultModel.addLiteral(experimentResource, LDCBench.numberOfDisallowedResources, disallowedTotal);
+        resultModel.addLiteral(experimentResource, LDCBench.ratioOfRequestedDisallowedResources, ((double)disallowedRequested) / disallowedTotal);
         resultModel.add(resultModel.createLiteralStatement(experimentResource, LDCBench.graphVisualization, dotlang));
 
         Path dotfile = Files.createTempFile("cloud", ".dot");
@@ -576,6 +603,24 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 nodesReadySemaphore.release();
             } else {
                 throw new IllegalStateException("Received unexpected NODE_READY_SIGNAL");
+            }
+            break;
+        }
+        case ApiConstants.NODE_RESULTS_SIGNAL: {
+            if (nodesResultSemaphore != null) {
+                LOGGER.debug("Received NODE_RESULTS_SIGNAL");
+                try {
+                    resultModelMutex.acquire();
+                    resultModel.add(RabbitMQUtils.readModel(data));
+                    resultModelMutex.release();
+                } catch (InterruptedException e) {
+                    LOGGER.error("Interrupted", e);
+                    throw new IllegalStateException(e);
+                }
+
+                nodesResultSemaphore.release();
+            } else {
+                throw new IllegalStateException("Received unexpected NODE_RESULTS_SIGNAL");
             }
             break;
         }

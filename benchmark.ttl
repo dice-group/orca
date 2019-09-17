@@ -22,12 +22,14 @@
     :httpDumpNodeWeight,
     :graphVisualization,
     :triplesEvaluated,
+    :numberOfDisallowedResources,
     :nodeSizeDeterminer;
   hobbit:measuresKPI
     :tripleCountOverTime,
     :truePositives,
     :macroRecall,
     :microRecall,
+    :ratioOfRequestedDisallowedResources,
     :runtime;
   hobbit:hasAPI :Api .
 
@@ -116,6 +118,12 @@
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:long .
 
+:numberOfDisallowedResources a hobbit:Parameter, hobbit:FeatureParameter ;
+  rdfs:label "Disallowed resources"@en;
+  rdfs:comment "The number of disallowed resources."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:long .
+
 :nodeSizeDeterminer a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Node size definition"@en;
   rdfs:comment "The method how the size of a single node is defined."@en;
@@ -148,6 +156,12 @@
 :microRecall a hobbit:KPI ;
   rdfs:label "Micro-recall"@en;
   rdfs:comment "The number of correctly retrieved triples divided by the number of triples that were expected to be returned."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:double .
+
+:ratioOfRequestedDisallowedResources a hobbit:KPI ;
+  rdfs:label "Requested disallowed resources"@en;
+  rdfs:comment "Number of requested disallowed resources divided by the total number of disallowed resources."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:double .
 
