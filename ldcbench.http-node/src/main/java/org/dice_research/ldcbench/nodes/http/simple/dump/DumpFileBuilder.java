@@ -25,14 +25,14 @@ import org.slf4j.LoggerFactory;
 /**
  * A simple class which builds a dump file from the given graph by serializing
  * all triples of the graph.
- * 
+ *
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
 public class DumpFileBuilder {
 
     public static final Lang DEFAULT_LANG = Lang.TTL;
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DumpFileBuilder.class);
 
     public static final List<CompressionStreamFactory> COMPRESSIONS = Arrays.asList(
@@ -80,7 +80,7 @@ public class DumpFileBuilder {
         // fileNameBuilder.append('.');
         // fileNameBuilder.append(fileExt.get(0));
         // }
-        dumpFile = File.createTempFile("", ".dump");
+        dumpFile = File.createTempFile("ldcbench", ".dump");
         OutputStream out = new FileOutputStream(dumpFile);
         out = new BufferedOutputStream(out);
         if (compression != null) {
@@ -96,7 +96,7 @@ public class DumpFileBuilder {
         TripleIterator iterator;
         LOGGER.info("Domain ID: " + domainId);
         LOGGER.info("graph size: " + graphs.length);
-        
+
         for(Graph graph: graphs) {
             for (int i = 0; i < graph.getNumberOfNodes(); ++i) {
                 iterator = new TripleIterator(graphs, domainId, resourceUriTemplates, accessUriTemplates, datasetId, i);
