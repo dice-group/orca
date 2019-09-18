@@ -108,16 +108,17 @@ public class SimpleCkanComponent extends NodeComponent implements Component {
     }
 
     private void addDataSource(String uri) {
-        LOGGER.info("Adding {} to CKAN...", uri);
+        LOGGER.info("Adding {} to CKAN...", uri.replaceAll("[^A-Za-z0-9]", "").toLowerCase());
         CkanDatasetBase dataset = new CkanDatasetBase();
         dataset.setTitle("Dataset " + uri);
-        dataset.setName(uri.replaceAll("[^A-Za-z0-9_-]", "_"));
+        dataset.setName(uri.replaceAll("[^A-Za-z0-9]", "").toLowerCase());
         dataset.setOwnerOrg(Constants.ORGANIZATION);
         dataset.setAuthor(Constants.AUTHOR);
 
         List<CkanResource> listResources = new ArrayList<CkanResource>();
         CkanResource ckanRes = new CkanResource();
-        ckanRes.setName("dist-" + uri);
+        ckanRes.setName("dist" + uri.replaceAll("[^A-Za-z0-9]", "").toLowerCase());
+        LOGGER.info("DS Name: " + "dist" + uri.replaceAll("[^A-Za-z0-9]", "").toLowerCase());
         ckanRes.setUrl(uri);
         listResources.add(ckanRes);
 
