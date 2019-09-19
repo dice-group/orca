@@ -32,7 +32,7 @@ public class LDCBench {
     public static final Resource StaticNodeSize = resource("StaticNodeSize");
 
     // Properties sorted alphabetically
-    public static final Property averageNodeDelay = property("averageNodeDelay");
+    public static final Property averageCrawlDelay = property("averageCrawlDelay");
     public static final Property averageNodeGraphDegree = property("averageNodeGraphDegree");
     public static final Property averageRdfGraphDegree = property("averageRdfGraphDegree");
     public static final Property averageTriplesPerNode = property("averageTriplesPerNode");
@@ -52,5 +52,11 @@ public class LDCBench {
     public static final Property tripleCountOverTime = property("tripleCountOverTime");
     public static final Property triplesEvaluated = property("triplesEvaluated");
     public static final Property truePositives = property("truePositives");
+    public static final Property microAverageCrawlDelayFulfillment = property("microAverageCrawlDelayFulfillment");
+    public static final Property macroAverageCrawlDelayFulfillment = property("macroAverageCrawlDelayFulfillment");
+    public static final Property minCrawlDelay = property("minCrawlDelay");
+    public static final Property maxCrawlDelay = property("maxCrawlDelay");
+    public static final Property minAverageCrawlDelayFulfillment = property("minAverageCrawlDelayFulfillment");
+    public static final Property maxAverageCrawlDelayFulfillment = property("maxAverageCrawlDelayFulfillment");
 
 }

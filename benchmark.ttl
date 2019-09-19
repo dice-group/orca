@@ -15,7 +15,7 @@
     :averageTriplesPerNode,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
-    :averageNodeDelay,
+    :averageCrawlDelay,
     :dereferencingHttpNodeWeight,
     :ckanNodeWeight,
     :sparqlNodeWeight,
@@ -29,6 +29,9 @@
     :truePositives,
     :macroRecall,
     :microRecall,
+    :macroAverageCrawlDelayFulfillment,
+    :minAverageCrawlDelayFulfillment,
+    :maxAverageCrawlDelayFulfillment,
     :ratioOfRequestedDisallowedResources,
     :runtime;
   hobbit:hasAPI :Api .
@@ -71,12 +74,12 @@
   rdfs:range xsd:integer;
   hobbit:defaultValue "5"^^xsd:integer .
 
-:averageNodeDelay a hobbit:Parameter, hobbit:ConfigurableParameter;
-  rdfs:label "Average node delay"@en;
-  rdfs:comment "Average delay of node reponses in ms."@en;
+:averageCrawlDelay a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Average crawl delay"@en;
+  rdfs:comment "Average crawl delay to be set in robots.txt in seconds."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:long;
-  hobbit:defaultValue "5000"^^xsd:string .
+  hobbit:defaultValue "5"^^xsd:long .
 
 :dereferencingHttpNodeWeight a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Weight of dereferencing HTTP node occurrence"@en;
@@ -120,7 +123,7 @@
 
 :numberOfDisallowedResources a hobbit:Parameter, hobbit:FeatureParameter ;
   rdfs:label "Disallowed resources"@en;
-  rdfs:comment "The number of disallowed resources."@en;
+  rdfs:comment "The number of resources disallowed with robots.txt."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:long .
 
@@ -156,6 +159,24 @@
 :microRecall a hobbit:KPI ;
   rdfs:label "Micro-recall"@en;
   rdfs:comment "The number of correctly retrieved triples divided by the number of triples that were expected to be returned."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:double .
+
+:macroAverageCrawlDelayFulfillment a hobbit:KPI ;
+  rdfs:label "Macro-average of crawl delay fulfillment"@en;
+  rdfs:comment "Average of average crawl delay fulfillments over all nodes."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:double .
+
+:minAverageCrawlDelayFulfillment a hobbit:KPI ;
+  rdfs:label "Minimum of crawl delay fulfillment"@en;
+  rdfs:comment "Minimum of average crawl delay fulfillments over all nodes."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:double .
+
+:maxAverageCrawlDelayFulfillment a hobbit:KPI ;
+  rdfs:label "Maximum of crawl delay fulfillment"@en;
+  rdfs:comment "Maximum of average crawl delay fulfillments over all nodes."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:double .
 

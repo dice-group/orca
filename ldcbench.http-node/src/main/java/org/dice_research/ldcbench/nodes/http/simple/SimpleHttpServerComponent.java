@@ -50,11 +50,14 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
     protected Server server;
     protected Connection connection;
     protected boolean dumpFileNode;
+    protected int crawlDelay;
+    protected GraphBasedResource graphBasedResource = null;
     protected DisallowedResource disallowedResource = null;
 
     @Override
     public void initBeforeDataGeneration() throws Exception {
         port = EnvVariables.getInt(ApiConstants.ENV_HTTP_PORT_KEY, DEFAULT_PORT, LOGGER);
+        crawlDelay = EnvVariables.getInt(ApiConstants.ENV_CRAWL_DELAY_KEY, LOGGER);
 
         String hostname = InetAddress.getLocalHost().getHostName();
         LOGGER.info("Retrieved my own name as: \"{}\"", hostname);
@@ -87,6 +90,20 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
 
     @Override
     public void addResults(Model model, Resource root) {
+        if (graphBasedResource != null) {
+            Double averageDelay = graphBasedResource.getAverageDelay();
+            if (averageDelay != null) {
+                model.addLiteral(root, LDCBench.microAverageCrawlDelayFulfillment, averageDelay / (crawlDelay * 1000));
+            }
+            Long minDelay = graphBasedResource.getMinDelay();
+            if (minDelay != null) {
+                model.addLiteral(root, LDCBench.minCrawlDelay, ((double)minDelay) / 1000);
+            }
+            Long maxDelay = graphBasedResource.getMaxDelay();
+            if (maxDelay != null) {
+                model.addLiteral(root, LDCBench.maxCrawlDelay, ((double)maxDelay) / 1000);
+            }
+        }
         if (disallowedResource != null) {
             model.addLiteral(root, LDCBench.numberOfDisallowedResources, disallowedResource.getTotalAmount());
             model.addLiteral(root, LDCBench.ratioOfRequestedDisallowedResources, ((double)disallowedResource.getRequestedAmount())/((double)disallowedResource.getTotalAmount()));
@@ -128,7 +145,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
                 }
                 graphsArray[g] = gb.build();
             }
-            resources.add(new RobotsResource(disallowedPaths));
+            resources.add(new RobotsResource(disallowedPaths, crawlDelay));
             disallowedResource = new DisallowedResource(disallowedPaths);
             resources.add(disallowedResource);
 
@@ -141,13 +158,14 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
                 }
             }
             // Create the container based on the information that has been received
-            resource = new GraphBasedResource(cloudNodeId.get(),
+            graphBasedResource = new GraphBasedResource(cloudNodeId.get(),
                     resourceUriTemplates,
                     accessUriTemplates,
                     graphsArray,
                     (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
                             && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
                     contentTypes.toArray(new String[contentTypes.size()]));
+            resource = graphBasedResource;
         }
         Objects.requireNonNull(resource, "Couldn't create crawleable resource. Exiting.");
         resources.add(resource);

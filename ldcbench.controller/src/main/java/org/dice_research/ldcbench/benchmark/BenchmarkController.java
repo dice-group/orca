@@ -179,7 +179,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // You might want to load parameters from the benchmarks parameter model
         long seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getLong();
         nodesAmount = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfNodes).getInt();
-        long averageNodeDelay = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeDelay).getLong();
+        long averageCrawlDelay = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageCrawlDelay).getLong();
         int averageNodeGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeGraphDegree)
                 .getInt();
         int averageRdfGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageRdfGraphDegree)
@@ -300,7 +300,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                             ApiConstants.ENV_NODE_URI_KEY + "=" + getNodeURI(i),
                             ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                             ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
-                            ApiConstants.ENV_NODE_DELAY_KEY + "=" + averageNodeDelay,
+                            ApiConstants.ENV_CRAWL_DELAY_KEY + "=" + averageCrawlDelay,
                             ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345),
                             ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
                             ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId,
@@ -534,12 +534,41 @@ public class BenchmarkController extends AbstractBenchmarkController {
         final int amountOfColors = 9;
         // https://www.graphviz.org/doc/info/colors.html
         final String colorScheme = "rdylgn" + amountOfColors;
+        long delaySupportingNodes = 0;
+        Double minDelayFulfillment = null;
+        Double maxDelayFulfillment = null;
+        double delayFulfillmentSum = 0;
         long disallowedTotal = 0;
         long disallowedRequested = 0;
         for (int i = 0; i < nodesAmount; i++) {
             Resource nodeResource = resultModel.createResource(getNodeURI(i));
             double recall = Double
                     .parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.microRecall));
+
+            Double crawlDelayFulfillment = null;
+            Double minCrawlDelay = null;
+            Double maxCrawlDelay = null;
+            String microAverageCrawlDelayFulfillmentString = RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.microAverageCrawlDelayFulfillment);
+            if (microAverageCrawlDelayFulfillmentString != null) {
+                crawlDelayFulfillment = Double.parseDouble(microAverageCrawlDelayFulfillmentString);
+                try {
+                    minCrawlDelay = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.minCrawlDelay));
+                } catch (NullPointerException e) {
+                }
+                try {
+                    maxCrawlDelay = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.maxCrawlDelay));
+                } catch (NullPointerException e) {
+                }
+                delayFulfillmentSum += crawlDelayFulfillment;
+                if (minDelayFulfillment == null || minDelayFulfillment > crawlDelayFulfillment) {
+                    minDelayFulfillment = crawlDelayFulfillment;
+                }
+                if (maxDelayFulfillment == null || maxDelayFulfillment < crawlDelayFulfillment) {
+                    maxDelayFulfillment = crawlDelayFulfillment;
+                }
+                delaySupportingNodes++;
+            }
+
             long numberOfDisallowed = 0;
             double ratioReqDisallowed = 0;
             String numberOfDisallowedString = RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.numberOfDisallowedResources);
@@ -549,7 +578,13 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 ratioReqDisallowed = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.ratioOfRequestedDisallowedResources));
                 disallowedRequested += numberOfDisallowed * ratioReqDisallowed;
             }
-            String tooltip = String.format("%d: %s\nDisallowed requested: %f, total: %d", i, nodeMetadata[i].getContainer(), ratioReqDisallowed, numberOfDisallowed);
+
+            String tooltip = String.format("%d: %s\n"
+                    + "Ratio of requested disallowed: %.2f\nTotal disallowed: %d\n"
+                    + "Crawl delay fulfillment: %.2f\nMin crawl delay: %.2f\nMax crawl delay: %.2f",
+                    i, nodeMetadata[i].getContainer(),
+                    ratioReqDisallowed, numberOfDisallowed,
+                    crawlDelayFulfillment, minCrawlDelay, maxCrawlDelay);
             String fillColor = Double.isNaN(recall) ? ""
                     : "/" + colorScheme + "/" + String.valueOf((int) Math.floor(recall * 8) + 1);
             dotlangLines.add(String.format("%d [label=<%s<BR/>%s%s>, tooltip=\"%s\", fillcolor=\"%s\", style=filled]", i,
@@ -564,6 +599,15 @@ public class BenchmarkController extends AbstractBenchmarkController {
         String dotlang = String.join("\n", dotlangLines);
 
         Resource experimentResource = resultModel.getResource(experimentUri);
+        if (delaySupportingNodes != 0) {
+            resultModel.addLiteral(experimentResource, LDCBench.macroAverageCrawlDelayFulfillment, delayFulfillmentSum / delaySupportingNodes);
+        }
+        if (minDelayFulfillment != null) {
+            resultModel.addLiteral(experimentResource, LDCBench.minAverageCrawlDelayFulfillment, (double)minDelayFulfillment);
+        }
+        if (maxDelayFulfillment != null) {
+            resultModel.addLiteral(experimentResource, LDCBench.maxAverageCrawlDelayFulfillment, (double)maxDelayFulfillment);
+        }
         resultModel.addLiteral(experimentResource, LDCBench.numberOfDisallowedResources, disallowedTotal);
         resultModel.addLiteral(experimentResource, LDCBench.ratioOfRequestedDisallowedResources, ((double)disallowedRequested) / disallowedTotal);
         resultModel.add(resultModel.createLiteralStatement(experimentResource, LDCBench.graphVisualization, dotlang));

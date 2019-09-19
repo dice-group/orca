@@ -8,11 +8,13 @@ import java.util.Set;
  * as described at https://en.wikipedia.org/wiki/Robots_exclusion_standard
  */
 public class RobotsResource extends StringResource {
-    private static String getContent(Set<String> paths) {
-        return "User-agent: *\n" + paths.stream().map(p -> "Disallow: " + p).collect(Collectors.joining("\n"));
+    private static String getContent(Set<String> paths, int crawlDelay) {
+        return "User-agent: *\n"
+        + "Crawl-delay: " + crawlDelay + "\n"
+        + paths.stream().map(p -> "Disallow: " + p).collect(Collectors.joining("\n"));
     }
 
-    public RobotsResource(Set<String> paths) {
-        super(r -> r.getPath().toString().equals("/robots.txt"), getContent(paths));
+    public RobotsResource(Set<String> paths, int crawlDelay) {
+        super(r -> r.getPath().toString().equals("/robots.txt"), getContent(paths, crawlDelay));
     }
 }

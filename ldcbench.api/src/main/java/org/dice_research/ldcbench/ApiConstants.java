@@ -11,8 +11,8 @@ public class ApiConstants {
     public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
     public static final String ENV_EVAL_DATA_QUEUE_KEY = "LDCBENCH_EVAL_DATA_QUEUE";
     public static final String ENV_SPARQL_ENDPOINT_KEY = "LDCBENCH_SPARQL_ENDPOINT";
-    public static final String ENV_NODE_DELAY_KEY = "LDCBENCH_NODE_DELAY";
-    
+    public static final String ENV_CRAWL_DELAY_KEY = "LDCBENCH_CRAWL_DELAY";
+
     public static final String ENV_SEED_KEY = "LDCBENCH_DATAGENERATOR_SEED";
     public static final String ENV_COMPONENT_COUNT_KEY = "LDCBENCH_COMPONENT_COUNT";
     public static final String ENV_COMPONENT_ID_KEY = "LDCBENCH_COMPONENT_ID";
