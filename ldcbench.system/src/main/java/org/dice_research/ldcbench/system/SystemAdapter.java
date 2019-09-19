@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 import javax.json.Json;
 import javax.json.JsonReader;
 import javax.json.JsonString;
@@ -105,7 +106,12 @@ public class SystemAdapter extends AbstractSystemAdapter {
                 } else {
                     logger.info("Crawling {}...", uri);
                     Model model = ModelFactory.createDefaultModel();
-                    model.read(uri);
+                    URL url = new URL(uri);
+                    if (url.getPath().endsWith(".ttl.gz")) {
+                        model.read(new GZIPInputStream(url.openStream()), null, "TURTLE");
+                    } else {
+                        model.read(uri);
+                    }
                     logger.info("Model from {}: {}", uri, model.toString());
 
                     UpdateExecutionFactory.createRemoteForm(
