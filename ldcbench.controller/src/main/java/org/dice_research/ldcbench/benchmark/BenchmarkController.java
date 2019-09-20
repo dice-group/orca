@@ -8,6 +8,7 @@ import static org.dice_research.ldcbench.Constants.VOS_PASSWORD;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -31,10 +32,19 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.update.UpdateExecutionFactory;
+import org.apache.jena.update.UpdateFactory;
+import org.apache.jena.update.UpdateProcessor;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.benchmark.cloud.AbstractNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.CkanNodeManager;
@@ -93,6 +103,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private Semaphore nodesReadySemaphore = new Semaphore(0);
     private Semaphore nodesResultSemaphore = null;
     private Semaphore nodeGraphMutex = new Semaphore(0);
+    private Semaphore evaluationStorageReady = new Semaphore(0);
 
     protected Channel dataGeneratorsChannel;
 
@@ -420,6 +431,39 @@ public class BenchmarkController extends AbstractBenchmarkController {
         sparqlUrl = "http://" + sparqlHostname + "/sparql";
         sparqlUrlAuth = sparqlUrl + "-auth";
         sparqlCredentials = new String[] { "dba", VOS_PASSWORD };
+
+        new Thread() {
+            public void run() {
+                CredentialsProvider credsProvider = new BasicCredentialsProvider();
+                credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials("dba", VOS_PASSWORD));
+                HttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
+
+                boolean success = false;
+                do {
+                    try {
+                        UpdateProcessor up = UpdateExecutionFactory.createRemoteForm(
+                            UpdateFactory.create("DELETE {GRAPH ?g {?s ?p ?o}} WHERE {GRAPH ?g {?s ?p ?o}}"),
+                            sparqlUrlAuth,
+                            httpClient
+                        );
+                        up.execute();
+                        success = true;
+                    } catch (Exception e) {
+                        if (e.getCause() instanceof SocketException) {
+                            LOGGER.info("Cannot connect to the evaluation storage {} to clean it up, will try again...", sparqlUrl);
+                        } else {
+                            LOGGER.info("Cannot clean up the evaluation storage, will try again...", e);
+                        }
+                        try {
+                            Thread.sleep(5000);
+                        } catch (InterruptedException ie) {
+                        }
+                    }
+                } while (!success);
+                LOGGER.info("Cleaned up the evaluation storage.");
+                evaluationStorageReady.release();
+            }
+        }.start();
     }
 
     protected void createEmptyServer() {
@@ -499,6 +543,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
         nodesReadySemaphore = null;
 
         long startTime = System.currentTimeMillis();
+
+        LOGGER.debug("Waiting for the evaluation storage to be ready...");
+        evaluationStorageReady.acquire();
+        LOGGER.debug("Evaluation storage is ready.");
 
         LOGGER.debug("Sending data to the system...");
         systemDataSender.sendData(RabbitMQUtils.writeByteArrays(new byte[][] { RabbitMQUtils.writeString(sparqlUrlAuth),
