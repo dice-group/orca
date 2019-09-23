@@ -128,106 +128,112 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 	int P1 = (m + 1)*(N-m) - (nE - indexToEdgeList) + m ;
 	if (P1 <= m ) P1 = m + 1;
 	//
-	for(int node=typeconnectivity.length+1;node<=N;node++) {//next node
+	try {
+		for(int node=typeconnectivity.length+1;node<=N;node++) {//next node
 
-		if(node==P1) {
-			m = m + 1;//second part
-		}
-
-		int m1,mi,mo;//number of inlinks and number of out links mi+mo=m1
-		m1= 1+ generator.nextInt(2*m-1);// to use uniform distribution from 1 to 2m
-		if(m1 >= node) m1=node-1;
-		if(node==N) {//last node
-			m1=nE-indexToEdgeList;
-		}
-		//if(m1 > 2*m) m1=2*m;
-
-		if((N-node)>=(nE-indexToEdgeList-m1+1)) m1=1;// to have the same number of nodes
-
-		if(m1==1) {
-			if(generator.nextDouble()> outlinkspct) { mo=0;}
-			else {mo=1;}
-		}else{
-			mo = (int) Math.round(m1 * outlinkspct);
-		}
-		mi = m1 - mo;
-
-		ctype = nodetypes[node-1];
-		//get possible out connections
-		if(mo > 0) {
-			ndests=0;
-			for(int i=1; i < node; i++) {//only use weights of nodes that accepts connections from current node.
-				if(typeconnectivity[ctype][nodetypes[i-1]]==1) {
-					typewt[i]=inDeg[i];
-					ndests++;
-				}
-				else typewt[i]=0;
+			if(node==P1) {
+				m = m + 1;//second part
 			}
-			int[] outlinks;
-			if(ndests > mo) {//sample out-links
-				outlinks = weightedSampleWithoutReplacement(node-1, mo, typewt, generator);
 
-				for (int k = 0; k < mo; k++) {
+			int m1,mi,mo;//number of inlinks and number of out links mi+mo=m1
+			m1= 1+ generator.nextInt(2*m-1);// to use uniform distribution from 1 to 2m
+			if(m1 >= node) m1=node-1;
+			if(node==N) {//last node
+				m1=nE-indexToEdgeList;
+			}
+			//if(m1 > 2*m) m1=2*m;
+
+			if((N-node)>=(nE-indexToEdgeList-m1+1)) m1=1;// to have the same number of nodes
+
+			if(m1==1) {
+				if(generator.nextDouble()> outlinkspct) { mo=0;}
+				else {mo=1;}
+			}else{
+				mo = (int) Math.round(m1 * outlinkspct);
+			}
+			mi = m1 - mo;
+
+			ctype = nodetypes[node-1];
+			//get possible out connections
+			if(mo > 0) {
+				ndests=0;
+				for(int i=1; i < node; i++) {//only use weights of nodes that accepts connections from current node.
+					if(typeconnectivity[ctype][nodetypes[i-1]]==1) {
+						typewt[i]=inDeg[i];
+						ndests++;
+					}
+					else typewt[i]=0;
+				}
+				int[] outlinks;
+				if(ndests > mo) {//sample out-links
+					outlinks = weightedSampleWithoutReplacement(node-1, mo, typewt, generator);
+
+					for (int k = 0; k < mo; k++) {
 						inDeg[outlinks[k]] = inDeg[outlinks[k]] + 1;
 						subj[indexToEdgeList] = node;
 						obj[indexToEdgeList] = outlinks[k];
-					    indexToEdgeList++;
-					    if(indexToEdgeList >= nE) break;
-				}
-			}else {//connect to all if count less than m
-				for(int i=1; i < node; i++) {//only use weights of nodes that accepts connections from current node.
-					if(typewt[i] > 0) {
-						inDeg[i] = inDeg[i] + 1;
-						subj[indexToEdgeList] = node;
-						obj[indexToEdgeList] = i;
-					    indexToEdgeList++;
-					    if(indexToEdgeList >= nE) break;
+						indexToEdgeList++;
+						if(indexToEdgeList >= nE) break;
+					}
+				}else {//connect to all if count less than m
+					for(int i=1; i < node; i++) {//only use weights of nodes that accepts connections from current node.
+						if(typewt[i] > 0) {
+							inDeg[i] = inDeg[i] + 1;
+							subj[indexToEdgeList] = node;
+							obj[indexToEdgeList] = i;
+							indexToEdgeList++;
+							if(indexToEdgeList >= nE) break;
+						}
 					}
 				}
 			}
-		}
-		//---- in-link: there can be in and out links between two nodes[DBpedia&Revyu]
-		if(indexToEdgeList >= nE) break;
-		if( mi > 0 ) {
-			nsrcs=0;
-			for(int i=1; i < node; i++) {//only use weights of nodes that accepts connections from current node.
-				if(typeconnectivity[nodetypes[i-1]][ctype]==1) {
-					typewt[i]=inDeg[i];
-					nsrcs++;
+			//---- in-link: there can be in and out links between two nodes[DBpedia&Revyu]
+			if(indexToEdgeList >= nE) break;
+			if( mi > 0 ) {
+				nsrcs=0;
+				for(int i=1; i < node; i++) {//only use weights of nodes that accepts connections from current node.
+					if(typeconnectivity[nodetypes[i-1]][ctype]==1) {
+						typewt[i]=inDeg[i];
+						nsrcs++;
+					}
+					else typewt[i]=0;
 				}
-				else typewt[i]=0;
-			}
-			int[] inlinks;
-			if(nsrcs > mi) {//sample in-links
-				inlinks = weightedSampleWithoutReplacement(node-1, mi, typewt, generator);
-				inDeg[node] = inDeg[node] + mi;
-				for (int k = 0; k < mi; k++) {
+				int[] inlinks;
+				if(nsrcs > mi) {//sample in-links
+					inlinks = weightedSampleWithoutReplacement(node-1, mi, typewt, generator);
+					inDeg[node] = inDeg[node] + mi;
+					for (int k = 0; k < mi; k++) {
 						subj[indexToEdgeList] = inlinks[k];
 						obj[indexToEdgeList] = 	 node;
-					    indexToEdgeList++;
-					    if(indexToEdgeList >= nE) break;
-				}
-			}else {//connect to all if count less than m
-				inDeg[node] = inDeg[node] + nsrcs;
-				for(int i=1; i < node; i++) {//only use weights of nodes that accepts connections from current node.
-					if(typewt[i] > 0) {
-	//					inDeg[node] = inDeg[node] + 1;
-						subj[indexToEdgeList] = i;
-						obj[indexToEdgeList] = node;
-					    indexToEdgeList++;
-					    if(indexToEdgeList >= nE) break;
+						indexToEdgeList++;
+						if(indexToEdgeList >= nE) break;
+					}
+				}else {//connect to all if count less than m
+					inDeg[node] = inDeg[node] + nsrcs;
+					for(int i=1; i < node; i++) {//only use weights of nodes that accepts connections from current node.
+						if(typewt[i] > 0) {
+							//					inDeg[node] = inDeg[node] + 1;
+							subj[indexToEdgeList] = i;
+							obj[indexToEdgeList] = node;
+							indexToEdgeList++;
+							if(indexToEdgeList >= nE) break;
+						}
 					}
 				}
 			}
-		}
 
-//		The dataset currently contains 1,239 datasets with 16,147 links (as of March 2019): d~=15
-     if (node % 10000 == 0) {
-			long ti1;
-			ti1= System.currentTimeMillis();
-			ti0= System.currentTimeMillis();
+			//		The dataset currently contains 1,239 datasets with 16,147 links (as of March 2019): d~=15
+			if (node % 10000 == 0) {
+				long ti1;
+				ti1= System.currentTimeMillis();
+				ti0= System.currentTimeMillis();
+			}
+			if(indexToEdgeList >= nE) break;
 		}
-	if(indexToEdgeList >= nE) break;
+	}
+	catch(IllegalArgumentException ex) {
+		throw new IllegalArgumentException("N=" + N + ", seed=" + seed + ", degree=" + degree +
+				" msg from sampling:"+ex.getMessage());
 	}
 	//5/7/2019 remapping ids to make nodes of same type having adjacent ids.
 	// type is 0 to n0-1, type1 n to n+n1-1 .. etc
@@ -371,18 +377,30 @@ protected int[] weightedSampleWithoutReplacement(int n, int m, int[] wt,Random g
 	int rand;
 	int i;
     int Sum = 0;
-    int n1 = n;
-
-    for(i = 1; i <= n; i++) Sum += wt[i];
-
+    int cntNNz = 0;//count of non zero values in wt, should be at least m :23.9.19
+    
+    for(i = 1; i <= n; i++) {
+    	   Sum += wt[i];
+    	   if(wt[i] > 0 ) cntNNz++;
+    }
+    
+    if(Sum<=0) {
+    	throw new IllegalArgumentException("Error, Sum<=0," + n +" m=" + m + " wt0=" + wt[0] + " Sum=" + Sum);    	
+    }
+    
+    if(cntNNz < m) {
+    	throw new IllegalArgumentException("Error, count nonzeros in weights: " + cntNNz + " < " + m +", n=" + n +
+    			" wt0=" + wt[0] + " Sum=" + Sum);    	
+    }
+    
 	int[] wt1=Arrays.copyOf(wt,n+1);
 
 	for (int j = 0; j < m; j++) {
 		rand =  generator.nextInt(Sum);
 
 		// find interval
-		for (i = 1; i <= n1; i++) {
-			rand-=wt1[i];
+		for (i = 1; i <= n; i++) {
+			rand -= wt1[i];
 			if (rand < 0) {//to avoid getting nodes set to zero degree, must be less than
 				Res[j] = i;
 				Sum -= wt1[i];

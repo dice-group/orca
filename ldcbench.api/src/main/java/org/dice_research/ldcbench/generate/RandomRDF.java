@@ -27,10 +27,10 @@ public class RandomRDF implements GraphGenerator{
  * @param n number of values to choose from.
  * @param m number of values to choose.
  * @param wt the weights for the values in index from 1 to n (0 is ignored).
- * @return the number of edges of the generated graph; 0 if failed.
+ * @return int array containing indexes of sampled nodes.
  */
-	protected int[] weightedSampleWithoutReplacement(int n, int m, int[] wt) {
-
+	protected int[] weightedSampleWithoutReplacementwithaw(int n, int m, int[] wt) {
+		/* with accumulated weight array (less efficient)*/
 		int[] Res = new int[m];
 		int[] aw = new int[n + 1];// accumulated weights
 		aw[0] = 0;
@@ -69,8 +69,8 @@ public class RandomRDF implements GraphGenerator{
 		return (Res);
 	}
 
-protected int[] weightedSampleWithoutReplacementbs(int n, int m, int[] wt) {
-
+protected int[] weightedSampleWithoutReplacementbswithawBS(int n, int m, int[] wt) {
+/* with accumulated weight array and binary search (less efficient)*/
 		int[] Res = new int[m];
 		int[] aw = new int[n + 1];// accumulated weights
 		aw[0] = 0;
@@ -104,27 +104,44 @@ protected int[] weightedSampleWithoutReplacementbs(int n, int m, int[] wt) {
 		return (Res);
 	}
 
-protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
-	/* without accumulated weights*/
+/**
+ * Samples numbers from 1 to n; m times without replacement using weights in wt
+ * @param n number of values to choose from.
+ * @param m number of values to choose.
+ * @param wt the weights for the values in index from 1 to n (0 is ignored).
+ * @return int array containing indexes of sampled nodes.
+ */
+protected int[] weightedSampleWithoutReplacement(int n, int m, int[] wt) {
+	/* without accumulated weights, select m from n without replacement */
 
 	int[] Res = new int[m];
 
 	int rand;
 	int i;
     int Sum = 0;//=IntStream.of(wt).sum();
-    int n1 = n;
-
-    for(i = 1; i <= n; i++) Sum+=wt[i];
-    if(Sum<=0) {
-    	System.out.println("Error, Sum<=0,"+n+" m="+m+" wt0="+wt[0]+" Sum="+Sum);    	
+    int cntNNz = 0;//count of non zero values in wt, should be at least m :23.9.19
+    
+    for(i = 1; i <= n; i++) {
+    	   Sum += wt[i];
+    	   if(wt[i] > 0 ) cntNNz++;
     }
+    
+    if(Sum<=0) {
+    	throw new IllegalArgumentException("Error, Sum<=0," + n +" m=" + m + " wt0=" + wt[0] + " Sum=" + Sum);    	
+    }
+    
+    if(cntNNz < m) {
+    	throw new IllegalArgumentException("Error, count nonzeros in weights: " + cntNNz + " < " + m +", n=" + n +
+    			" wt0=" + wt[0] + " Sum=" + Sum);    	
+    }
+    
 	int[] wt1=Arrays.copyOf(wt,n+1);
-	//System.out.println("Sum="+Sum);
+	
 	for (int j = 0; j < m; j++) {
 		rand =  generator.nextInt(Sum);
 
 		// find interval
-		for (i = 1; i <= n1; i++) {
+		for (i = 1; i <= n; i++) {
 			rand-=wt1[i];
 			if (rand < 0) {//to avoid getting nodes set to zero degree, must be less than
 				Res[j] = i;
@@ -171,15 +188,13 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 			if (P1<=m ) P1 = m+1;
 
 			double biasedCoin=((m/2.0-1)/(m-1));
-			long ts10k=0;
+			//long ts10k=0;
 			for (int i = m + 1; i <= N; i++) {
 				long ts1=System.currentTimeMillis();
-//				int[] tmp = weightedSampleWithoutReplacement((i - 1), m, inDeg);// #new links
-				int[] tmp = weightedSampleWithoutReplacementOhneaw((i - 1), m, inDeg);// #new links
-				ts10k+=(System.currentTimeMillis()-ts1);
+				int[] tmp = weightedSampleWithoutReplacement((i - 1), m, inDeg);// #new links
+		//		ts10k+=(System.currentTimeMillis()-ts1);
 
 				 //in- link
-//				int vin_ix = (int) Math.floor(generator.nextDouble() * m);
 				int vin_ix = generator.nextInt(m) ;
 				if (vin_ix == m)
 					vin_ix--;
@@ -209,7 +224,7 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 				if (i % 10000 == 0) {
 					long ti1;
 					ti1= System.currentTimeMillis();
-					ts10k=0;
+					//ts10k=0;
 					ti0= System.currentTimeMillis();
 				}
 			}
@@ -226,14 +241,14 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 			int[] entranceNodes= {0};
 			builder.setEntranceNodes(entranceNodes);
 
-			long t_gbuilder = System.currentTimeMillis();
+		//	long t_gbuilder = System.currentTimeMillis();
 		}
 
 /*-----------------------------------------------------------------------*/
 		int getOneNodeLinks(int node,int m1,int indexToEdgeList,int[] subj,int[] obj,int[] inDeg){		
-			//int[] tmp = weightedSampleWithoutReplacement((i - 1), m1, inDeg);// #new links
-			int[] tmp = weightedSampleWithoutReplacementOhneaw((node - 1), m1, inDeg);// #new links
-			//ts10k += (System.currentTimeMillis()-ts1);
+			/* finds m1 connections from/to to node*/
+			
+			int[] tmp = weightedSampleWithoutReplacement((node - 1), m1, inDeg);// #new links			
 			double biasedCoin=((m1/2.0-1)/(m1-1));
 			//in- link
 			int vin_ix = generator.nextInt(m1) ;
@@ -289,6 +304,7 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 			long ts10k=0;
 			int cntE=indexToEdgeList;
 			int i;
+			try {
 			for ( i = m + 1; i < N; i++) {
 				long ts1=System.currentTimeMillis();
 				int m1= 1+ generator.nextInt(2*m-1);
@@ -315,13 +331,15 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 				//if(indexToEdgeList >= (nE-1)) break;
 			}
 			
+			//---------- Links for last node ---------------------------//
 //			System.out.println("crnt nE:"+indexToEdgeList+" required nE="+nE);
 			// trailing node have a degree such that to get exact number of edges
 			int mf=nE-indexToEdgeList;
+			
 			if(mf<=0) {
-				System.out.println("No remaining edges for last node mf="+mf);	
+				System.out.println("No remaining edges for last node mf=" + mf);	
 			}	else {
-			   indexToEdgeList=getOneNodeLinks(i,mf,indexToEdgeList,subj,obj,inDeg);
+			   indexToEdgeList = getOneNodeLinks(i,mf,indexToEdgeList,subj,obj,inDeg);
 			}
 			
 			long t_barabasi = System.currentTimeMillis();
@@ -343,6 +361,11 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 			builder.setEntranceNodes(entranceNodes);
 
 			long t_gbuilder = System.currentTimeMillis();
+			}
+			catch(IllegalArgumentException ex) {
+				throw new IllegalArgumentException("N=" + N + ", seed=" + seed + ", degree=" + degree +
+						" msg from sampling:"+ex.getMessage());
+			}
 		}
 
 //-------------------------------------------------------------------------------------------
@@ -373,9 +396,9 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 			// initial part
 			if (m > 2) {
 				for (int i = 3; i <= m; i++) {
-					//int[] tmp = weightedSampleWithoutReplacement(i - 1, 2, inDeg);// new links
-					int[] tmp = weightedSampleWithoutReplacementbs(i - 1, 2, inDeg);// new links
-//					int[] tmp = weightedSampleWithoutReplacementOhneaw(i - 1, 2, inDeg);// new links
+					int[] tmp = weightedSampleWithoutReplacement(i - 1, 2, inDeg);// new links
+					//int[] tmp = weightedSampleWithoutReplacementbswithawBS(i - 1, 2, inDeg);// new links
+					
 					boolean randIndex = generator.nextBoolean();
 					int vto;
 					if (randIndex) {
@@ -526,7 +549,7 @@ protected int[] weightedSampleWithoutReplacementOhneaw(int n, int m, int[] wt) {
 				builder.setEntranceNodes(entranceNodes);
 				return;
 			}
-//		this.getBarabasiRDF(numberOfNodes, avgDegree, seed,builder);//String algorithm
+//		this.getBarabasiRDF(numberOfNodes, avgDegree, seed,builder);//fixed value of degree
 		this.getBarabasiRDFum(numberOfNodes, avgDegree, seed,builder);//use uniform distribution for degree
 //		this.getBarabasiRDFumChkRep(numberOfNodes, avgDegree, seed,builder);//Slowest
 	}
