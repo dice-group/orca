@@ -1,8 +1,0 @@
-FROM maven
-
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
-
-ADD target/ldcbench.controller-shaded.jar /usr/src/app
-
-CMD ["java", "-cp", "ldcbench.controller-shaded.jar", "org.hobbit.core.run.ComponentStarter", "org.dice_research.ldcbench.benchmark.EvalModule"]

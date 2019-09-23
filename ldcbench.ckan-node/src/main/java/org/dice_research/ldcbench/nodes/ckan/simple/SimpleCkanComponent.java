@@ -2,16 +2,18 @@ package org.dice_research.ldcbench.nodes.ckan.simple;
 
 import static org.hobbit.core.Constants.CONTAINER_TYPE_BENCHMARK;
 
+import java.io.InputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.ckan.Constants;
 import org.dice_research.ldcbench.nodes.ckan.dao.CkanDAO;
-import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
+import org.dice_research.ldcbench.nodes.components.NodeComponent;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.hobbit.core.components.Component;
 import org.slf4j.Logger;
@@ -31,7 +33,7 @@ import eu.trentorise.opendata.jackan.model.CkanResource;
  *
  */
 
-public class SimpleCkanComponent extends AbstractNodeComponent implements Component {
+public class SimpleCkanComponent extends NodeComponent implements Component {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleCkanComponent.class);
 
@@ -72,14 +74,25 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
         solrContainer = createContainer(Constants.SOLR, CONTAINER_TYPE_BENCHMARK, null);
         redisContainer = createContainer(Constants.REDIS, CONTAINER_TYPE_BENCHMARK, null);
 
+        String recaptchaPublicKey = "";
+        String recaptchaPrivateKey = "";
+        try (InputStream ps = getClass().getClassLoader().getResourceAsStream("recaptcha.properties")) {
+            Properties p = new Properties();
+            p.load(ps);
+            recaptchaPublicKey = p.getProperty("publicKey", "");
+            recaptchaPrivateKey = p.getProperty("privateKey", "");
+        } catch (NullPointerException e) {
+            LOGGER.warn("Cannot load recaptcha.properties.");
+        }
+
         LOGGER.debug("Starting CKAN service: {}...", Constants.CKAN);
         ckanContainer = createContainer(Constants.CKAN, CONTAINER_TYPE_BENCHMARK,
                 new String[] { "CKAN_SOLR_URL=http://" + solrContainer + ":8983/solr/ckan",
                         "CKAN_SQLALCHEMY_URL=postgresql://ckan:ckan@" + postGresContainer + ":5432/ckan",
                         "CKAN_REDIS_URL=redis://" + redisContainer + ":6379/0", "CKAN_SITE_URL=http://localhost",
                         "CKAN_SITE_TITLE=CKAN NODE", "CKAN_SITE_DESCRIPTION=LDCBench Benchmark node",
-                        "CKAN_RECAPTCHA_PUBLICKEY=" + Constants.CKAN_RECAPTCHA_PUBLICKEY,
-                        "CKAN_RECAPTCHA_PRIVATEKEY=" + Constants.CKAN_RECAPTCHA_PRIVATEKEY,
+                        "CKAN_RECAPTCHA_PUBLICKEY=" + recaptchaPublicKey,
+                        "CKAN_RECAPTCHA_PRIVATEKEY=" + recaptchaPrivateKey,
                         "REDIS_HOSTNAME=" + redisContainer,
                         "HOBBIT_SDK_PUBLISH_PORTS=5000",
         });
@@ -95,16 +108,17 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
     }
 
     private void addDataSource(String uri) {
-        LOGGER.info("Adding {} to CKAN...", uri);
+        LOGGER.info("Adding {} to CKAN...", uri.replaceAll("[^A-Za-z0-9]", "").toLowerCase());
         CkanDatasetBase dataset = new CkanDatasetBase();
         dataset.setTitle("Dataset " + uri);
-        dataset.setName(uri.replaceAll("[^A-Za-z0-9_-]", "_"));
+        dataset.setName(uri.replaceAll("[^A-Za-z0-9]", "").toLowerCase());
         dataset.setOwnerOrg(Constants.ORGANIZATION);
         dataset.setAuthor(Constants.AUTHOR);
 
         List<CkanResource> listResources = new ArrayList<CkanResource>();
         CkanResource ckanRes = new CkanResource();
-        ckanRes.setName("dist-" + uri);
+        ckanRes.setName("dist" + uri.replaceAll("[^A-Za-z0-9]", "").toLowerCase());
+        LOGGER.info("DS Name: " + "dist" + uri.replaceAll("[^A-Za-z0-9]", "").toLowerCase());
         ckanRes.setUrl(uri);
         listResources.add(ckanRes);
 

@@ -1,5 +1,7 @@
 package org.dice_research.ldcbench;
 
+import org.dice_research.ldcbench.benchmark.BenchmarkController;
+
 public class Constants {
 
     public static String GIT_USERNAME = "ldcbench";
@@ -9,14 +11,15 @@ public class Constants {
     public static String PROJECT_NAME = "ldcbench";
 
     //use these constants within BenchmarkController
-    public static final String BENCHMARK_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/benchmark-controller";
-    public static final String DATAGEN_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/datagen";
-    public static final String EVAL_STORAGE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/eval-storage";
-    public static final String EVALMODULE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/eval-module";
-    public static final String SYSTEM_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/system-adapter";
-    public static final String HTTPNODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/simple-http-node";
-    public static final String CKANNODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ckan-node";
-    public static final String SPARQLNODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/sparql-node";
+    public static final String BENCHMARK_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.controller";
+    public static final String DATAGEN_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.data-generator";
+    public static final String EVAL_STORAGE_IMAGE_NAME = BenchmarkController.DEFAULT_EVAL_STORAGE_IMAGE;
+    public static final String EVALMODULE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.eval-module";
+    public static final String SYSTEM_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.system";
+    public static final String HTTPNODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.http-node";
+    public static final String CKANNODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.ckan-node";
+    public static final String SPARQLNODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.sparql-node";
+    public static final String EMPTY_SERVER_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.empty-server";
 
     public static final String BENCHMARK_URI = "http://project-hobbit.eu/"+PROJECT_NAME;
     public static final String SYSTEM_URI = "http://project-hobbit.eu/"+PROJECT_NAME+"/system";

@@ -2,6 +2,10 @@ package org.dice_research.ldcbench.nodes.http.simple;
 
 import java.io.OutputStream;
 import java.util.function.Predicate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -31,6 +35,7 @@ public class GraphBasedResource extends AbstractNegotiatingResource {
     protected final String[] accessUriTemplates;
     protected final Graph[] graphs;
     protected boolean failIfContentTypeMismatch = false;
+    protected List<Long> requestTimes = Collections.synchronizedList(new ArrayList<>());
 
     public GraphBasedResource(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs,
             Predicate<Request> predicate, String[] contentTypes) {
@@ -39,6 +44,47 @@ public class GraphBasedResource extends AbstractNegotiatingResource {
         this.resourceUriTemplates = resourceUriTemplates;
         this.accessUriTemplates = accessUriTemplates;
         this.graphs = graphs;
+    }
+
+    public Double getAverageDelay() {
+        synchronized (requestTimes) {
+            Collections.sort(requestTimes);
+            long total = 0;
+            int size = requestTimes.size();
+            if (size <= 1) {
+                return null;
+            }
+            for (int i = 0; i < size - 1; i++) {
+                total += requestTimes.get(i+1) - requestTimes.get(i);
+            }
+            return ((double)total) / (size - 1);
+        }
+    }
+
+    public Long getMinDelay() {
+        synchronized (requestTimes) {
+            Collections.sort(requestTimes);
+            Long min = null;
+            int size = requestTimes.size();
+            for (int i = 0; i < size - 1; i++) {
+                long val = requestTimes.get(i+1) - requestTimes.get(i);
+                if (min == null || min > val) min = val;
+            }
+            return min;
+        }
+    }
+
+    public Long getMaxDelay() {
+        synchronized (requestTimes) {
+            Collections.sort(requestTimes);
+            Long max = null;
+            int size = requestTimes.size();
+            for (int i = 0; i < size - 1; i++) {
+                long val = requestTimes.get(i+1) - requestTimes.get(i);
+                if (max == null || max < val) max = val;
+            }
+            return max;
+        }
     }
 
     @Override
@@ -55,6 +101,9 @@ public class GraphBasedResource extends AbstractNegotiatingResource {
 
     public boolean handleRequest(String target, Lang lang, OutputStream out)
             throws SimpleHttpException {
+        long time = new Date().getTime();
+        requestTimes.add(time);
+
         // Lang lang = RDFLanguages.contentTypeToLang(contentType);
         // if ((lang == null) && (failIfContentTypeMismatch)) {
         // throw new SimpleHttpException(

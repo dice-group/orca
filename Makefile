@@ -10,14 +10,14 @@ images:
 
 push-images:
 	# mvn -DskipTests deploy
-	docker push $(IMAGE_BASE)benchmark-controller
-	docker push $(IMAGE_BASE)datagen
-	docker push $(IMAGE_BASE)eval-module
-	docker push $(IMAGE_BASE)system-adapter
-	docker push $(IMAGE_BASE)empty-server
-	docker push $(IMAGE_BASE)simple-http-node
-	docker push $(IMAGE_BASE)ckan-node
-	docker push $(IMAGE_BASE)sparql-node
+	docker push $(IMAGE_BASE)ldcbench.controller
+	docker push $(IMAGE_BASE)ldcbench.data-generator
+	docker push $(IMAGE_BASE)ldcbench.eval-module
+	docker push $(IMAGE_BASE)ldcbench.system
+	docker push $(IMAGE_BASE)ldcbench.empty-server
+	docker push $(IMAGE_BASE)ldcbench.http-node
+	docker push $(IMAGE_BASE)ldcbench.ckan-node
+	docker push $(IMAGE_BASE)ldcbench.sparql-node
 
 add-hobbit-remote:
 	git remote |grep hobbit ||git remote --verbose add hobbit https://git.project-hobbit.eu/ldcbench/ldcbench

@@ -14,6 +14,9 @@ import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.utils.TripleIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * A simple class which builds a dump file from the given graph by serializing
@@ -25,6 +28,9 @@ import org.dice_research.ldcbench.nodes.utils.TripleIterator;
 public class DumpFileBuilder {
 
     public static final Lang DEFAULT_LANG = Lang.TTL;
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(DumpFileBuilder.class);
+
 
     protected final int domainId;
     protected final String[] resourceUriTemplates;
@@ -63,7 +69,7 @@ public class DumpFileBuilder {
 //            fileNameBuilder.append('.');
 //            fileNameBuilder.append(fileExt.get(0));
 //        }
-        dumpFile = File.createTempFile("", ".dump");
+        dumpFile = File.createTempFile("ldcbench", ".dump");
         OutputStream out = new FileOutputStream(dumpFile);
         out = new BufferedOutputStream(out);
         if(useCompression) {
@@ -77,11 +83,22 @@ public class DumpFileBuilder {
         StreamRDF writerStream = StreamRDFWriter.getWriterStream(out, lang);
         writerStream.start();
         TripleIterator iterator;
-        int numberOfNodes = graphs[domainId].getNumberOfNodes();
-        for (int i = 0; i < numberOfNodes; ++i) {
-            iterator = new TripleIterator(graphs, domainId, resourceUriTemplates, accessUriTemplates, datasetId, i);
-            StreamOps.sendTriplesToStream(iterator, writerStream);
+        LOGGER.info("Domain ID: " + domainId);
+        LOGGER.info("graph size: " + graphs.length);
+        
+        for(Graph graph: graphs) {
+            for (int i = 0; i < graph.getNumberOfNodes(); ++i) {
+                iterator = new TripleIterator(graphs, domainId, resourceUriTemplates, accessUriTemplates, datasetId, i);
+                StreamOps.sendTriplesToStream(iterator, writerStream);
+            }
+            datasetId++;
         }
+
+//        int numberOfNodes = graphs[domainId].getNumberOfNodes();
+//        for (int i = 0; i < numberOfNodes; ++i) {
+//            iterator = new TripleIterator(graphs, domainId, resourceUriTemplates, accessUriTemplates, datasetId, i);
+//            StreamOps.sendTriplesToStream(iterator, writerStream);
+//        }
         writerStream.finish();
     }
 
