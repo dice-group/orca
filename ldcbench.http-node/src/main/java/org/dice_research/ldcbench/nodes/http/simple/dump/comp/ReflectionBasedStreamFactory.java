@@ -26,6 +26,10 @@ public class ReflectionBasedStreamFactory implements CompressionStreamFactory {
      * The media type string of the compression.
      */
     private String mediaType;
+    /**
+     * Typical file ending for this type of compression.
+     */
+    private String fileEnding;
 
     /**
      * Constructor.
@@ -36,10 +40,14 @@ public class ReflectionBasedStreamFactory implements CompressionStreamFactory {
      *            single {@link OutputStream} as only argument.
      * @param mediaType
      *            the media type string of the compression.
+     * @param fileEnding
+     *            the file ending of this compression.
      */
-    public ReflectionBasedStreamFactory(Constructor<? extends OutputStream> compressionConstructor, String mediaType) {
+    public ReflectionBasedStreamFactory(Constructor<? extends OutputStream> compressionConstructor, String mediaType,
+            String fileEnding) {
         this.compressionConstructor = compressionConstructor;
         this.mediaType = mediaType;
+        this.fileEnding = fileEnding;
     }
 
     @Override
@@ -56,6 +64,11 @@ public class ReflectionBasedStreamFactory implements CompressionStreamFactory {
     public String getMediaType() {
         return mediaType;
     }
+    
+    @Override
+    public String getFileEnding() {
+        return fileEnding;
+    }
 
     /**
      * Method for creating an instance of the {@link ReflectionBasedStreamFactory}
@@ -67,13 +80,15 @@ public class ReflectionBasedStreamFactory implements CompressionStreamFactory {
      *            compression.
      * @param mediaType
      *            the media type string of the compression.
+     * @param fileEnding
+     *            the file ending of this compression.
      * @return An instance of the {@link ReflectionBasedStreamFactory} class or
      *         {@code null} if the given class can not be found.
      */
     @SuppressWarnings("unchecked")
-    public static ReflectionBasedStreamFactory create(String className, String mediaType) {
+    public static ReflectionBasedStreamFactory create(String className, String mediaType, String fileEnding) {
         try {
-            return create((Class<? extends OutputStream>) Class.forName(className), mediaType);
+            return create((Class<? extends OutputStream>) Class.forName(className), mediaType, fileEnding);
         } catch (ClassNotFoundException e) {
             LOGGER.info("Error while trying to find compression class. Returning null.", e);
             return null;
@@ -89,15 +104,17 @@ public class ReflectionBasedStreamFactory implements CompressionStreamFactory {
      *            the class that should be used for compression.
      * @param mediaType
      *            the media type string of the compression.
+     * @param fileEnding
+     *            the file ending of this compression.
      * @return An instance of the {@link ReflectionBasedStreamFactory} class or
      *         {@code null} if the given class can not be found.
      */
-    public static ReflectionBasedStreamFactory create(Class<? extends OutputStream> compressionClass,
-            String mediaType) {
+    public static ReflectionBasedStreamFactory create(Class<? extends OutputStream> compressionClass, String mediaType,
+            String fileEnding) {
         try {
             return new ReflectionBasedStreamFactory(
                     (Constructor<? extends OutputStream>) compressionClass.getDeclaredConstructor(OutputStream.class),
-                    mediaType);
+                    mediaType, fileEnding);
         } catch (Exception e) {
             LOGGER.info("Error while trying to find compression class. Returning null.", e);
             return null;
