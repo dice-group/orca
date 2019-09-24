@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
+import org.apache.http.HttpHeaders;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
@@ -11,15 +12,19 @@ import org.springframework.http.MediaType;
 
 public abstract class AbstractCrawleableResource implements CrawleableResource {
 
-    public static final String DEFAULT_CONTENT_TYPE = "*/*";
-    public static final String ACCEPT_HEADER = "Accept";
-    public static final String CONTENT_TYPE_HEADER = "Content-Type";
+    /**
+     * If the default content type is not set, this content type is used.
+     */
+    public static final String DEFAULT_CONTENT_TYPE = MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
     /**
      * A predicate deciding whether a given request is answered with this resources
      * or not.
      */
     protected final Predicate<Request> predicate;
+    /**
+     * The default content type which is used for all resources that do not define their own content type.
+     */
     protected MediaType defaultContentType;
 
     public AbstractCrawleableResource(Predicate<Request> predicate) {
@@ -28,7 +33,7 @@ public abstract class AbstractCrawleableResource implements CrawleableResource {
 
     public AbstractCrawleableResource(Predicate<Request> predicate, String defaultContentType) {
         this.predicate = predicate;
-        setDefaultContentType(DEFAULT_CONTENT_TYPE);
+        setDefaultContentType(defaultContentType);
     }
 
     public boolean handleRequest(Request request, Response response, OutputStream out) throws SimpleHttpException {
@@ -37,10 +42,10 @@ public abstract class AbstractCrawleableResource implements CrawleableResource {
             return false;
         }
         // Get the response type
-        MediaType responseType = getResponseType(request.getValues(ACCEPT_HEADER).iterator());
+        MediaType responseType = getResponseType(request.getValues(HttpHeaders.ACCEPT).iterator());
         if (responseType == null) {
             throw new SimpleHttpException("Couldn't find a fitting content type in the list of accepted types ("
-                    + request.getValues(ACCEPT_HEADER).toString() + ").", Status.NOT_ACCEPTABLE);
+                    + request.getValues(HttpHeaders.ACCEPT).toString() + ").", Status.NOT_ACCEPTABLE);
         }
         // Set the response type
         response.setContentType(responseType.toString());
