@@ -169,7 +169,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
         }
         Objects.requireNonNull(resource, "Couldn't create crawleable resource. Exiting.");
         resources.add(resource);
-        return new CrawleableResourceContainer(resources.toArray(new CrawleableResource[]{}));
+        return new CrawleableResourceContainer(resources.toArray(new CrawleableResource[resources.size()]));
     }
 
     protected Model readModel(String modelFile, String modelLang) {
