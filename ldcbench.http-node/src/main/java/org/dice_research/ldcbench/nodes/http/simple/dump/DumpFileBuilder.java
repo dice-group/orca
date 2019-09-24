@@ -9,7 +9,6 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.system.StreamOps;
@@ -22,7 +21,6 @@ import org.dice_research.ldcbench.nodes.utils.TripleIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import toools.collections.Collections;
 
 /**
  * A simple class which builds a dump file from the given graph by serializing
@@ -37,12 +35,12 @@ public class DumpFileBuilder {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(DumpFileBuilder.class);
 
-    private static final List<CompressionStreamFactory> COMPRESSIONS = Arrays.asList(
-            ReflectionBasedStreamFactory.create("java.util.zip.GZIPOutputStream", "application/gzip"),
-            ReflectionBasedStreamFactory.create("java.util.zip.ZipOutputStream", "application/zip"),
+    public static final List<CompressionStreamFactory> COMPRESSIONS = Arrays.asList(
+            ReflectionBasedStreamFactory.create("java.util.zip.GZIPOutputStream", "application/gzip", ".gz"),
+            ReflectionBasedStreamFactory.create("java.util.zip.ZipOutputStream", "application/zip", ".zip"),
             ReflectionBasedStreamFactory.create(
                     "org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream",
-                    "application/x-bzip2"));
+                    "application/x-bzip2", ".bz2"));
 
     protected final String defaultCompressionType = "java.util.zip.GZIPOutputStream";
     protected final int domainId;
@@ -52,25 +50,15 @@ public class DumpFileBuilder {
     protected final Lang lang;
     protected final CompressionStreamFactory compression;
     protected File dumpFile;
-    private Random rand;
 
     public DumpFileBuilder(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs,
-            long seed) {
-        this(domainId, resourceUriTemplates, accessUriTemplates, graphs, DEFAULT_LANG, seed);
-    }
-
-    public DumpFileBuilder(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs,
-            Lang lang, long seed) {
-        rand = new Random(seed);
+            Lang lang, CompressionStreamFactory compression) {
         this.domainId = domainId;
         this.resourceUriTemplates = resourceUriTemplates;
         this.accessUriTemplates = accessUriTemplates;
         this.graphs = graphs;
         this.lang = lang;
-        compression = randomCompressionType();
-        if (compression == null) {
-            LOGGER.info("Created dump file builder without compression.");
-        }
+        this.compression = compression;
     }
 
     public File build()
@@ -99,11 +87,6 @@ public class DumpFileBuilder {
             out = compression.createCompressionStream(out);
         }
         return out;
-    }
-
-    private CompressionStreamFactory randomCompressionType() {
-        return Collections.pickRandomObject(COMPRESSIONS, rand);
-
     }
 
     private void streamData(OutputStream out, Lang lang) {

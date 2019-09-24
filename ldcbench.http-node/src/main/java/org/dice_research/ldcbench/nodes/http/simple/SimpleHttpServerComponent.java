@@ -1,8 +1,5 @@
 package org.dice_research.ldcbench.nodes.http.simple;
 
-import java.util.Random;
-import org.dice_research.ldcbench.graph.GraphBuilder;
-import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -11,7 +8,9 @@ import java.net.SocketAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -22,10 +21,13 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.dice_research.ldcbench.ApiConstants;
-import org.dice_research.ldcbench.generate.SeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
+import org.dice_research.ldcbench.graph.GraphBuilder;
+import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.dice_research.ldcbench.nodes.components.NodeComponent;
+import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileBuilder;
 import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileResource;
+import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
 import org.dice_research.ldcbench.nodes.utils.LangUtils;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.rdf.UriHelper;
@@ -40,13 +42,14 @@ import org.simpleframework.transport.connect.SocketConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import toools.collections.Collections;
+
 public class SimpleHttpServerComponent extends NodeComponent implements Component {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServerComponent.class);
 
     private static final int DEFAULT_PORT = 80;
         
-
     protected int port;
     protected String pathTemplate;
     protected Container container;
@@ -56,6 +59,8 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
     protected int crawlDelay;
     protected GraphBasedResource graphBasedResource = null;
     protected DisallowedResource disallowedResource = null;
+    protected Lang dumpFileLang = null;
+    protected CompressionStreamFactory dumpFileCompression = null;
 
     @Override
     public void initBeforeDataGeneration() throws Exception {
@@ -65,12 +70,27 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
         String hostname = InetAddress.getLocalHost().getHostName();
         LOGGER.info("Retrieved my own name as: \"{}\"", hostname);
         String authority = (dockerized ? hostname : "localhost") + (port == 80 ? "" : ":" + port);
-
+        
         // check whether this node contains dump files
         dumpFileNode = EnvVariables.getBoolean("LDCBENCH_USE_DUMP_FILE", false);
         if (dumpFileNode) {
             LOGGER.debug("Init as HTTP dump file node.");
-            pathTemplate = "/dumpFile.ttl.gz#%s-%s/%s-%s";
+            Random random = new Random(seedGenerator.getNextSeed());
+            dumpFileLang = LangUtils.getRandomLang(random.nextLong());
+            
+            List<CompressionStreamFactory> compressions = new ArrayList<>(DumpFileBuilder.COMPRESSIONS);
+            // Add the case that no compression is used
+            compressions.add(null);
+            dumpFileCompression = Collections.pickRandomObject(compressions, random);
+            
+            // Create path including the dump file name
+            StringBuilder builder = new StringBuilder("/dumpFile");
+            builder.append(dumpFileLang.getFileExtensions().get(0));
+            if(dumpFileCompression != null) {
+                builder.append(dumpFileCompression.getFileNameExtension());
+            }
+            builder.append("#%s-%s/%s-%s");
+            pathTemplate = builder.toString();
         } else {
             LOGGER.debug("Init as dereferencing HTTP node.");
             pathTemplate = "/%s-%s/%s-%s";
@@ -120,11 +140,10 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
         String[] resourceUriTemplates = Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new);
         String[] accessUriTemplates = Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new);
         if (dumpFileNode) {
-            Lang lang = LangUtils.getRandomLang(seedGenerator.getNextSeed());
             resource = DumpFileResource.create(cloudNodeId.get(),
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                    graphs.toArray(new Graph[graphs.size()]), (r -> true), lang, seedGenerator.getNextSeed());
+                    graphs.toArray(new Graph[graphs.size()]), (r -> true), dumpFileLang, dumpFileCompression);
         } else {
             SimpleTripleCreator tripleCreator = new SimpleTripleCreator(cloudNodeId.get(), resourceUriTemplates, accessUriTemplates);
             HashSet<String> disallowedPaths = new HashSet<>();
