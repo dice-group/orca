@@ -6,7 +6,7 @@ experiments:New a hobbit:Experiment;
   :seed 100;
   :nodeSizeDeterminer :StaticNodeSize;
   :averageTriplesPerNode 5;
-  :averageNodeDelay 5000;
+  :averageCrawlDelay 5;
   :averageRdfGraphDegree 2;
   :dereferencingHttpNodeWeight 0;
   :httpDumpNodeWeight 1;

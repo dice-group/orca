@@ -8,11 +8,11 @@ experiments:New a hobbit:Experiment;
   #:nodeSizeDeterminer :ExponentialDistNodeSize;
   :nodeSizeDeterminer :StaticNodeSize;
   :averageTriplesPerNode 5;
-  :averageNodeDelay 5000;
+  :averageCrawlDelay 5;
   :averageRdfGraphDegree 2;
   :dereferencingHttpNodeWeight 1;
-  :httpDumpNodeWeight 1;
+  :httpDumpNodeWeight 0;
   :ckanNodeWeight 0.01;
   :sparqlNodeWeight 0.01;
-  :numberOfNodes 4;
+  :numberOfNodes 3;
   :averageNodeGraphDegree 2.

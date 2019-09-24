@@ -1,5 +1,6 @@
 package org.dice_research.ldcbench.system;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -28,12 +29,14 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import javax.json.Json;
 import javax.json.JsonReader;
@@ -105,8 +108,21 @@ public class SystemAdapter extends AbstractSystemAdapter {
                     }
                 } else {
                     logger.info("Crawling {}...", uri);
-                    Model model = ModelFactory.createDefaultModel();
                     URL url = new URL(uri);
+
+                    Integer crawlDelay = null;
+                    try (InputStream stream = new URL(url, "/robots.txt").openStream()) {
+                        String robots = IOUtils.toString(stream, Charset.defaultCharset());
+                        crawlDelay = Stream.of(robots.split("\n"))
+                                .filter(s -> s.startsWith("Crawl-delay: "))
+                                .findFirst()
+                                .map(s -> Integer.parseInt(s.split(": ")[1]))
+                                .orElse(null);
+                    } catch (Exception e) {
+                        logger.error("Exception while trying to access robots.txt.", e);
+                    }
+
+                    Model model = ModelFactory.createDefaultModel();
                     if (url.getPath().endsWith(".ttl.gz")) {
                         model.read(new GZIPInputStream(url.openStream()), null, "TURTLE");
                     } else {
@@ -124,6 +140,14 @@ public class SystemAdapter extends AbstractSystemAdapter {
                         sparqlUrl,
                         httpClient
                     ).execute();
+
+                    if (crawlDelay != null) {
+                        logger.info("Crawl-delay is {}, will crawl again...", crawlDelay);
+                        Thread.sleep(crawlDelay * 1000);
+                        model.read(url.openStream(), null, "TURTLE");
+                    }
+
+                    logger.info("Crawled {}.", uri);
                 }
             } catch (Exception e) {
                 logger.error("Failed to crawl {}.", uri, e);
