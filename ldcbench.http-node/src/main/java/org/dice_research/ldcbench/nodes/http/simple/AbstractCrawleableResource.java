@@ -19,6 +19,7 @@ public abstract class AbstractCrawleableResource implements CrawleableResource {
      * A predicate deciding whether a given request is answered with this resources
      * or not.
      */
+    
     protected final Predicate<Request> predicate;
     protected MediaType defaultContentType;
 
@@ -28,7 +29,7 @@ public abstract class AbstractCrawleableResource implements CrawleableResource {
 
     public AbstractCrawleableResource(Predicate<Request> predicate, String defaultContentType) {
         this.predicate = predicate;
-        setDefaultContentType(DEFAULT_CONTENT_TYPE);
+        setDefaultContentType(defaultContentType);
     }
 
     public boolean handleRequest(Request request, Response response, OutputStream out) throws SimpleHttpException {
