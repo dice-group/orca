@@ -21,6 +21,7 @@ public abstract class AbstractCrawleableResource implements CrawleableResource {
      * A predicate deciding whether a given request is answered with this resources
      * or not.
      */
+    
     protected final Predicate<Request> predicate;
     /**
      * The default content type which is used for all resources that do not define their own content type.
