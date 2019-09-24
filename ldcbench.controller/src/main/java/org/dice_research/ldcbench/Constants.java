@@ -1,7 +1,6 @@
 package org.dice_research.ldcbench;
 
 import org.dice_research.ldcbench.benchmark.BenchmarkController;
-import org.hobbit.core.components.AbstractBenchmarkController;
 
 public class Constants {
 

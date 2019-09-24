@@ -34,7 +34,7 @@ import toools.collections.Collections;
 public class DumpFileBuilder {
 
     public static final Lang DEFAULT_LANG = Lang.TTL;
-
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(DumpFileBuilder.class);
 
     private static final List<CompressionStreamFactory> COMPRESSIONS = Arrays.asList(
@@ -111,11 +111,22 @@ public class DumpFileBuilder {
         StreamRDF writerStream = StreamRDFWriter.getWriterStream(out, lang);
         writerStream.start();
         TripleIterator iterator;
-        int numberOfNodes = graphs[domainId].getNumberOfNodes();
-        for (int i = 0; i < numberOfNodes; ++i) {
-            iterator = new TripleIterator(graphs, domainId, resourceUriTemplates, accessUriTemplates, datasetId, i);
-            StreamOps.sendTriplesToStream(iterator, writerStream);
+        LOGGER.info("Domain ID: " + domainId);
+        LOGGER.info("graph size: " + graphs.length);
+        
+        for(Graph graph: graphs) {
+            for (int i = 0; i < graph.getNumberOfNodes(); ++i) {
+                iterator = new TripleIterator(graphs, domainId, resourceUriTemplates, accessUriTemplates, datasetId, i);
+                StreamOps.sendTriplesToStream(iterator, writerStream);
+            }
+            datasetId++;
         }
+
+//        int numberOfNodes = graphs[domainId].getNumberOfNodes();
+//        for (int i = 0; i < numberOfNodes; ++i) {
+//            iterator = new TripleIterator(graphs, domainId, resourceUriTemplates, accessUriTemplates, datasetId, i);
+//            StreamOps.sendTriplesToStream(iterator, writerStream);
+//        }
         writerStream.finish();
     }
 

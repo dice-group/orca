@@ -28,6 +28,7 @@ import org.dice_research.ldcbench.nodes.ckan.simple.SimpleCkanComponent;
 import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpServerComponent;
 import org.dice_research.ldcbench.nodes.sparql.simple.SimpleSparqlComponent;
 import org.dice_research.ldcbench.system.SystemAdapter;
+import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.core.components.Component;
 import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.sdk.docker.AbstractDockerizer;
@@ -40,6 +41,7 @@ import org.hobbit.sdk.utils.CommandQueueListener;
 import org.hobbit.sdk.utils.ComponentsExecutor;
 import org.hobbit.sdk.utils.ModelsHandler;
 import org.hobbit.sdk.utils.commandreactions.CommandReactionsBuilder;
+import org.hobbit.utils.rdf.RdfHelper;
 import org.junit.Assert;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.slf4j.Logger;
@@ -92,7 +94,7 @@ public class BenchmarkTestBase {
             RABBIT_MQ_HOST_NAME_KEY+"="+(dockerized ? "rabbit" : "localhost"),
         };
         String [] systemParamsStr = new String[]{
-            SYSTEM_PARAMETERS_MODEL_KEY+"="+RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(createSystemParameters(), ModelsHandler.readModelFromFile("src/test/system.ttl"))),
+            SYSTEM_PARAMETERS_MODEL_KEY+"="+RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(createSystemParameters(), ModelsHandler.readModelFromFile("../system.ttl"))),
             RABBIT_MQ_HOST_NAME_KEY+"="+(dockerized ? "rabbit" : "localhost"),
         };
 
@@ -180,6 +182,11 @@ public class BenchmarkTestBase {
             }
             Assert.fail();
         }
+
+        // As long as there are any HTTP nodes, dummy system should crawl something.
+        Assert.assertNotNull(componentsExecutor.resultModel);
+        double recall = Double.parseDouble(RdfHelper.getStringValue(componentsExecutor.resultModel, null, LDCBench.macroRecall));
+        Assert.assertTrue("Macro-recall > 0", recall > 0);
     }
 
     public Model createBenchmarkParameters() throws IOException {

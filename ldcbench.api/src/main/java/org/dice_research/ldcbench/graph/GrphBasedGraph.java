@@ -36,6 +36,35 @@ public class GrphBasedGraph implements GraphBuilder {
     protected Map<Integer, int[]> externalNodes = new HashMap<>();
 
     /**
+     * Constructor for an empty GraphBuilder.
+     *
+     * @return an instance with an empty graph.
+     */
+    public GrphBasedGraph() {
+    }
+
+    /**
+     * Clones speficied graph's data into this GraphBuilder.
+     *
+     * @return an instance with the specified graph cloned.
+     */
+    public GrphBasedGraph(Graph other) {
+        int nodes = other.getNumberOfNodes();
+        addNodes(nodes);
+        for (int i = 0; i < nodes; i++) {
+            int[] targets = other.outgoingEdgeTargets(i);
+            int[] types = other.outgoingEdgeTypes(i);
+            for (int j = 0; j < targets.length; j++) {
+                addEdge(i, targets[j], types[j]);
+            }
+            if (other.getGraphId(i) != Graph.INTERNAL_NODE_GRAPH_ID) {
+                setGraphIdOfNode(i, other.getGraphId(i), other.getExternalNodeId(i));
+            }
+        }
+        setEntranceNodes(other.getEntranceNodes());
+    }
+
+    /**
      * Given an edge ID, returns type of that edge.
      *
      * @param edge

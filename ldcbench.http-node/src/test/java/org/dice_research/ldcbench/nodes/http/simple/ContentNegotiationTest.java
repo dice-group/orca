@@ -40,6 +40,9 @@ public class ContentNegotiationTest extends AbstractNegotiatingResource {
         // No type is requested --> select the first available type
         data.add(new Object[] { new String[] { "text/plain" }, new String[] {},
                 MediaType.parseMediaType("text/plain") });
+        // 3 types are requested with two of them having a wildcard part
+        data.add(new Object[] { new String[] { "application/rdf+xml" }, new String[] { "text/plain", "text/*", "*/*" },
+                MediaType.parseMediaType("application/rdf+xml") });
 
         // Check the process with the RDF languages of Jena (as requested types)
         Set<String> jenaContentTypes = new HashSet<String>();

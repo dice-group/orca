@@ -4,21 +4,22 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.stream.Stream;
 import java.util.concurrent.Semaphore;
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.generate.GraphGenerator;
 import org.dice_research.ldcbench.generate.RandomCloudGraph;
 import org.dice_research.ldcbench.generate.RandomRDF;
+import org.dice_research.ldcbench.generate.SeedGenerator;
+import org.dice_research.ldcbench.generate.SequentialSeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.graph.GraphBuilder;
 import org.dice_research.ldcbench.graph.GraphMetadata;
@@ -36,7 +37,6 @@ import com.rabbitmq.client.Consumer;
 
 public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_TYPE_KEY = "LDCBENCH_DATAGENERATOR_TYPE";
-    public static final String ENV_SEED_KEY = "LDCBENCH_DATAGENERATOR_SEED";
     public static final String ENV_NUMBER_OF_NODES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_NODES";
     public static final String ENV_AVERAGE_DEGREE_KEY = "LDCBENCH_DATAGENERATOR_AVERAGE_DEGREE";
     public static final String ENV_NUMBER_OF_EDGES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_EDGES";
@@ -62,7 +62,7 @@ public class DataGenerator extends AbstractDataGenerator {
 
     private int generatorId = -1;
 
-    private long seed;
+    private SeedGenerator seedGenerator;
     private Types type;
     private int numberOfNodes;
     private double avgDegree;
@@ -125,7 +125,7 @@ public class DataGenerator extends AbstractDataGenerator {
 
     private void addInterlinks(GraphBuilder g) {
         int numberOfInternalNodes = g.getNumberOfNodes();
-        Random random = new Random(seed);
+        Random random = new Random(seedGenerator.getNextSeed());
         for (Map.Entry<Integer, GraphMetadata> entry : rdfMetadata.entrySet()) {
             int targetNodeGraph = entry.getKey();
 //            GraphMetadata gm = entry.getValue();
@@ -175,9 +175,14 @@ public class DataGenerator extends AbstractDataGenerator {
 
         generatorId = getGeneratorId();
         type = Types.valueOf(EnvVariables.getString(ENV_TYPE_KEY));
-        LOGGER = LoggerFactory.getLogger(DataGenerator.class + "#" + (type == Types.NODE_GRAPH_GENERATOR ? "nodeGraph" : "rdfGraph" + generatorId));
+        LOGGER = LoggerFactory.getLogger(DataGenerator.class + "#" + (type == Types.NODE_GRAPH_GENERATOR ? "nodeGraph" : "rdfGraph" + (generatorId - 1)));
 
-        seed = EnvVariables.getLong(ENV_SEED_KEY);
+        long seed = EnvVariables.getLong(ApiConstants.ENV_SEED_KEY);
+        int numberOfComponents = EnvVariables.getInt(ApiConstants.ENV_COMPONENT_COUNT_KEY);
+        int componentId = EnvVariables.getInt(ApiConstants.ENV_COMPONENT_ID_KEY);
+        seedGenerator = new SequentialSeedGenerator(seed, componentId, numberOfComponents);
+        seed = seedGenerator.getNextSeed();
+                
         numberOfNodes = EnvVariables.getInt(ENV_NUMBER_OF_NODES_KEY, 0);
         avgDegree = Double.parseDouble(EnvVariables.getString(ENV_AVERAGE_DEGREE_KEY));
         numberOfEdges = EnvVariables.getInt(ENV_NUMBER_OF_EDGES_KEY, 0);

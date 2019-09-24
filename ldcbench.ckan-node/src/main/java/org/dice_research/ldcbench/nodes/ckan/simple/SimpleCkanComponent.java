@@ -13,7 +13,7 @@ import org.apache.commons.io.IOUtils;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.ckan.Constants;
 import org.dice_research.ldcbench.nodes.ckan.dao.CkanDAO;
-import org.dice_research.ldcbench.nodes.components.AbstractNodeComponent;
+import org.dice_research.ldcbench.nodes.components.NodeComponent;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.hobbit.core.components.Component;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ import eu.trentorise.opendata.jackan.model.CkanResource;
  *
  */
 
-public class SimpleCkanComponent extends AbstractNodeComponent implements Component {
+public class SimpleCkanComponent extends NodeComponent implements Component {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleCkanComponent.class);
 
@@ -108,16 +108,17 @@ public class SimpleCkanComponent extends AbstractNodeComponent implements Compon
     }
 
     private void addDataSource(String uri) {
-        LOGGER.info("Adding {} to CKAN...", uri);
+        LOGGER.info("Adding {} to CKAN...", uri.replaceAll("[^A-Za-z0-9]", "").toLowerCase());
         CkanDatasetBase dataset = new CkanDatasetBase();
         dataset.setTitle("Dataset " + uri);
-        dataset.setName(uri.replaceAll("[^A-Za-z0-9_-]", "_"));
+        dataset.setName(uri.replaceAll("[^A-Za-z0-9]", "").toLowerCase());
         dataset.setOwnerOrg(Constants.ORGANIZATION);
         dataset.setAuthor(Constants.AUTHOR);
 
         List<CkanResource> listResources = new ArrayList<CkanResource>();
         CkanResource ckanRes = new CkanResource();
-        ckanRes.setName("dist-" + uri);
+        ckanRes.setName("dist" + uri.replaceAll("[^A-Za-z0-9]", "").toLowerCase());
+        LOGGER.info("DS Name: " + "dist" + uri.replaceAll("[^A-Za-z0-9]", "").toLowerCase());
         ckanRes.setUrl(uri);
         listResources.add(ckanRes);
 

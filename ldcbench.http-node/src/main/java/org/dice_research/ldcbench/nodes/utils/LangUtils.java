@@ -43,8 +43,19 @@ public class LangUtils {
      * @return a random Lang Type
      */
     public static Lang getRandomLang(long seed) {
+        return getRandomLang(new Random(seed));
+    }
+    
+    /**
+     * 
+     * Method that randomize a position in a list returned by 
+     * the getAllowedLangs() method and return a random
+     * Lang Type
+     * 
+     * @return a random Lang Type
+     */
+    public static Lang getRandomLang(Random rand) {
         List<Lang> langlist = getAllowedLangs();
-        Random rand = new Random(seed);
         int langPos = rand.nextInt(langlist.size());
         return langlist.get(langPos);
     }
