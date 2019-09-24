@@ -30,11 +30,12 @@ public interface CompressionStreamFactory {
      * @return the media type of the used compression.
      */
     public String getMediaType();
-    
+
     /**
-     * Returns the typical file ending for the used compression.
+     * Returns the typical file name extension for the used compression (including
+     * the '.' character if there is any).
      * 
-     * @return the typical file ending for the used compression.
+     * @return the typical file name extension for the used compression.
      */
-    public String getFileEnding();
+    public String getFileNameExtension();
 }
