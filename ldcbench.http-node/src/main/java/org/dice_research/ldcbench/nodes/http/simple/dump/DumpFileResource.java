@@ -40,7 +40,6 @@ public class DumpFileResource extends AbstractCrawleableResource {
             LOGGER.error("Couldn't create dump file.", e);
         } catch (ReflectiveOperationException e) {
             LOGGER.error("Couldn't create dump file.", e);
-
         }
         return null;
     }

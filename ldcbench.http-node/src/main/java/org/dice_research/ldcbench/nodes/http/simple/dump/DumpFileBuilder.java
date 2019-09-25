@@ -42,7 +42,6 @@ public class DumpFileBuilder {
                     "org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream",
                     "application/x-bzip2", ".bz2"));
 
-    protected final String defaultCompressionType = "java.util.zip.GZIPOutputStream";
     protected final int domainId;
     protected final String[] resourceUriTemplates;
     protected final String[] accessUriTemplates;
