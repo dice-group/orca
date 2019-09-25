@@ -37,7 +37,6 @@ public class ReflectionBasedStreamFactoryTest {
         List<Object[]> data = new ArrayList<>();
 
         data.add(new Object[] { "java.util.zip.GZIPOutputStream", "java.util.zip.GZIPInputStream" });
-        data.add(new Object[] { "java.util.zip.ZipOutputStream", "java.util.zip.ZipInputStream" });
         data.add(new Object[] { "org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream",
                 "org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream" });
 
@@ -68,7 +67,7 @@ public class ReflectionBasedStreamFactoryTest {
         Assert.assertArrayEquals(data, redData);
     }
 
-    private byte[] generateData() {
+    protected static byte[] generateData() {
         long seed = System.currentTimeMillis();
         System.out.println("Using " + seed + " as seed to generate data.");
         Random random = new Random(seed);

@@ -28,6 +28,7 @@ import org.dice_research.ldcbench.nodes.components.NodeComponent;
 import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileBuilder;
 import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileResource;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
+import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ZipStreamFactory;
 import org.dice_research.ldcbench.nodes.utils.LangUtils;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.rdf.UriHelper;
@@ -49,7 +50,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServerComponent.class);
 
     private static final int DEFAULT_PORT = 80;
-        
+
     protected int port;
     protected String pathTemplate;
     protected Container container;
@@ -70,23 +71,28 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
         String hostname = InetAddress.getLocalHost().getHostName();
         LOGGER.info("Retrieved my own name as: \"{}\"", hostname);
         String authority = (dockerized ? hostname : "localhost") + (port == 80 ? "" : ":" + port);
-        
+
         // check whether this node contains dump files
         dumpFileNode = EnvVariables.getBoolean("LDCBENCH_USE_DUMP_FILE", false);
         if (dumpFileNode) {
             LOGGER.debug("Init as HTTP dump file node.");
             Random random = new Random(seedGenerator.getNextSeed());
             dumpFileLang = LangUtils.getRandomLang(random.nextLong());
-            
+
             List<CompressionStreamFactory> compressions = new ArrayList<>(DumpFileBuilder.COMPRESSIONS);
             // Add the case that no compression is used
             compressions.add(null);
             dumpFileCompression = Collections.pickRandomObject(compressions, random);
-            
+
             // Create path including the dump file name
             StringBuilder builder = new StringBuilder("/dumpFile");
             builder.append(dumpFileLang.getFileExtensions().get(0));
-            if(dumpFileCompression != null) {
+            if (dumpFileCompression != null) {
+                // FIXME This is a bad workaround to make the ZIP compression aware of the file
+                // name of the compressed data
+                if (dumpFileCompression instanceof ZipStreamFactory) {
+                    ((ZipStreamFactory) dumpFileCompression).setCompressedFileName(builder.toString());
+                }
                 builder.append(dumpFileCompression.getFileNameExtension());
             }
             builder.append("#%s-%s/%s-%s");
@@ -120,16 +126,18 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             }
             Long minDelay = graphBasedResource.getMinDelay();
             if (minDelay != null) {
-                model.addLiteral(root, LDCBench.minCrawlDelay, ((double)minDelay) / 1000);
+                model.addLiteral(root, LDCBench.minCrawlDelay, ((double) minDelay) / 1000);
             }
             Long maxDelay = graphBasedResource.getMaxDelay();
             if (maxDelay != null) {
-                model.addLiteral(root, LDCBench.maxCrawlDelay, ((double)maxDelay) / 1000);
+                model.addLiteral(root, LDCBench.maxCrawlDelay, ((double) maxDelay) / 1000);
             }
         }
         if (disallowedResource != null) {
             model.addLiteral(root, LDCBench.numberOfDisallowedResources, disallowedResource.getTotalAmount());
-            model.addLiteral(root, LDCBench.ratioOfRequestedDisallowedResources, ((double)disallowedResource.getRequestedAmount())/((double)disallowedResource.getTotalAmount()));
+            model.addLiteral(root, LDCBench.ratioOfRequestedDisallowedResources,
+                    ((double) disallowedResource.getRequestedAmount())
+                            / ((double) disallowedResource.getTotalAmount()));
         }
     }
 
@@ -137,15 +145,18 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
         Graph[] graphsArray = graphs.toArray(new Graph[graphs.size()]);
         ArrayList<CrawleableResource> resources = new ArrayList<>();
         CrawleableResource resource = null;
-        String[] resourceUriTemplates = Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new);
-        String[] accessUriTemplates = Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new);
+        String[] resourceUriTemplates = Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate())
+                .toArray(String[]::new);
+        String[] accessUriTemplates = Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate())
+                .toArray(String[]::new);
         if (dumpFileNode) {
             resource = DumpFileResource.create(cloudNodeId.get(),
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
                     graphs.toArray(new Graph[graphs.size()]), (r -> true), dumpFileLang, dumpFileCompression);
         } else {
-            SimpleTripleCreator tripleCreator = new SimpleTripleCreator(cloudNodeId.get(), resourceUriTemplates, accessUriTemplates);
+            SimpleTripleCreator tripleCreator = new SimpleTripleCreator(cloudNodeId.get(), resourceUriTemplates,
+                    accessUriTemplates);
             HashSet<String> disallowedPaths = new HashSet<>();
             Random random = new Random(seedGenerator.getNextSeed());
             for (int g = 0; g < graphs.size(); g++) {
@@ -181,9 +192,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
                 }
             }
             // Create the container based on the information that has been received
-            graphBasedResource = new GraphBasedResource(cloudNodeId.get(),
-                    resourceUriTemplates,
-                    accessUriTemplates,
+            graphBasedResource = new GraphBasedResource(cloudNodeId.get(), resourceUriTemplates, accessUriTemplates,
                     graphsArray,
                     (r -> r.getTarget().contains(UriHelper.DATASET_KEY_WORD)
                             && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
