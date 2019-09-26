@@ -4,6 +4,9 @@ import static org.hobbit.core.Constants.CONTAINER_TYPE_BENCHMARK;
 
 import java.io.InputStream;
 import java.io.IOException;
+import java.net.SocketException;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -37,6 +40,10 @@ public class SimpleCkanComponent extends NodeComponent implements Component {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleCkanComponent.class);
 
+    private static final String POSTGRES_USER = "ckan";
+    private static final String POSTGRES_PASSWORD = "ckan";
+    private static final String POSTGRES_DB = "ckan";
+
     protected String postGresContainer = null;
     protected String solrContainer = null;
     protected String redisContainer = null;
@@ -61,15 +68,38 @@ public class SimpleCkanComponent extends NodeComponent implements Component {
 
     }
 
+    private void waitForSqlConnection(String url) throws InterruptedException {
+        LOGGER.info("Waiting for {} to be ready...", url);
+        Properties props = new Properties();
+        props.put("user", POSTGRES_USER);
+        props.put("password", POSTGRES_PASSWORD);
+        while (true) {
+            try {
+                DriverManager.getConnection(url, props);
+                break;
+            } catch (SQLException e) {
+                if (e.getCause() instanceof SocketException) {
+                    LOGGER.info("Cannot connect to the database {}, will try again...", url);
+                } else {
+                    LOGGER.info("Cannot connect to the database {}, will try again...", url, e);
+                }
+                Thread.sleep(5000);
+            }
+        }
+        LOGGER.info("Database {} is ready.", url);
+    }
+
     @Override
     public void initBeforeDataGeneration() throws Exception {
-        postGresContainer = createContainer(Constants.POSTGRES, CONTAINER_TYPE_BENCHMARK, new String[] { "POSTGRES_PASSWORD=ckan",
-                "POSTGRES_USER=ckan", "PGDATA=/var/postgresql/data", "POSTGRES_DB=ckan"
-                });
-
-        // FIXME
-        LOGGER.info("Waiting to allow Postgres to initialize...");
-        Thread.sleep(60000);
+        postGresContainer = createContainer(Constants.POSTGRES, CONTAINER_TYPE_BENCHMARK, new String[] {
+                "POSTGRES_USER=ckan" + POSTGRES_USER,
+                "POSTGRES_PASSWORD=" + POSTGRES_PASSWORD,
+                "POSTGRES_DB=" + POSTGRES_DB,
+                "PGDATA=/var/postgresql/data",
+                "HOBBIT_SDK_PUBLISH_PORTS=5432",
+        });
+        waitForSqlConnection("jdbc:postgresql://" + (dockerized ? postGresContainer : "localhost") + ":5432/" + POSTGRES_DB);
+        String sqlUrl = "postgresql://" + POSTGRES_USER + ":" + POSTGRES_PASSWORD + "@" + postGresContainer + ":5432/" + POSTGRES_DB;
 
         solrContainer = createContainer(Constants.SOLR, CONTAINER_TYPE_BENCHMARK, null);
         redisContainer = createContainer(Constants.REDIS, CONTAINER_TYPE_BENCHMARK, null);
@@ -88,7 +118,7 @@ public class SimpleCkanComponent extends NodeComponent implements Component {
         LOGGER.debug("Starting CKAN service: {}...", Constants.CKAN);
         ckanContainer = createContainer(Constants.CKAN, CONTAINER_TYPE_BENCHMARK,
                 new String[] { "CKAN_SOLR_URL=http://" + solrContainer + ":8983/solr/ckan",
-                        "CKAN_SQLALCHEMY_URL=postgresql://ckan:ckan@" + postGresContainer + ":5432/ckan",
+                        "CKAN_SQLALCHEMY_URL=" + sqlUrl,
                         "CKAN_REDIS_URL=redis://" + redisContainer + ":6379/0", "CKAN_SITE_URL=http://localhost",
                         "CKAN_SITE_TITLE=CKAN NODE", "CKAN_SITE_DESCRIPTION=LDCBench Benchmark node",
                         "CKAN_RECAPTCHA_PUBLICKEY=" + recaptchaPublicKey,
@@ -96,10 +126,6 @@ public class SimpleCkanComponent extends NodeComponent implements Component {
                         "REDIS_HOSTNAME=" + redisContainer,
                         "HOBBIT_SDK_PUBLISH_PORTS=5000",
         });
-
-        // FIXME
-        LOGGER.info("Waiting to allow CKAN to initialize...");
-        Thread.sleep(60000);
 
         accessUriTemplate = "http://" + (dockerized ? ckanContainer : "localhost") + ":5000/";
         resourceUriTemplate = accessUriTemplate;
