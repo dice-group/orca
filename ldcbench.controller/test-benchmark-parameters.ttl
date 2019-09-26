@@ -3,7 +3,9 @@
 @prefix : <https://github.com/dice-group/ldcbench#> .
 
 experiments:New a hobbit:Experiment;
-  :seed 100;
+  # FIXME to test for recall > 0, the seed is manually selected for DummySystem
+  # to be able to crawl the type of dump node created
+  :seed 1;
   :nodeSizeDeterminer :StaticNodeSize;
   :averageTriplesPerNode 5;
   :averageCrawlDelay 5;
