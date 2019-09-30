@@ -9,9 +9,11 @@ import java.util.Set;
  */
 public class RobotsResource extends StringResource {
     private static String getContent(Set<String> paths, int crawlDelay) {
-        return "User-agent: *\n"
-        + "Crawl-delay: " + crawlDelay + "\n"
-        + paths.stream().map(p -> "Disallow: " + p).collect(Collectors.joining("\n"));
+        StringBuilder s = new StringBuilder();
+        s.append("Crawl-delay: " + crawlDelay + "\n");
+        s.append(paths.stream().map(p -> "Disallow: " + p).collect(Collectors.joining("\n")));
+
+        return "User-agent: *\n" + s.toString();
     }
 
     public RobotsResource(Set<String> paths, int crawlDelay) {
