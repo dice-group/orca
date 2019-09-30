@@ -33,6 +33,7 @@ public class LDCBench {
 
     // Properties sorted alphabetically
     public static final Property averageCrawlDelay = property("averageCrawlDelay");
+    public static final Property averageDisallowedRatio = property("averageDisallowedRatio");
     public static final Property averageNodeGraphDegree = property("averageNodeGraphDegree");
     public static final Property averageRdfGraphDegree = property("averageRdfGraphDegree");
     public static final Property averageTriplesPerNode = property("averageTriplesPerNode");

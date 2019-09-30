@@ -191,6 +191,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         long seed = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.seed).getLong();
         nodesAmount = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfNodes).getInt();
         long averageCrawlDelay = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageCrawlDelay).getLong();
+        double averageDisallowedRatio = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageDisallowedRatio).getDouble();
         int averageNodeGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageNodeGraphDegree)
                 .getInt();
         int averageRdfGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageRdfGraphDegree)
@@ -312,6 +313,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                             ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                             ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                             ApiConstants.ENV_CRAWL_DELAY_KEY + "=" + averageCrawlDelay,
+                            ApiConstants.ENV_DISALLOWED_RATIO_KEY + "=" + averageDisallowedRatio,
                             ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345),
                             ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
                             ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId,

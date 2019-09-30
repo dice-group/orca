@@ -9,6 +9,7 @@ experiments:New a hobbit:Experiment;
   :nodeSizeDeterminer :StaticNodeSize;
   :averageTriplesPerNode 5;
   :averageCrawlDelay 5;
+  :averageDisallowedRatio 0.5;
   :averageRdfGraphDegree 2;
   :dereferencingHttpNodeWeight 0;
   :httpDumpNodeWeight 1;

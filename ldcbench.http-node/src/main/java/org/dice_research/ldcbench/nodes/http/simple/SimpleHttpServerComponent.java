@@ -58,6 +58,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
     protected Connection connection;
     protected boolean dumpFileNode;
     protected int crawlDelay;
+    protected double disallowedRatio;
     protected GraphBasedResource graphBasedResource = null;
     protected DisallowedResource disallowedResource = null;
     protected Lang dumpFileLang = null;
@@ -66,6 +67,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
     @Override
     public void initBeforeDataGeneration() throws Exception {
         port = EnvVariables.getInt(ApiConstants.ENV_HTTP_PORT_KEY, DEFAULT_PORT, LOGGER);
+        disallowedRatio = Double.parseDouble(EnvVariables.getString(ApiConstants.ENV_DISALLOWED_RATIO_KEY, LOGGER));
         crawlDelay = EnvVariables.getInt(ApiConstants.ENV_CRAWL_DELAY_KEY, LOGGER);
 
         String hostname = InetAddress.getLocalHost().getHostName();
@@ -162,7 +164,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             for (int g = 0; g < graphs.size(); g++) {
                 GraphBuilder gb = new GrphBasedGraph(graphs.get(g));
                 int nodes = gb.getNumberOfNodes();
-                int disallowedAmount = nodes / 10 + 1;
+                int disallowedAmount = Math.max((int)(nodes * disallowedRatio / (1 - disallowedRatio)), disallowedRatio == 0 ? 0 : 1);
                 LOGGER.debug("Adding {} disallowed resources...", disallowedAmount);
                 for (int i = 0; i < disallowedAmount; i++) {
                     int linkingNode = random.nextInt(nodes);
