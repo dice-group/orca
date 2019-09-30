@@ -1,7 +1,10 @@
 package org.dice_research.ldcbench.nodes.http.simple;
 
+import java.io.OutputStream;
 import java.util.stream.Collectors;
 import java.util.Set;
+import org.simpleframework.http.Response;
+import org.springframework.http.MediaType;
 
 /**
  * A resource which provides robots.txt file
@@ -15,10 +18,16 @@ public class RobotsResource extends StringResource {
         }
         s.append(paths.stream().map(p -> "Disallow: " + p).collect(Collectors.joining("\n")));
 
-        return "User-agent: *\n" + s.toString();
+        return s.length() != 0 ? "User-agent: *\n" + s.toString() : null;
     }
 
     public RobotsResource(Set<String> paths, int crawlDelay) {
         super(r -> r.getPath().toString().equals("/robots.txt"), getContent(paths, crawlDelay));
+    }
+
+    @Override
+    protected boolean handleRequest(String target, MediaType responseType, Response response, OutputStream out)
+            throws SimpleHttpException {
+        return content != null ? super.handleRequest(target, responseType, response, out) : false;
     }
 }
