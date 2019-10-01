@@ -625,8 +625,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
             if (numberOfDisallowedString != null) {
                 numberOfDisallowed = Long.parseLong(numberOfDisallowedString);
                 disallowedTotal += numberOfDisallowed;
-                ratioReqDisallowed = Double.parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.ratioOfRequestedDisallowedResources));
-                disallowedRequested += numberOfDisallowed * ratioReqDisallowed;
+                String ratioReqDisallowedString = RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.ratioOfRequestedDisallowedResources);
+                if (ratioReqDisallowedString != null) {
+                    ratioReqDisallowed = Double.parseDouble(ratioReqDisallowedString);
+                    disallowedRequested += numberOfDisallowed * ratioReqDisallowed;
+                }
             }
 
             String tooltip = String.format("%d: %s\n"
@@ -659,7 +662,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
             resultModel.addLiteral(experimentResource, LDCBench.maxAverageCrawlDelayFulfillment, (double)maxDelayFulfillment);
         }
         resultModel.addLiteral(experimentResource, LDCBench.numberOfDisallowedResources, disallowedTotal);
-        resultModel.addLiteral(experimentResource, LDCBench.ratioOfRequestedDisallowedResources, ((double)disallowedRequested) / disallowedTotal);
+        if (disallowedTotal != 0) {
+            resultModel.addLiteral(experimentResource, LDCBench.ratioOfRequestedDisallowedResources, ((double)disallowedRequested) / disallowedTotal);
+        }
         resultModel.add(resultModel.createLiteralStatement(experimentResource, LDCBench.graphVisualization, dotlang));
 
         Path dotfile = Files.createTempFile("cloud", ".dot");

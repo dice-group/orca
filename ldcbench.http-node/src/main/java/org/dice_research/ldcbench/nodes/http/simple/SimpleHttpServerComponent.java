@@ -122,9 +122,11 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
     @Override
     public void addResults(Model model, Resource root) {
         if (graphBasedResource != null) {
-            Double averageDelay = graphBasedResource.getAverageDelay();
-            if (averageDelay != null) {
-                model.addLiteral(root, LDCBench.microAverageCrawlDelayFulfillment, averageDelay / (crawlDelay * 1000));
+            if (crawlDelay != 0) {
+                Double averageDelay = graphBasedResource.getAverageDelay();
+                if (averageDelay != null) {
+                    model.addLiteral(root, LDCBench.microAverageCrawlDelayFulfillment, averageDelay / (crawlDelay * 1000));
+                }
             }
             Long minDelay = graphBasedResource.getMinDelay();
             if (minDelay != null) {
@@ -136,10 +138,13 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             }
         }
         if (disallowedResource != null) {
-            model.addLiteral(root, LDCBench.numberOfDisallowedResources, disallowedResource.getTotalAmount());
-            model.addLiteral(root, LDCBench.ratioOfRequestedDisallowedResources,
-                    ((double) disallowedResource.getRequestedAmount())
-                            / ((double) disallowedResource.getTotalAmount()));
+            int total = disallowedResource.getTotalAmount();
+            model.addLiteral(root, LDCBench.numberOfDisallowedResources, total);
+            if (total != 0) {
+                model.addLiteral(root, LDCBench.ratioOfRequestedDisallowedResources,
+                        ((double) disallowedResource.getRequestedAmount())
+                                / ((double) total));
+            }
         }
     }
 
