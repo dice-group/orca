@@ -355,7 +355,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // Node graph generator
         LOGGER.info("Creating node graph generator...");
         envVariables = new String[] { DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
-                ApiConstants.ENV_SEED_KEY + "=" + seed, 
+                ApiConstants.ENV_SEED_KEY + "=" + seed,
                 DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
                 DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageNodeGraphDegree,
                 DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
@@ -387,9 +387,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
                                                                                                                  // SDK
                                                                                                                  // workaround
                         Constants.GENERATOR_COUNT_KEY + "=" + nodesAmount,
-                        DataGenerator.ENV_TYPE_KEY + "=" + 
+                        DataGenerator.ENV_TYPE_KEY + "=" +
                         DataGenerator.Types.RDF_GRAPH_GENERATOR,
-                        ApiConstants.ENV_SEED_KEY + "=" + seed, 
+                        ApiConstants.ENV_SEED_KEY + "=" + seed,
                         DataGenerator.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
                         DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
@@ -454,7 +454,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                         if (e.getCause() instanceof SocketException) {
                             LOGGER.info("Cannot connect to the evaluation storage {} to clean it up, will try again...", sparqlUrl);
                         } else {
-                            LOGGER.info("Cannot clean up the evaluation storage, will try again...", e);
+                            LOGGER.info("Cannot clean up the evaluation storage {}, will try again...", sparqlUrl, e);
                         }
                         try {
                             Thread.sleep(5000);

@@ -182,7 +182,7 @@ public class DataGenerator extends AbstractDataGenerator {
         int componentId = EnvVariables.getInt(ApiConstants.ENV_COMPONENT_ID_KEY);
         seedGenerator = new SequentialSeedGenerator(seed, componentId, numberOfComponents);
         seed = seedGenerator.getNextSeed();
-                
+
         numberOfNodes = EnvVariables.getInt(ENV_NUMBER_OF_NODES_KEY, 0);
         avgDegree = Double.parseDouble(EnvVariables.getString(ENV_AVERAGE_DEGREE_KEY));
         numberOfEdges = EnvVariables.getInt(ENV_NUMBER_OF_EDGES_KEY, 0);
@@ -299,7 +299,6 @@ public class DataGenerator extends AbstractDataGenerator {
     public void receiveCommand(byte command, byte[] data) {
         switch (command) {
         case ApiConstants.DATAGENERATOR_READY_SIGNAL:
-            LOGGER.debug("Received DATAGENERATOR_READY_SIGNAL");
             dataGeneratorsReady.release();
         }
 
