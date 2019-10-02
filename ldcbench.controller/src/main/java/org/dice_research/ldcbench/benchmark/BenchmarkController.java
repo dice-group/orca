@@ -299,7 +299,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         }
 
         nodeMetadata = new NodeMetadata[nodesAmount];
-        int batchSize = 10;
+        int batchSize = dockerized ? 20 : 1;
         for (int batch = 0; batch < (float) nodesAmount / batchSize; batch++) {
             for (int i = batch * batchSize; i < (batch + 1) * batchSize && i < nodesAmount; i++) {
                 LOGGER.info("Creating node {}...", i);
