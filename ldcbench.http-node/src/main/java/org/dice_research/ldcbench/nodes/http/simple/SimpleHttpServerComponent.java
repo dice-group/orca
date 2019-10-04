@@ -88,6 +88,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
 
             // Create path including the dump file name
             StringBuilder builder = new StringBuilder("/dumpFile");
+            builder.append(".");
             builder.append(dumpFileLang.getFileExtensions().get(0));
             if (dumpFileCompression != null) {
                 // FIXME This is a bad workaround to make the ZIP compression aware of the file
