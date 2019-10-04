@@ -58,6 +58,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
     protected Connection connection;
     protected boolean dumpFileNode;
     protected int crawlDelay;
+    protected double compressedRatio;
     protected double disallowedRatio;
     protected GraphBasedResource graphBasedResource = null;
     protected DisallowedResource disallowedResource = null;
@@ -67,6 +68,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
     @Override
     public void initBeforeDataGeneration() throws Exception {
         port = EnvVariables.getInt(ApiConstants.ENV_HTTP_PORT_KEY, DEFAULT_PORT, LOGGER);
+        compressedRatio = Double.parseDouble(EnvVariables.getString(ApiConstants.ENV_COMPRESSED_RATIO_KEY, LOGGER));
         disallowedRatio = Double.parseDouble(EnvVariables.getString(ApiConstants.ENV_DISALLOWED_RATIO_KEY, LOGGER));
         crawlDelay = EnvVariables.getInt(ApiConstants.ENV_CRAWL_DELAY_KEY, LOGGER);
 
@@ -81,9 +83,13 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             Random random = new Random(seedGenerator.getNextSeed());
             dumpFileLang = LangUtils.getRandomLang(random.nextLong());
 
-            List<CompressionStreamFactory> compressions = new ArrayList<>(DumpFileBuilder.COMPRESSIONS);
-            // Add the case that no compression is used
-            compressions.add(null);
+            List<CompressionStreamFactory> compressions = new ArrayList<>();
+            if (random.nextDouble() < compressedRatio) {
+                compressions.addAll(DumpFileBuilder.COMPRESSIONS);
+            } else {
+                // Add the case that no compression is used
+                compressions.add(null);
+            }
             dumpFileCompression = Collections.pickRandomObject(compressions, random);
 
             // Create path including the dump file name

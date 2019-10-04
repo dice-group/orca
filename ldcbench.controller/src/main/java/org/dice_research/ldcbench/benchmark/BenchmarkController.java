@@ -196,6 +196,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 .getInt();
         int averageRdfGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageRdfGraphDegree)
                 .getInt();
+        double httpDumpNodeCompressedRatio = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.httpDumpNodeCompressedRatio).getDouble();
 
         /*
          * Determine the number of components which will make use of a random number
@@ -317,6 +318,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                             ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345),
                             ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
                             ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId,
+                            ApiConstants.ENV_COMPRESSED_RATIO_KEY + "=" + httpDumpNodeCompressedRatio,
                         },
                         nodeManagers.get(i).getNodeEnvironment());
 

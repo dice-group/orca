@@ -11,6 +11,7 @@ experiments:New a hobbit:Experiment;
   :averageCrawlDelay 5;
   :averageDisallowedRatio 0.5;
   :averageRdfGraphDegree 2;
+  :httpDumpNodeCompressedRatio 0.5;
   :dereferencingHttpNodeWeight 1;
   :httpDumpNodeWeight 0;
   :ckanNodeWeight 0.01;

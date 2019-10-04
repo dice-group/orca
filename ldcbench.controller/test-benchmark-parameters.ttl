@@ -5,12 +5,13 @@
 experiments:New a hobbit:Experiment;
   # FIXME to test for recall > 0, the seed is manually selected for DummySystem
   # to be able to crawl the type of dump node created
-  :seed 1;
+  :seed 2;
   :nodeSizeDeterminer :StaticNodeSize;
   :averageTriplesPerNode 5;
   :averageCrawlDelay 5;
   :averageDisallowedRatio 0.5;
   :averageRdfGraphDegree 2;
+  :httpDumpNodeCompressedRatio 0.5;
   :dereferencingHttpNodeWeight 0;
   :httpDumpNodeWeight 1;
   :ckanNodeWeight 0.01;

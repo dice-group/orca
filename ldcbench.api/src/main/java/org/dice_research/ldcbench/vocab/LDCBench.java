@@ -40,6 +40,7 @@ public class LDCBench {
     public static final Property ckanNodeWeight = property("ckanNodeWeight");
     public static final Property dereferencingHttpNodeWeight = property("dereferencingHttpNodeWeight");
     public static final Property graphVisualization = property("graphVisualization");
+    public static final Property httpDumpNodeCompressedRatio = property("httpDumpNodeCompressedRatio");
     public static final Property httpDumpNodeWeight = property("httpDumpNodeWeight");
     public static final Property numberOfNodes = property("numberOfNodes");
     public static final Property macroRecall = property("macroRecall");

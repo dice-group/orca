@@ -21,6 +21,7 @@
     :ckanNodeWeight,
     :sparqlNodeWeight,
     :httpDumpNodeWeight,
+    :httpDumpNodeCompressedRatio,
     :graphVisualization,
     :triplesEvaluated,
     :numberOfDisallowedResources,
@@ -116,6 +117,13 @@
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:float;
   hobbit:defaultValue "1"^^xsd:float .
+
+:httpDumpNodeCompressedRatio a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Ratio of HTTP dump nodes with compressed data"@en;
+  rdfs:comment "0 would mean uncompressed nodes only. 1 would mean compressed nodes only."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:float;
+  hobbit:defaultValue "0.5"^^xsd:double .
 
 :graphVisualization a hobbit:Parameter ;
   rdfs:label "Cloud graph visualization"@en;
