@@ -98,7 +98,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
                 }
                 builder.append(dumpFileCompression.getFileNameExtension());
             }
-            builder.append("#%s-%s/%s-%s");
+            builder.append("#%s-%s-%s-%s");
             pathTemplate = builder.toString();
         } else {
             LOGGER.debug("Init as dereferencing HTTP node.");
