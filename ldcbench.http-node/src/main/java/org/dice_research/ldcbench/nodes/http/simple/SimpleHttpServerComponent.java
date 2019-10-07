@@ -73,7 +73,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
         crawlDelay = EnvVariables.getInt(ApiConstants.ENV_CRAWL_DELAY_KEY, LOGGER);
 
         String hostname = InetAddress.getLocalHost().getHostName();
-        LOGGER.info("Retrieved my own name as: \"{}\"", hostname);
+        LOGGER.info("Hostname: {}", hostname);
         String authority = (dockerized ? hostname : "localhost") + (port == 80 ? "" : ":" + port);
 
         // check whether this node contains dump files
@@ -104,6 +104,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
                 }
                 builder.append(dumpFileCompression.getFileNameExtension());
             }
+            LOGGER.debug("Path: {}", builder.toString());
             builder.append("#%s-%s-%s-%s");
             pathTemplate = builder.toString();
         } else {
