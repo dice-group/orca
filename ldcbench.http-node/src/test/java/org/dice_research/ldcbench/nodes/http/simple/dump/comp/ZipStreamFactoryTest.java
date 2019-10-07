@@ -45,7 +45,7 @@ public class ZipStreamFactoryTest {
         Assert.assertArrayEquals(data, redData);
     }
 
-    private InputStream generateInputStream(InputStream is) throws IOException {
+    public static InputStream generateInputStream(InputStream is) throws IOException {
         ZipInputStream zipIn = new ZipInputStream(is);
         zipIn.getNextEntry();
         return zipIn;

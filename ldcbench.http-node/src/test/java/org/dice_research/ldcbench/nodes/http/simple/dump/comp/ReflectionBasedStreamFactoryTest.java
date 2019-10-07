@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.io.IOUtils;
+import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
+import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ReflectionBasedStreamFactory;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,7 +60,7 @@ public class ReflectionBasedStreamFactoryTest {
 
         int length = 0;
         byte redData[] = new byte[2 * DATA_SIZE];
-        try (InputStream is = generateInputStream(bArrayIStream)) {
+        try (InputStream is = generateInputStream(bArrayIStream, decompressionClassName)) {
             length = IOUtils.read(is, redData);
         } catch (Exception e) {
             throw new AssertionError("Unexpected Exception.", e);
@@ -77,7 +79,7 @@ public class ReflectionBasedStreamFactoryTest {
     }
 
     @SuppressWarnings("unchecked")
-    private InputStream generateInputStream(InputStream is)
+    public static InputStream generateInputStream(InputStream is, String decompressionClassName)
             throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException,
             IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         Class<? extends InputStream> clazz = (Class<? extends InputStream>) Class.forName(decompressionClassName);

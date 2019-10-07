@@ -10,7 +10,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.system.StreamOps;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
@@ -92,7 +95,17 @@ public class DumpFileBuilder {
 
     private void streamData(OutputStream out, Lang lang) {
         int datasetId = 0;
-        StreamRDF writerStream = StreamRDFWriter.getWriterStream(out, lang);
+        StreamRDF writerStream = null;
+        try {
+            writerStream = StreamRDFWriter.getWriterStream(out, lang);
+        } catch(RiotException e ) {
+            if(e.getMessage().startsWith("No serialization for language")) {
+                LOGGER.warn("No serialization for language Lang: {}. Trying to write it from an in-memory model.", lang);
+                writeData(out, lang);
+            }
+        }
+        // The stream has been created
+        if(writerStream != null) {
         writerStream.start();
         TripleIterator iterator;
         LOGGER.info("Domain ID: " + domainId);
@@ -105,13 +118,28 @@ public class DumpFileBuilder {
             }
             datasetId++;
         }
-
-//        int numberOfNodes = graphs[domainId].getNumberOfNodes();
-//        for (int i = 0; i < numberOfNodes; ++i) {
-//            iterator = new TripleIterator(graphs, domainId, resourceUriTemplates, accessUriTemplates, datasetId, i);
-//            StreamOps.sendTriplesToStream(iterator, writerStream);
-//        }
         writerStream.finish();
+        }
+    }
+
+    private void writeData(OutputStream out, Lang lang) {
+        TripleIterator iterator;
+        LOGGER.info("Domain ID: " + domainId);
+        LOGGER.info("graph size: " + graphs.length);
+        
+        Model model = ModelFactory.createDefaultModel();
+        org.apache.jena.graph.Graph modelGraph = model.getGraph();
+        int datasetId = 0;
+        for(Graph graph: graphs) {
+            for (int i = 0; i < graph.getNumberOfNodes(); ++i) {
+                iterator = new TripleIterator(graphs, domainId, resourceUriTemplates, accessUriTemplates, datasetId, i);
+                while(iterator.hasNext()) {
+                    modelGraph.add(iterator.next());
+                }
+            }
+            datasetId++;
+        }
+        model.write(out, lang.getLabel());
     }
 
     public String buildContentType() {
