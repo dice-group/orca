@@ -82,6 +82,8 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             LOGGER.debug("Init as HTTP dump file node.");
             Random random = new Random(seedGenerator.getNextSeed());
             dumpFileLang = LangUtils.getRandomLang(random);
+            LOGGER.debug("Language: {}", dumpFileLang);
+            LOGGER.debug("File extensions: {}", dumpFileLang.getFileExtensions());
 
             List<CompressionStreamFactory> compressions = new ArrayList<>();
             if (random.nextDouble() < compressedRatio) {
