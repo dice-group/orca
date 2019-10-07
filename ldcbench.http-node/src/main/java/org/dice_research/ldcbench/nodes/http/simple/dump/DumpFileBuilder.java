@@ -102,6 +102,8 @@ public class DumpFileBuilder {
             if(e.getMessage().startsWith("No serialization for language")) {
                 LOGGER.warn("No serialization for language Lang: {}. Trying to write it from an in-memory model.", lang);
                 writeData(out, lang);
+            } else {
+                throw e;
             }
         }
         // The stream has been created
