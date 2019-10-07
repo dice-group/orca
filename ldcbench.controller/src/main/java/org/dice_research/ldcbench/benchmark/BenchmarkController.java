@@ -317,7 +317,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                             ApiConstants.ENV_DISALLOWED_RATIO_KEY + "=" + averageDisallowedRatio,
                             ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345),
                             ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
-                            ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId,
+                            ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++,
                             ApiConstants.ENV_COMPRESSED_RATIO_KEY + "=" + httpDumpNodeCompressedRatio,
                         },
                         nodeManagers.get(i).getNodeEnvironment());
@@ -341,7 +341,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
                         ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=" + sparqlUrl,
                         ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
-                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId,  });
+                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++,  });
 
         LOGGER.debug("Waiting for all cloud nodes and evaluation module to initialize...");
         nodesInitSemaphore.acquire(nodesAmount + 1);
@@ -374,7 +374,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                                 .map(s -> s.mapToObj(String::valueOf).collect(Collectors.joining(",")))
                                 .collect(Collectors.joining(";")),
                 ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
-                ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId, };
+                ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++, };
         createDataGenerators(DATAGEN_IMAGE_NAME, 1, envVariables);
         // FIXME: HOBBIT SDK workaround (setting environment for "containers")
         if (sdk) {
@@ -396,7 +396,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
                         DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
                         ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
-                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId, },
+                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++, },
                         nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree,
                                 nodeSizeDeterminer.getNodeSize()));
                 createDataGenerator(DATAGEN_IMAGE_NAME, envVariables);
