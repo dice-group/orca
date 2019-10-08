@@ -3,7 +3,10 @@ package org.dice_research.ldcbench.nodes.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
+import org.dice_research.ldcbench.vocab.LDCBench;
+import org.hobbit.utils.rdf.RdfHelper;
 
 import java.util.Random;
 /**
@@ -23,14 +26,22 @@ public class LangUtils {
    *   
    * @return List of Lang Types
    */
-    public static List<Lang> getAllowedLangs(){
+    public static List<Lang> getAllowedLangs(Model benchmarkParamModel){
         List<Lang> langlist = new ArrayList<Lang>();
-        
-        langlist.add(Lang.TTL);
-        langlist.add(Lang.N3);
-        langlist.add(Lang.RDFXML);
-        langlist.add(Lang.NT);
-        
+
+        if (Boolean.parseBoolean(RdfHelper.getStringValue(benchmarkParamModel, null, LDCBench.useTurtleDumps))) {
+            langlist.add(Lang.TTL);
+        }
+        if (Boolean.parseBoolean(RdfHelper.getStringValue(benchmarkParamModel, null, LDCBench.useN3Dumps))) {
+            langlist.add(Lang.N3);
+        }
+        if (Boolean.parseBoolean(RdfHelper.getStringValue(benchmarkParamModel, null, LDCBench.useRdfXmlDumps))) {
+            langlist.add(Lang.RDFXML);
+        }
+        if (Boolean.parseBoolean(RdfHelper.getStringValue(benchmarkParamModel, null, LDCBench.useNtDumps))) {
+            langlist.add(Lang.NT);
+        }
+
         return langlist;
     }
     
@@ -42,8 +53,8 @@ public class LangUtils {
      * 
      * @return a random Lang Type
      */
-    public static Lang getRandomLang(Random rand) {
-        List<Lang> langlist = getAllowedLangs();
+    public static Lang getRandomLang(Model benchmarkParamModel, Random rand) {
+        List<Lang> langlist = getAllowedLangs(benchmarkParamModel);
         int langPos = rand.nextInt(langlist.size());
         return langlist.get(langPos);
     }

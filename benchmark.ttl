@@ -22,6 +22,10 @@
     :sparqlNodeWeight,
     :httpDumpNodeWeight,
     :httpDumpNodeCompressedRatio,
+    :useTurtleDumps,
+    :useN3Dumps,
+    :useRdfXmlDumps,
+    :useNtDumps,
     :graphVisualization,
     :triplesEvaluated,
     :numberOfDisallowedResources,
@@ -124,6 +128,34 @@
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:float;
   hobbit:defaultValue "0.5"^^xsd:double .
+
+:useTurtleDumps a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Use TTL dumps"@en;
+  rdfs:comment "Whether HTTP dump nodes would include Turtle serialization."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:boolean;
+  hobbit:defaultValue "true"^^xsd:boolean .
+
+:useN3Dumps a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Use N3 dumps"@en;
+  rdfs:comment "Whether HTTP dump nodes would include Notation3 serialization."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:boolean;
+  hobbit:defaultValue "true"^^xsd:boolean .
+
+:useRdfXmlDumps a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Use RDF/XML dumps"@en;
+  rdfs:comment "Whether HTTP dump nodes would include RDF/XML serialization."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:boolean;
+  hobbit:defaultValue "true"^^xsd:boolean .
+
+:useNtDumps a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Use NT dumps"@en;
+  rdfs:comment "Whether HTTP dump nodes would include N-Triples serialization."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:boolean;
+  hobbit:defaultValue "true"^^xsd:boolean .
 
 :graphVisualization a hobbit:Parameter ;
   rdfs:label "Cloud graph visualization"@en;

@@ -86,7 +86,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             // FIXME: it helps to avoid constant result after the first nextInt(4)
             random.nextInt();
 
-            dumpFileLang = LangUtils.getRandomLang(random);
+            dumpFileLang = LangUtils.getRandomLang(benchmarkParamModel, random);
             LOGGER.debug("Language: {}", dumpFileLang);
             LOGGER.debug("File extensions: {}", dumpFileLang.getFileExtensions());
 

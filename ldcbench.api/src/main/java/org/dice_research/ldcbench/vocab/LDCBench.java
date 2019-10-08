@@ -54,6 +54,10 @@ public class LDCBench {
     public static final Property tripleCountOverTime = property("tripleCountOverTime");
     public static final Property triplesEvaluated = property("triplesEvaluated");
     public static final Property truePositives = property("truePositives");
+    public static final Property useN3Dumps = property("useN3Dumps");
+    public static final Property useNtDumps = property("useNtDumps");
+    public static final Property useRdfXmlDumps = property("useRdfXmlDumps");
+    public static final Property useTurtleDumps = property("useTurtleDumps");
     public static final Property microAverageCrawlDelayFulfillment = property("microAverageCrawlDelayFulfillment");
     public static final Property macroAverageCrawlDelayFulfillment = property("macroAverageCrawlDelayFulfillment");
     public static final Property minCrawlDelay = property("minCrawlDelay");
