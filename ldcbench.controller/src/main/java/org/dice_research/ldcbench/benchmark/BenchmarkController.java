@@ -230,7 +230,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     int numberOfNodes = g.getNumberOfNodes();
                     for (int node = 0; node < numberOfNodes; node++) {
                         for (int target : g.outgoingEdgeTargets(node)) {
-                            dotlangLines.add(String.format("%d -> %d", node, target));
+                            String targetUrl = getSeedForNode(target); // FIXME: keep the same as in DataGenerator
+                            dotlangLines.add(String.format("%d -> %d [tooltip=\"%s\"]", node, target, targetUrl));
                         }
                     }
                     nodeGraph = g;
