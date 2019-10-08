@@ -308,7 +308,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 nodeStarted.add(new Semaphore(0));
 
                 envVariables = ArrayUtils.addAll(new String[] {
-                    ApiConstants.ENV_DOCKERIZED_KEY + "=" + dockerized,
+                            Constants.BENCHMARK_PARAMETERS_MODEL_KEY + "=" + RabbitMQUtils.writeModel2String(benchmarkParamModel),
+                            ApiConstants.ENV_DOCKERIZED_KEY + "=" + dockerized,
                             ApiConstants.ENV_SEED_KEY + "=" + seed,
                             ApiConstants.ENV_NODE_ID_KEY + "=" + i,
                             ApiConstants.ENV_NODE_URI_KEY + "=" + getNodeURI(i),

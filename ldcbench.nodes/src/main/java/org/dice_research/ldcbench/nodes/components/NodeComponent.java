@@ -1,5 +1,6 @@
 package org.dice_research.ldcbench.nodes.components;
 
+import org.hobbit.core.Constants;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -31,6 +32,7 @@ abstract public class NodeComponent extends AbstractCommandReceivingComponent im
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractNodeComponent.class);
 
+    protected Model benchmarkParamModel;
     protected SeedGenerator seedGenerator;
 
     protected Semaphore dataGenerationFinished = new Semaphore(0);
@@ -56,6 +58,7 @@ abstract public class NodeComponent extends AbstractCommandReceivingComponent im
     public void init() throws Exception {
         super.init();
 
+        benchmarkParamModel = EnvVariables.getModel(Constants.BENCHMARK_PARAMETERS_MODEL_KEY, LOGGER);
         long seed = EnvVariables.getLong(ApiConstants.ENV_SEED_KEY);
         int numberOfComponents = EnvVariables.getInt(ApiConstants.ENV_COMPONENT_COUNT_KEY);
         int componentId = EnvVariables.getInt(ApiConstants.ENV_COMPONENT_ID_KEY);
