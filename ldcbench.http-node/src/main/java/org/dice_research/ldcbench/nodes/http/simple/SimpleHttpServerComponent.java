@@ -62,6 +62,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
     protected double disallowedRatio;
     protected GraphBasedResource graphBasedResource = null;
     protected DisallowedResource disallowedResource = null;
+    protected String dumpFilePath = null;
     protected Lang dumpFileLang = null;
     protected CompressionStreamFactory dumpFileCompression = null;
 
@@ -110,7 +111,8 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
                 }
                 builder.append(dumpFileCompression.getFileNameExtension());
             }
-            LOGGER.debug("Path: {}", builder.toString());
+            dumpFilePath = builder.toString();
+            LOGGER.debug("Path: {}", dumpFilePath);
             builder.append("#%s-%s-%s-%s");
             pathTemplate = builder.toString();
         } else {
@@ -174,7 +176,9 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             resource = DumpFileResource.create(cloudNodeId.get(),
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                    graphs.toArray(new Graph[graphs.size()]), (r -> true), dumpFileLang, dumpFileCompression);
+                    graphs.toArray(new Graph[graphs.size()]),
+                    r -> r.getPath().toString().equals(dumpFilePath),
+                    dumpFileLang, dumpFileCompression);
         } else {
             SimpleTripleCreator tripleCreator = new SimpleTripleCreator(cloudNodeId.get(), resourceUriTemplates,
                     accessUriTemplates);
