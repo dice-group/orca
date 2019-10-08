@@ -81,6 +81,10 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
         if (dumpFileNode) {
             LOGGER.debug("Init as HTTP dump file node.");
             Random random = new Random(seedGenerator.getNextSeed());
+
+            // FIXME: it helps to avoid constant result after the first nextInt(4)
+            random.nextInt();
+
             dumpFileLang = LangUtils.getRandomLang(random);
             LOGGER.debug("Language: {}", dumpFileLang);
             LOGGER.debug("File extensions: {}", dumpFileLang.getFileExtensions());
