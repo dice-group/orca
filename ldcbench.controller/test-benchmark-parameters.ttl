@@ -12,7 +12,7 @@ experiments:New a hobbit:Experiment;
   :averageCrawlDelay 5;
   :averageDisallowedRatio 0.5;
   :averageRdfGraphDegree 2;
-  :httpDumpNodeCompressedRatio 0.5;
+  :httpDumpNodeCompressedRatio 1;
   :dereferencingHttpNodeWeight 0;
   :httpDumpNodeWeight 1;
   :useTurtleDumps "true"^^xsd:boolean;

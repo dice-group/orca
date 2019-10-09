@@ -14,6 +14,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResIterator;
+import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.modify.request.QuadDataAcc;
 import org.apache.jena.sparql.modify.request.UpdateDataInsert;
@@ -35,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
@@ -123,12 +126,27 @@ public class SystemAdapter extends AbstractSystemAdapter {
                     }
 
                     Model model = ModelFactory.createDefaultModel();
-                    if (url.getPath().endsWith(".ttl.gz")) {
-                        model.read(new GZIPInputStream(url.openStream()), null, "TURTLE");
-                    } else {
-                        model.read(uri);
+                    InputStream input = url.openStream();
+                    String path = url.getPath();
+                    {
+                        Matcher m = Pattern.compile("^(.+)\\.(gz)$").matcher(path);
+                        if (m.find()) {
+                            path = m.group(1);
+                            if (m.group(2).equals("gz")) {
+                                input = new GZIPInputStream(input);
+                            }
+                        }
                     }
-                    logger.info("Model from {}: {}", uri, model.toString());
+                    {
+                        Matcher m = Pattern.compile("^(.+)\\.([^.]+)$").matcher(path);
+                        if (m.find()) {
+                            model.read(input, null, RDFLanguages.fileExtToLang(m.group(2)).getName());
+                        } else {
+                            model.read(uri);
+                        }
+                    }
+
+                    logger.info("Model size for {}: {}", uri, model.size());
 
                     UpdateExecutionFactory.createRemoteForm(
                         new UpdateRequest(new UpdateDataInsert(new QuadDataAcc(
