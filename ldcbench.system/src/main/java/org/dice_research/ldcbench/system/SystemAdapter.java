@@ -142,7 +142,7 @@ public class SystemAdapter extends AbstractSystemAdapter {
                         if (m.find()) {
                             model.read(input, null, RDFLanguages.fileExtToLang(m.group(2)).getName());
                         } else {
-                            model.read(uri);
+                            model.read(input, null, RDFLanguages.TTL.getName());
                         }
                     }
 
@@ -160,9 +160,11 @@ public class SystemAdapter extends AbstractSystemAdapter {
                     ).execute();
 
                     if (crawlDelay != null) {
+                        // FIXME: Only works correctly with dereferencing nodes,
+                        // but at the moment only these nodes have crawlDelay
                         logger.info("Crawl-delay is {}, will crawl again...", crawlDelay);
                         Thread.sleep(crawlDelay * 1000);
-                        model.read(url.openStream(), null, "TURTLE");
+                        model.read(url.openStream(), null, RDFLanguages.TTL.getName());
                     }
 
                     logger.info("Crawled {}.", uri);
