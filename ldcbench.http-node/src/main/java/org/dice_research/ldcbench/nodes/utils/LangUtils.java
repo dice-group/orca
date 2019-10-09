@@ -12,15 +12,14 @@ import org.hobbit.vocab.HOBBIT;
 
 import java.util.Random;
 /**
- * 
+ *
  * Useful methods for Jena Lang issues
- * 
+ *
  * @author Geraldo de Souza Jr
  *
  */
 
 public class LangUtils {
-    
 
     /**
      *
@@ -39,10 +38,10 @@ public class LangUtils {
     }
 
   /**
-   * 
+   *
    * Method that returns a list of Lang Types, that could be used by the dumpFile Node
-   * 
-   *   
+   *
+   *
    * @return List of Lang Types
    */
     public static List<Lang> getAllowedLangs(Model benchmarkParamModel){
@@ -63,13 +62,13 @@ public class LangUtils {
 
         return langlist;
     }
-    
+
     /**
-     * 
-     * Method that randomize a position in a list returned by 
+     *
+     * Method that randomize a position in a list returned by
      * the getAllowedLangs() method and return a random
      * Lang Type
-     * 
+     *
      * @return a random Lang Type
      */
     public static Lang getRandomLang(Model benchmarkParamModel, Random rand) {
