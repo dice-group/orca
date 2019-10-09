@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.utils.rdf.RdfHelper;
+import org.hobbit.vocab.HOBBIT;
 
 import java.util.Random;
 /**
@@ -19,6 +21,23 @@ import java.util.Random;
 
 public class LangUtils {
     
+
+    /**
+     *
+     * Method that returns a list of Lang Types, that could be used by the dumpFile Node
+     *
+     *
+     * @return List of Lang Types
+     */
+    public static List<Lang> getAllowedLangs(){
+        Model model = ModelFactory.createDefaultModel();
+        model.addLiteral(HOBBIT.Experiment, LDCBench.useTurtleDumps, true);
+        model.addLiteral(HOBBIT.Experiment, LDCBench.useN3Dumps, true);
+        model.addLiteral(HOBBIT.Experiment, LDCBench.useRdfXmlDumps, true);
+        model.addLiteral(HOBBIT.Experiment, LDCBench.useNtDumps, true);
+        return getAllowedLangs(model);
+    }
+
   /**
    * 
    * Method that returns a list of Lang Types, that could be used by the dumpFile Node
