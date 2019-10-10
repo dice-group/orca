@@ -11,11 +11,6 @@ public class HttpDumpNodeManager extends AbstractNodeManager {
     }
 
     @Override
-    public int weightOfLinkFrom(Class<?> nodeManager) {
-        return 1;
-    }
-
-    @Override
     public boolean canBeHub() {
         return false;
     }

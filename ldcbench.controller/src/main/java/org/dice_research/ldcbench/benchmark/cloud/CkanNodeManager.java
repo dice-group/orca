@@ -11,15 +11,6 @@ public class CkanNodeManager extends AbstractNodeManager {
     }
 
     @Override
-    public int weightOfLinkFrom(Class<?> nodeManager) {
-        if (nodeManager == CkanNodeManager.class) {
-            return 1;
-        }
-
-        return 0;
-    }
-
-    @Override
     public boolean canBeHub() {
         return true;
     }

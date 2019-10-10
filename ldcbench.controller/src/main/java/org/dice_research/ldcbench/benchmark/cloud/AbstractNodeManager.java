@@ -3,7 +3,9 @@ package org.dice_research.ldcbench.benchmark.cloud;
 import org.dice_research.ldcbench.data.NodeMetadata;
 
 public abstract class AbstractNodeManager {
-    public abstract int weightOfLinkFrom(Class<?> nodeManager);
+    public int weightOfLinkFrom(Class<?> nodeManager) {
+        return 1;
+    };
 
     public abstract boolean canBeHub();
 
