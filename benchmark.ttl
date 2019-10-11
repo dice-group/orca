@@ -16,10 +16,16 @@
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
     :averageCrawlDelay,
+    :averageDisallowedRatio,
     :dereferencingHttpNodeWeight,
     :ckanNodeWeight,
     :sparqlNodeWeight,
     :httpDumpNodeWeight,
+    :httpDumpNodeCompressedRatio,
+    :useTurtleDumps,
+    :useN3Dumps,
+    :useRdfXmlDumps,
+    :useNtDumps,
     :graphVisualization,
     :triplesEvaluated,
     :numberOfDisallowedResources,
@@ -81,6 +87,13 @@
   rdfs:range xsd:long;
   hobbit:defaultValue "5"^^xsd:long .
 
+:averageDisallowedRatio a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Average ratio of disallowed resources"@en;
+  rdfs:comment "Average ratio of resources disallowed by robots.txt."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:double;
+  hobbit:defaultValue "0.1"^^xsd:double .
+
 :dereferencingHttpNodeWeight a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Weight of dereferencing HTTP node occurrence"@en;
   rdfs:comment "0 would mean no such nodes. Otherwise at least one node would be created."@en;
@@ -108,6 +121,41 @@
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:float;
   hobbit:defaultValue "1"^^xsd:float .
+
+:httpDumpNodeCompressedRatio a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Ratio of HTTP dump nodes with compressed data"@en;
+  rdfs:comment "0 would mean uncompressed nodes only. 1 would mean compressed nodes only."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:float;
+  hobbit:defaultValue "0.5"^^xsd:double .
+
+:useTurtleDumps a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Use TTL dumps"@en;
+  rdfs:comment "Whether HTTP dump nodes would include Turtle serialization."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:boolean;
+  hobbit:defaultValue "true"^^xsd:boolean .
+
+:useN3Dumps a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Use N3 dumps"@en;
+  rdfs:comment "Whether HTTP dump nodes would include Notation3 serialization."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:boolean;
+  hobbit:defaultValue "true"^^xsd:boolean .
+
+:useRdfXmlDumps a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Use RDF/XML dumps"@en;
+  rdfs:comment "Whether HTTP dump nodes would include RDF/XML serialization."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:boolean;
+  hobbit:defaultValue "true"^^xsd:boolean .
+
+:useNtDumps a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Use NT dumps"@en;
+  rdfs:comment "Whether HTTP dump nodes would include N-Triples serialization."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:boolean;
+  hobbit:defaultValue "true"^^xsd:boolean .
 
 :graphVisualization a hobbit:Parameter ;
   rdfs:label "Cloud graph visualization"@en;

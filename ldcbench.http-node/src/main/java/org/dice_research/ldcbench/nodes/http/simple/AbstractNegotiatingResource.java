@@ -46,7 +46,6 @@ public abstract class AbstractNegotiatingResource extends AbstractCrawleableReso
             } catch (Exception e) {
                 LOGGER.warn("Couldn't parse requested media type \"{}\".", typeString);
             }
-
         }
         return null;
     }

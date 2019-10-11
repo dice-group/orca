@@ -1,15 +1,24 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix hobbit: <http://w3id.org/hobbit/vocab#> .
 @prefix experiments: <http://w3id.org/hobbit/experiments#>
 @prefix : <https://github.com/dice-group/ldcbench#> .
 
 experiments:New a hobbit:Experiment;
-  :seed 100;
+  # FIXME to test for recall > 0, the seed is manually selected for DummySystem
+  # to be able to crawl the type of dump node created
+  :seed 2;
   :nodeSizeDeterminer :StaticNodeSize;
   :averageTriplesPerNode 5;
-  :averageNodeDelay 5000;
+  :averageCrawlDelay 5;
+  :averageDisallowedRatio 0.5;
   :averageRdfGraphDegree 2;
+  :httpDumpNodeCompressedRatio 1;
   :dereferencingHttpNodeWeight 0;
   :httpDumpNodeWeight 1;
+  :useTurtleDumps "true"^^xsd:boolean;
+  :useN3Dumps "true"^^xsd:boolean;
+  :useRdfXmlDumps "true"^^xsd:boolean;
+  :useNtDumps "true"^^xsd:boolean;
   :ckanNodeWeight 0.01;
   # FIXME if using SPARQL node:
   #

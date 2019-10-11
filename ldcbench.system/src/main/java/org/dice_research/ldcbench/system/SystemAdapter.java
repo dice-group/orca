@@ -1,5 +1,6 @@
 package org.dice_research.ldcbench.system;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -13,6 +14,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResIterator;
+import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.modify.request.QuadDataAcc;
 import org.apache.jena.sparql.modify.request.UpdateDataInsert;
@@ -28,12 +30,16 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import javax.json.Json;
 import javax.json.JsonReader;
@@ -105,14 +111,42 @@ public class SystemAdapter extends AbstractSystemAdapter {
                     }
                 } else {
                     logger.info("Crawling {}...", uri);
-                    Model model = ModelFactory.createDefaultModel();
                     URL url = new URL(uri);
-                    if (url.getPath().endsWith(".ttl.gz")) {
-                        model.read(new GZIPInputStream(url.openStream()), null, "TURTLE");
-                    } else {
-                        model.read(uri);
+
+                    Integer crawlDelay = null;
+                    try (InputStream stream = new URL(url, "/robots.txt").openStream()) {
+                        String robots = IOUtils.toString(stream, Charset.defaultCharset());
+                        crawlDelay = Stream.of(robots.split("\n"))
+                                .filter(s -> s.startsWith("Crawl-delay: "))
+                                .findFirst()
+                                .map(s -> Integer.parseInt(s.split(": ")[1]))
+                                .orElse(null);
+                    } catch (Exception e) {
+                        logger.error("Exception while trying to access robots.txt.", e);
                     }
-                    logger.info("Model from {}: {}", uri, model.toString());
+
+                    Model model = ModelFactory.createDefaultModel();
+                    InputStream input = url.openStream();
+                    String path = url.getPath();
+                    {
+                        Matcher m = Pattern.compile("^(.+)\\.(gz)$").matcher(path);
+                        if (m.find()) {
+                            path = m.group(1);
+                            if (m.group(2).equals("gz")) {
+                                input = new GZIPInputStream(input);
+                            }
+                        }
+                    }
+                    {
+                        Matcher m = Pattern.compile("^(.+)\\.([^.]+)$").matcher(path);
+                        if (m.find()) {
+                            model.read(input, null, RDFLanguages.fileExtToLang(m.group(2)).getName());
+                        } else {
+                            model.read(input, null, RDFLanguages.TTL.getName());
+                        }
+                    }
+
+                    logger.info("Model size for {}: {}", uri, model.size());
 
                     UpdateExecutionFactory.createRemoteForm(
                         new UpdateRequest(new UpdateDataInsert(new QuadDataAcc(
@@ -124,6 +158,16 @@ public class SystemAdapter extends AbstractSystemAdapter {
                         sparqlUrl,
                         httpClient
                     ).execute();
+
+                    if (crawlDelay != null) {
+                        // FIXME: Only works correctly with dereferencing nodes,
+                        // but at the moment only these nodes have crawlDelay
+                        logger.info("Crawl-delay is {}, will crawl again...", crawlDelay);
+                        Thread.sleep(crawlDelay * 1000);
+                        model.read(url.openStream(), null, RDFLanguages.TTL.getName());
+                    }
+
+                    logger.info("Crawled {}.", uri);
                 }
             } catch (Exception e) {
                 logger.error("Failed to crawl {}.", uri, e);

@@ -12,7 +12,6 @@ import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.components.NodeComponent;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
-import org.dice_research.ldcbench.sink.Sink;
 import org.dice_research.ldcbench.sink.SparqlBasedSink;
 import org.dice_research.ldcbench.util.uri.Constants;
 import org.dice_research.ldcbench.util.uri.CrawleableUri;
@@ -36,8 +35,6 @@ public class SimpleSparqlComponent extends NodeComponent implements Component {
 
     private static final String SPARQL_IMG = "openlink/virtuoso-opensource-7:latest";
 
-    private Sink sink;
-
     @Override
     public void initBeforeDataGeneration() throws Exception {
         LOGGER.debug("Starting SPARQL service: {}...", SPARQL_IMG);
@@ -46,22 +43,18 @@ public class SimpleSparqlComponent extends NodeComponent implements Component {
         resourceUriTemplate = "http://" + sparqlContainer + "/data/%s-%s/%s-%s";
         accessUriTemplate = "http://" + sparqlContainer + ":8890/sparql";
         LOGGER.info("SPARQL service started at: {}", accessUriTemplate);
-        
-        Thread.sleep(15000);
-        
-
-        sink = SparqlBasedSink.create(accessUriTemplate + "-auth", ApiConstants.SPARQL_USER,
-                ApiConstants.SPARQL_PASSWORD);
     }
 
     @Override
     public void initAfterDataGeneration() throws Exception {
         LOGGER.info("Adding triples to SPARQL database...");
 
+        SparqlBasedSink sink = SparqlBasedSink.create(accessUriTemplate + "-auth", ApiConstants.SPARQL_USER,
+                ApiConstants.SPARQL_PASSWORD);
+
         CrawleableUri uri = new CrawleableUri(new URI(accessUriTemplate));
         uri.addData(Constants.UUID_KEY, UUID.randomUUID().toString());
-        SparqlBasedSink sbs = (SparqlBasedSink) sink;
-        sbs.deleteTriples();
+        sink.deleteTriples();
         sink.openSinkForUri(uri);
 
         SimpleTripleCreator tripleCreator = new SimpleTripleCreator(

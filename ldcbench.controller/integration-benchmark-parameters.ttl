@@ -1,3 +1,4 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix hobbit: <http://w3id.org/hobbit/vocab#> .
 @prefix experiments: <http://w3id.org/hobbit/experiments#>
 @prefix : <https://github.com/dice-group/ldcbench#> .
@@ -8,11 +9,17 @@ experiments:New a hobbit:Experiment;
   #:nodeSizeDeterminer :ExponentialDistNodeSize;
   :nodeSizeDeterminer :StaticNodeSize;
   :averageTriplesPerNode 5;
-  :averageNodeDelay 5000;
+  :averageCrawlDelay 5;
+  :averageDisallowedRatio 0.5;
   :averageRdfGraphDegree 2;
+  :httpDumpNodeCompressedRatio 0.5;
   :dereferencingHttpNodeWeight 1;
-  :httpDumpNodeWeight 1;
+  :httpDumpNodeWeight 0;
+  :useTurtleDumps "true"^^xsd:boolean;
+  :useN3Dumps "true"^^xsd:boolean;
+  :useRdfXmlDumps "true"^^xsd:boolean;
+  :useNtDumps "true"^^xsd:boolean;
   :ckanNodeWeight 0.01;
   :sparqlNodeWeight 0.01;
-  :numberOfNodes 4;
+  :numberOfNodes 3;
   :averageNodeGraphDegree 2.

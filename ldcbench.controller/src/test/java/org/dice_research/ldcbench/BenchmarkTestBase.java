@@ -87,10 +87,11 @@ public class BenchmarkTestBase {
     }
 
     protected void executeBenchmark(Boolean dockerized) throws Exception {
+        Model benchmarkParameters = createBenchmarkParameters();
 
         String[] benchmarkParamsStr = new String[]{
             HOBBIT_EXPERIMENT_URI_KEY+"="+org.hobbit.vocab.HobbitExperiments.New.getURI(),
-            BENCHMARK_PARAMETERS_MODEL_KEY+"="+RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(createBenchmarkParameters(), ModelsHandler.readModelFromFile("../benchmark.ttl"))),
+            BENCHMARK_PARAMETERS_MODEL_KEY+"="+RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(benchmarkParameters, ModelsHandler.readModelFromFile("../benchmark.ttl"))),
             RABBIT_MQ_HOST_NAME_KEY+"="+(dockerized ? "rabbit" : "localhost"),
         };
         String [] systemParamsStr = new String[]{
@@ -185,8 +186,19 @@ public class BenchmarkTestBase {
 
         // As long as there are any HTTP nodes, dummy system should crawl something.
         Assert.assertNotNull(componentsExecutor.resultModel);
+
         double recall = Double.parseDouble(RdfHelper.getStringValue(componentsExecutor.resultModel, null, LDCBench.macroRecall));
         Assert.assertTrue("Macro-recall > 0", recall > 0);
+
+        int dereferencingHttpNodeWeight = Integer.parseInt(RdfHelper.getStringValue(benchmarkParameters, null, LDCBench.dereferencingHttpNodeWeight));
+        if (dereferencingHttpNodeWeight > 0) {
+            double minAverageCrawlDelayFulfillment = Double.parseDouble(RdfHelper.getStringValue(componentsExecutor.resultModel, null, LDCBench.minAverageCrawlDelayFulfillment));
+            Assert.assertTrue("minAverageCrawlDelayFulfillment > 1", minAverageCrawlDelayFulfillment > 1);
+            double maxAverageCrawlDelayFulfillment = Double.parseDouble(RdfHelper.getStringValue(componentsExecutor.resultModel, null, LDCBench.maxAverageCrawlDelayFulfillment));
+            Assert.assertTrue("maxAverageCrawlDelayFulfillment < 1.5", maxAverageCrawlDelayFulfillment < 1.5);
+        } else {
+            LOGGER.info("Crawl-delay assertions skipped.");
+        }
     }
 
     public Model createBenchmarkParameters() throws IOException {

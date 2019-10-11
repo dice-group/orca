@@ -33,12 +33,14 @@ public class LDCBench {
 
     // Properties sorted alphabetically
     public static final Property averageCrawlDelay = property("averageCrawlDelay");
+    public static final Property averageDisallowedRatio = property("averageDisallowedRatio");
     public static final Property averageNodeGraphDegree = property("averageNodeGraphDegree");
     public static final Property averageRdfGraphDegree = property("averageRdfGraphDegree");
     public static final Property averageTriplesPerNode = property("averageTriplesPerNode");
     public static final Property ckanNodeWeight = property("ckanNodeWeight");
     public static final Property dereferencingHttpNodeWeight = property("dereferencingHttpNodeWeight");
     public static final Property graphVisualization = property("graphVisualization");
+    public static final Property httpDumpNodeCompressedRatio = property("httpDumpNodeCompressedRatio");
     public static final Property httpDumpNodeWeight = property("httpDumpNodeWeight");
     public static final Property numberOfNodes = property("numberOfNodes");
     public static final Property macroRecall = property("macroRecall");
@@ -52,6 +54,10 @@ public class LDCBench {
     public static final Property tripleCountOverTime = property("tripleCountOverTime");
     public static final Property triplesEvaluated = property("triplesEvaluated");
     public static final Property truePositives = property("truePositives");
+    public static final Property useN3Dumps = property("useN3Dumps");
+    public static final Property useNtDumps = property("useNtDumps");
+    public static final Property useRdfXmlDumps = property("useRdfXmlDumps");
+    public static final Property useTurtleDumps = property("useTurtleDumps");
     public static final Property microAverageCrawlDelayFulfillment = property("microAverageCrawlDelayFulfillment");
     public static final Property macroAverageCrawlDelayFulfillment = property("macroAverageCrawlDelayFulfillment");
     public static final Property minCrawlDelay = property("minCrawlDelay");

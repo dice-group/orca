@@ -13,6 +13,7 @@ import org.apache.jena.riot.Lang;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.http.simple.AbstractCrawleableResource;
 import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpException;
+import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
@@ -25,13 +26,19 @@ public class DumpFileResource extends AbstractCrawleableResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(DumpFileResource.class);
 
     public static DumpFileResource create(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates,
-            Graph[] graphs, Predicate<Request> predicate, Lang lang, boolean useCompression) {
+            Graph[] graphs, Predicate<Request> predicate, Lang lang, CompressionStreamFactory compression) {
         DumpFileBuilder builder = new DumpFileBuilder(domainId, resourceUriTemplates, accessUriTemplates, graphs,
-                lang, useCompression);
+                lang, compression);
         try {
             File dumpFile = builder.build();
             return new DumpFileResource(predicate, builder.buildContentType(), dumpFile);
         } catch (IOException e) {
+            LOGGER.error("Couldn't create dump file.", e);
+        } catch (NoSuchMethodException e) {
+            LOGGER.error("Couldn't create dump file.", e);
+        } catch (SecurityException e) {
+            LOGGER.error("Couldn't create dump file.", e);
+        } catch (ReflectiveOperationException e) {
             LOGGER.error("Couldn't create dump file.", e);
         }
         return null;
