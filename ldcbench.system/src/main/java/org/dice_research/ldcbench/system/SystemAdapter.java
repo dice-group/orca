@@ -121,6 +121,10 @@ public class SystemAdapter extends AbstractSystemAdapter {
                                 .findFirst()
                                 .map(s -> Integer.parseInt(s.split(": ")[1]))
                                 .orElse(null);
+                        if (crawlDelay != null) {
+                            logger.info("Crawl-delay is {}, waiting between accessing robots.txt and the needed URL...", crawlDelay);
+                            Thread.sleep(crawlDelay * 1000);
+                        }
                     } catch (Exception e) {
                         logger.error("Exception while trying to access robots.txt.", e);
                     }
