@@ -497,9 +497,17 @@ public class BenchmarkController extends AbstractBenchmarkController {
         seedNodes = new ArrayList<>();
         seedURIs = new ArrayList<>();
 
-        int[] entranceNodes = g.getEntranceNodes();
-        for (int i = 0; i < entranceNodes.length; i++) {
-            addNodeToSeed(seedURIs, entranceNodes[i]);
+        Literal allNodesInSeed = RdfHelper.getLiteral(benchmarkParamModel, null, benchmarkParamModel.getProperty(LDCBench.getURI() + "allNodesInSeed"));
+        if (allNodesInSeed != null && allNodesInSeed.getBoolean()) {
+            // For testing purposes, include all nodes in seed.
+            for (int node = 0; node < g.getNumberOfNodes(); node++) {
+                addNodeToSeed(seedURIs, node);
+            }
+        } else {
+            int[] entranceNodes = g.getEntranceNodes();
+            for (int node : entranceNodes) {
+                addNodeToSeed(seedURIs, node);
+            }
         }
         if (seedURIs.size() == 0) {
             throw new IllegalStateException();

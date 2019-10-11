@@ -4,6 +4,7 @@
 @prefix : <https://github.com/dice-group/ldcbench#> .
 
 experiments:New a hobbit:Experiment;
+  :allNodesInSeed "true"^^xsd:boolean;
   :seed 100;
   ## FIXME: this generates nodes with invalid parameters
   #:nodeSizeDeterminer :ExponentialDistNodeSize;
