@@ -48,7 +48,6 @@ public class RandomLODTest {
         }
     }
 
-    @Ignore
     @Test
     public void totalConnectivity() {
         new RandomCloudGraph("Barabasi RandomLOD", new int[]{1, 1}, 0, new int[][]{{1, 1}, {1, 1}})
