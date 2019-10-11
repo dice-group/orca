@@ -1,6 +1,7 @@
 package org.dice_research.ldcbench.generate;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -45,5 +46,12 @@ public class RandomLODTest {
         for(int i=0;i<typecounts.length;i++) {
             assertEquals("Number of nodes in type: "+i, tmptypecounts[i], typecounts[i]);
         }
+    }
+
+    @Ignore
+    @Test
+    public void totalConnectivity() {
+        new RandomCloudGraph("Barabasi RandomLOD", new int[]{1, 1}, 0, new int[][]{{1, 1}, {1, 1}})
+        .generateGraph(2, 1.0, 0L, g);
     }
 }
