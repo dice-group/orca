@@ -72,7 +72,7 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 	if (degree > (N-1)) {// max links created at any step is N-1
 		throw new IllegalArgumentException("Degree can NOT be more than (N-1).");
 	}
-
+   
 	int indexToEdgeList ;// index to edge list
 	long t0 = System.currentTimeMillis();
 	long ti0 = System.currentTimeMillis();
@@ -108,15 +108,22 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 		}
 	}*/
 	// only one out connection
-	for(int i=0; i < typeconnectivity.length;i++) {// start by all possible connections
+	for(int i=0; i < typeconnectivity.length;i++) {
 		for(int j = 0; j < typeconnectivity.length; j++) {
 			if(i==j) continue;
 			if(typeconnectivity[nodetypes[i]][nodetypes[j]]==1) {
+			//	System.out.println(i+" "+j+" "+il+" "+nE);
 				subj[il] = i+1; obj[il] = j+1;
 				il++;
 				break;
 			}
 		}
+		if(il==nE) break;
+	}
+
+	if(il < typeconnectivity.length && nE>il) {
+		throw new IllegalArgumentException("type connectivity matrix represent unconnected graph "
+				+ "               (each row must contain at least one nonzero other than diagonal).");
 	}
 	// type of node
 	int ctype ;
@@ -124,12 +131,14 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 
 	//--------------------------------------
 	indexToEdgeList=il;
-
+     
 	int P1 = (m + 1)*(N-m) - (nE - indexToEdgeList) + m ;
 	if (P1 <= m ) P1 = m + 1;
 	//
 	try {
-		for(int node=typeconnectivity.length+1;node<=N;node++) {//next node
+//		for(int node=typeconnectivity.length+1;node<=N;node++) {//next node
+		int node=typeconnectivity.length+1;
+		while(node<=N) {//next node
 
 			if(node==P1) {
 				m = m + 1;//second part
@@ -229,6 +238,7 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 				ti0= System.currentTimeMillis();
 			}
 			if(indexToEdgeList >= nE) break;
+			node++;
 		}
 	}
 	catch(IllegalArgumentException ex) {
@@ -271,8 +281,10 @@ protected void getRandomLOD(int N, double degree, long seed, double outlinkspct,
 	
 	int[] entranceNodes;
 	entranceNodes = findEnteranceNodes(builder);
+	if(entranceNodes.length==0) {
+		System.out.println("There is no entranceNodes, Graph is not connected.");
+	}//else	System.out.println("#EnterenceNodes:"+entranceNodes.length+" First:"+entranceNodes[0]);
 	builder.setEntranceNodes(entranceNodes);
-
 }
 //----------------------------------------------------------
 
