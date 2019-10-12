@@ -12,7 +12,7 @@ public class DereferencingHttpNodeManager extends AbstractNodeManager {
 
     @Override
     public int weightOfLinkFrom(Class<?> nodeManager) {
-        if (nodeManager == DereferencingHttpNodeManager.class) {
+        if (nodeManager == CkanNodeManager.class) {
             return 0;
         }
 
