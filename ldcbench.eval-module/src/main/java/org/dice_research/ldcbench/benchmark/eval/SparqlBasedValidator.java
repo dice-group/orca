@@ -65,8 +65,10 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
         ValidationCounter counter = new ValidationCounter();
         QueryPatternCreator creator;
         if (supplier.getAccessUriTemplates()[graphId].matches(".*:5000/")) {
+            LOGGER.debug("Using CKAN pattern creator to validate results from graph {}", graphId);
             creator = new CkanQueryPatternCreator(graphId, supplier.getResourceUriTemplates(), supplier.getAccessUriTemplates());
         } else {
+            LOGGER.debug("Using Simple pattern creator to validate results from graph {}", graphId);
             creator = new SimpleQueryPatternCreator(graphId, supplier.getResourceUriTemplates(), supplier.getAccessUriTemplates());
         }
         try {
@@ -81,7 +83,9 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
                     return Arrays.stream(edges);
                 })
                 .map(e -> results(creator, graph, e)).forEach(a -> Stream.of(a).forEach(b -> counter.accept(b)));
-        return counter.getValidationResult();
+        ValidationResult result = counter.getValidationResult();
+        LOGGER.debug("Validation result from graph {}: {}", graphId, result);
+        return result;
         } catch(Exception e) {
             System.out.println("graphId = " + graphId);
             System.out.println(Arrays.toString(supplier.getResourceUriTemplates()));
@@ -109,6 +113,7 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
         q.setQueryAskType();
         ElementTriplesBlock pattern = creator.create(edge[0], edge[1], edge[2],
                 graph.getExternalNodeId(edge[2]), graph.getGraphId(edge[2]));
+        assert !pattern.isEmpty();
         int expected = 0;
         for (Iterator<?> i = pattern.patternElts(); i.hasNext(); i.next()) {
             expected++;

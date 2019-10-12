@@ -18,4 +18,9 @@ public class ValidationResult {
         this.checkedTriples += v2.checkedTriples;
         this.truePositives += v2.truePositives;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%d triples checked, %d true positives", checkedTriples, truePositives);
+    }
 }
