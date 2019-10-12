@@ -54,7 +54,6 @@ public class RandomLODTest {
         .generateGraph(2, 1.0, 0L, g);
     }
 
-    @Ignore
     @Test
     public void oneNodeType() {
         new RandomCloudGraph("Barabasi RandomLOD", new int[]{2}, 0, new int[][]{{1}})
