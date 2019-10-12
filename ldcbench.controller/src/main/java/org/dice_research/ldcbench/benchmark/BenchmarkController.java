@@ -358,6 +358,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         // Node graph generator
         LOGGER.info("Creating node graph generator...");
+        LOGGER.info("Type connectivity matrix: {}", Arrays.deepToString(getTypeConnectivity(nodeManagerClasses)));
         envVariables = new String[] { DataGenerator.ENV_TYPE_KEY + "=" + DataGenerator.Types.NODE_GRAPH_GENERATOR,
                 ApiConstants.ENV_SEED_KEY + "=" + seed,
                 DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + nodesAmount,
