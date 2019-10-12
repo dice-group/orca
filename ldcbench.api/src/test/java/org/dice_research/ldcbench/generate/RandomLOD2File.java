@@ -22,15 +22,27 @@ public class RandomLOD2File {
 //    double degree=2*15655.0/N;
 
 	//twoNodes
-	int N=2;
-	int[] typecounts= {1,1};
-    int[][] typeconn= {{1,1},{1,1}};
-    double degree=1.0;
+//	int N=2;
+//	int[] typecounts= {1,1};
+//    int[][] typeconn= {{1,1},{1,1}};
+//    double degree=1.0;
+
+  //one node
+//  	int N=1;
+//  	int[] typecounts= {1};
+//      int[][] typeconn= {{1}};
+//      double degree=0.0;
+	
+	//two nodes one type
+  	int N=2;
+  	int[] typecounts= {2};
+      int[][] typeconn= {{1}};
+      double degree=1.0;
 
     g = new GrphBasedGraph();
 	rg = new RandomCloudGraph("RandomLOD",typecounts,100,typeconn);
 	rg.generateGraph(N,degree,123L,g);
-
+    System.out.println("Number of nodes:"+g.getNumberOfNodes());
 	String fname=String.format("D:\\RandLOD_inDeg_N%s_%.1f_123.txt",N,degree);
 		try {
 			PrintWriter oout = new PrintWriter(new FileWriter(fname));

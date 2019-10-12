@@ -109,20 +109,20 @@ public class RandomCloudGraph implements GraphGenerator {
          */
 
 //	MR (12.10.2019): Disabled connectivity check since we have a search for seed nodes which will handle unconnected parts of the graph
-//	// only one out connection
-//	for(int i=0; i < typeconnectivity.length;i++) {
-//		for(int j = 0; j < typeconnectivity.length; j++) {
-//			if(i==j) continue;
-//			if(typeconnectivity[nodetypes[i]][nodetypes[j]]==1) {
-//			//	System.out.println(i+" "+j+" "+il+" "+nE);
-//				subj[il] = i+1; obj[il] = j+1;
-//				il++;
-//				break;
-//			}
-//		}
-//		if(il==nE) break;
-//	}
-//
+//	// only one out connection: initialize graph
+	for(int i=0; i < typeconnectivity.length;i++) {
+		for(int j = 0; j < typeconnectivity.length; j++) {
+			if(i==j) continue;
+			if(typeconnectivity[nodetypes[i]][nodetypes[j]]==1) {
+			//	System.out.println(i+" "+j+" "+il+" "+nE);
+				subj[il] = i+1; obj[il] = j+1;
+				il++;
+				break;
+			}
+		}
+		if(il==nE) break;
+	}
+
 //	if(il < typeconnectivity.length && nE>il) {
 //		throw new IllegalArgumentException("type connectivity matrix represent unconnected graph "
 //				+ "               (each row must contain at least one nonzero other than diagonal).");
@@ -387,8 +387,8 @@ public class RandomCloudGraph implements GraphGenerator {
             crntCnts[i] = 1;
             nodeTypes[i] = i;
         }
-
-        while (n < totalNodes) {
+        
+         while (n < totalNodes) {
             for (int y = 0; y < nTypes; y++) {
                 if (((double) crntCnts[y] / n) <= ((double) typeCnts[y] / totalNodes)) {
                     n++;
@@ -399,8 +399,7 @@ public class RandomCloudGraph implements GraphGenerator {
                     break;
             }
         }
-
-        // for(int x:crntCnts) System.out.println(x);
+//         for(int x:crntCnts) System.out.println(x);
         int[] nodeTypesout;
         nodeTypesout = Arrays.copyOf(nodeTypes, totalNodes);
         return (nodeTypesout);
