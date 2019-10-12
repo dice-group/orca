@@ -238,16 +238,21 @@ public class EvalModule extends AbstractCommandReceivingComponent {
 
         // Add results from all nodes
         double macroRecall = 0;
+        int macroRecallDenominator = 0;
         for (Map.Entry<Integer, EvaluationResult> entry : results.entrySet()) {
             if (entry.getKey() != CrawledDataEvaluator.TOTAL_EVALUATION_RESULTS) {
                 Resource nodeResource = model.createResource(experimentUri + "_Node_" + entry.getKey());
                 double recall = entry.getValue().recall;
-                macroRecall += recall;
+                // When node has no data at all, recall would be NaN
+                if (!Double.isNaN(recall)) {
+                    macroRecall += recall;
+                    macroRecallDenominator++;
+                }
                 //model.add(model.createStatement(experimentResource, model.createProperty(LDCBench.getURI(), "node"), nodeResource));
                 model.add(model.createLiteralStatement(nodeResource, LDCBench.microRecall, recall));
             }
         }
-        macroRecall /= (results.size() - 1);
+        macroRecall /= macroRecallDenominator;
         model.add(model.createLiteralStatement(experimentResource, LDCBench.macroRecall, macroRecall));
 
         // Transform the data of the triple counter into RDF
