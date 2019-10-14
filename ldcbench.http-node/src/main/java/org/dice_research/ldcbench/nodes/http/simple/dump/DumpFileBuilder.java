@@ -13,6 +13,8 @@ import java.util.List;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.system.StreamOps;
 import org.apache.jena.riot.system.StreamRDF;
@@ -141,7 +143,12 @@ public class DumpFileBuilder {
             }
             datasetId++;
         }
-        model.write(out, lang.getLabel());
+        if (lang.equals(Lang.RDFXML)) {
+            // Just RDFXML leads to StackOverflow exceptions
+            RDFDataMgr.write(out, model, RDFFormat.RDFXML_PLAIN);
+        } else {
+            RDFDataMgr.write(out, model, lang);
+        }
     }
 
     public String buildContentType() {
