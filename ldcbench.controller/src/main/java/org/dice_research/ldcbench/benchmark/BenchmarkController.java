@@ -61,12 +61,15 @@ import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.core.Commands;
 import org.hobbit.core.Constants;
+import org.hobbit.core.components.utils.SystemResourceUsageRequester;
 import org.hobbit.core.components.AbstractBenchmarkController;
+import org.hobbit.core.data.usage.ResourceUsageInformation;
 import org.hobbit.core.rabbit.DataSender;
 import org.hobbit.core.rabbit.DataSenderImpl;
 import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.utils.EnvVariables;
 import org.hobbit.utils.rdf.RdfHelper;
+import org.hobbit.vocab.HOBBIT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +81,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkController.class);
 
     public static final String DEFAULT_EVAL_STORAGE_IMAGE = AbstractBenchmarkController.DEFAULT_EVAL_STORAGE_IMAGE;
+
+    private SystemResourceUsageRequester resUsageRequester = null;
 
     private Set<Future<String>> dataGenContainers = new HashSet<>();
     private List<Future<String>> nodeContainers = new ArrayList<>();
@@ -417,6 +422,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
         systemTaskSender = DataSenderImpl.builder().queue(getFactoryForOutgoingDataQueues(),
                 generateSessionQueueName(Constants.TASK_GEN_2_SYSTEM_QUEUE_NAME)).build();
 
+        resUsageRequester = SystemResourceUsageRequester.create(this, getHobbitSessionId());
+
         LOGGER.debug("Waiting for components to initialize...");
         waitForComponentsToInitialize();
     }
@@ -574,8 +581,29 @@ public class BenchmarkController extends AbstractBenchmarkController {
         LOGGER.debug("Waiting for the system to finish...");
         waitForSystemToFinish();
 
-        // Create a model so we can store information about nodes.
+        // Create the result model so we can store information early.
         resultModel = ModelFactory.createDefaultModel();
+        Resource experimentResource = resultModel.getResource(experimentUri);
+
+        if (!sdk) {
+            LOGGER.debug("Requesting resource usage...");
+            ResourceUsageInformation resUsageInfo = resUsageRequester.getSystemResourceUsage();
+            LOGGER.info("Resource usage: {}", resUsageInfo);
+            if (resUsageInfo != null) {
+                if (resUsageInfo.getCpuStats() != null) {
+                    resultModel.addLiteral(experimentResource, resultModel.createProperty(HOBBIT.getURI() + "totalCpuUsage"), resUsageInfo.getCpuStats().getTotalUsage());
+                }
+                if (resUsageInfo.getDiskStats() != null) {
+                    resultModel.addLiteral(experimentResource, resultModel.createProperty(HOBBIT.getURI() + "totalDiskUsage"), resUsageInfo.getDiskStats().getFsSizeSum());
+                }
+                if (resUsageInfo.getMemoryStats() != null) {
+                    resultModel.addLiteral(experimentResource, resultModel.createProperty(HOBBIT.getURI() + "totalMemoryUsage"), resUsageInfo.getMemoryStats().getUsageSum());
+                }
+            }
+        } else {
+            LOGGER.debug("Will not request resource usage.");
+        }
+
         nodesResultSemaphore = new Semaphore(0);
         sendToCmdQueue(ApiConstants.CRAWLING_FINISHED_SIGNAL, RabbitMQUtils.writeLong(new Date().getTime()));
 
@@ -664,7 +692,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
         dotlangLines.add("}");
         String dotlang = String.join("\n", dotlangLines);
 
-        Resource experimentResource = resultModel.getResource(experimentUri);
         if (delaySupportingNodes != 0) {
             resultModel.addLiteral(experimentResource, LDCBench.macroAverageCrawlDelayFulfillment, delayFulfillmentSum / delaySupportingNodes);
         }
@@ -770,6 +797,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     public void close() throws IOException {
         LOGGER.debug("BenchmarkController.close()");
         // Free the resources you requested here
+        IOUtils.closeQuietly(resUsageRequester);
         IOUtils.closeQuietly(systemDataSender);
         IOUtils.closeQuietly(systemTaskSender);
         if (nodeMetadata != null) {
