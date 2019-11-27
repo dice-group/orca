@@ -20,6 +20,7 @@ import org.dice_research.ldcbench.benchmark.eval.EvaluationResult;
 import org.dice_research.ldcbench.benchmark.eval.FileBasedGraphSupplier;
 import org.dice_research.ldcbench.benchmark.eval.GraphSupplier;
 import org.dice_research.ldcbench.benchmark.eval.GraphValidator;
+import org.dice_research.ldcbench.benchmark.eval.ResourceUsageTimerTask;
 import org.dice_research.ldcbench.benchmark.eval.SimpleCompleteEvaluator;
 import org.dice_research.ldcbench.benchmark.eval.SparqlBasedTripleCounter;
 import org.dice_research.ldcbench.benchmark.eval.SparqlBasedValidator;
@@ -29,19 +30,25 @@ import org.dice_research.ldcbench.rabbit.ObjectStreamFanoutExchangeConsumer;
 import org.dice_research.ldcbench.rabbit.SimpleFileQueueConsumer;
 import org.dice_research.ldcbench.vocab.LDCBench;
 import org.dice_research.ldcbench.vocab.LDCBenchDiagrams;
+import org.dice_research.ldcbench.vocab.ResourceUsageDiagrams;
 import org.hobbit.core.Commands;
 import org.hobbit.core.Constants;
-import org.hobbit.core.components.AbstractCommandReceivingComponent;
+import org.hobbit.core.components.utils.SystemResourceUsageRequester;
+import org.hobbit.core.components.AbstractPlatformConnectorComponent;
+import org.hobbit.core.data.usage.ResourceUsageInformation;
 import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.utils.EnvVariables;
 import org.hobbit.vocab.HOBBIT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EvalModule extends AbstractCommandReceivingComponent {
+public class EvalModule extends AbstractPlatformConnectorComponent {
     private static final Logger LOGGER = LoggerFactory.getLogger(EvalModule.class);
 
     protected static final long PERIOD_FOR_TRIPLE_COUNTER = 60000;
+    protected static final long PERIOD_FOR_RESOURCE_USAGE_REQUESTER = 60000;
+
+    private boolean sdk;
 
     /**
      * The URI of the experiment.
@@ -62,10 +69,13 @@ public class EvalModule extends AbstractCommandReceivingComponent {
     protected long endTimeStamp;
     protected Timer timer = null;
     protected TripleCountingTimerTask countingTimerTask = null;
+    protected ResourceUsageTimerTask resourcesTimerTask = null;
 
     @Override
     public void init() throws Exception {
         super.init();
+
+        sdk = EnvVariables.getBoolean(ApiConstants.ENV_SDK_KEY, false, LOGGER);
 
         // Get the experiment URI
         experimentUri = EnvVariables.getString(Constants.HOBBIT_EXPERIMENT_URI_KEY, LOGGER);
@@ -177,6 +187,14 @@ public class EvalModule extends AbstractCommandReceivingComponent {
             timer = new Timer();
             timer.schedule(countingTimerTask, (System.currentTimeMillis() + PERIOD_FOR_TRIPLE_COUNTER) - startTimeStamp,
                     PERIOD_FOR_TRIPLE_COUNTER);
+
+            if (!sdk) {
+                resourcesTimerTask = new ResourceUsageTimerTask(SystemResourceUsageRequester.create(this, getHobbitSessionId()));
+                timer.schedule(resourcesTimerTask, System.currentTimeMillis() + PERIOD_FOR_RESOURCE_USAGE_REQUESTER - startTimeStamp,
+                        PERIOD_FOR_RESOURCE_USAGE_REQUESTER);
+            } else {
+                LOGGER.debug("Will not request resource usage.");
+            }
         } catch (Exception e) {
             LOGGER.error("Error while starting the timer task for counting triples.", e);
         }
@@ -190,6 +208,7 @@ public class EvalModule extends AbstractCommandReceivingComponent {
             timer.cancel();
             // Execute the counter one last time
             countingTimerTask.run();
+            // Do not execute the resource usage requester since now all the system containers are gone.
         }
         crawlingFinished.release();
     }
@@ -267,6 +286,37 @@ public class EvalModule extends AbstractCommandReceivingComponent {
             }
             model.add(experimentResource, LDCBench.tripleCountOverTime, dataset);
         }
+
+        if ((resourcesTimerTask != null) && (resourcesTimerTask.getTimestamps().size() > 1)
+                && (resourcesTimerTask.getValues().size() > 1)) {
+            Resource dataset = ResourceUsageDiagrams.createDataset(model, getHobbitSessionId());
+            List<Long> timestamps = resourcesTimerTask.getTimestamps();
+            List<ResourceUsageInformation> values = resourcesTimerTask.getValues();
+            double maxCpuUsage = 0;
+            double sumDiskUsage = 0;
+            double sumMemoryUsage = 0;
+            for (int i = 0; i < timestamps.size(); ++i) {
+                ResourceUsageInformation info = values.get(i);
+                ResourceUsageDiagrams.addPoint(model, dataset, getHobbitSessionId(), i, timestamps.get(i) - startTimeStamp,
+                        info.getCpuStats().getTotalUsage(),
+                        info.getDiskStats().getFsSizeSum(),
+                        info.getMemoryStats().getUsageSum());
+                maxCpuUsage = Math.max(maxCpuUsage, info.getCpuStats().getTotalUsage());
+                sumDiskUsage += info.getDiskStats().getFsSizeSum();
+                sumMemoryUsage += info.getMemoryStats().getUsageSum();
+            }
+            model.add(experimentResource, LDCBench.resourceUsageOverTime, dataset);
+            if (maxCpuUsage != 0) {
+                model.addLiteral(experimentResource, LDCBench.totalCpuUsage, maxCpuUsage);
+            }
+            if (sumDiskUsage != 0) {
+                model.addLiteral(experimentResource, LDCBench.averageDiskUsage, sumDiskUsage / timestamps.size());
+            }
+            if (sumMemoryUsage != 0) {
+                model.addLiteral(experimentResource, LDCBench.averageMemoryUsage, sumMemoryUsage / timestamps.size());
+            }
+        }
+
         return model;
     }
 }

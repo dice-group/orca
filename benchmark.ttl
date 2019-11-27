@@ -32,6 +32,7 @@
     :nodeSizeDeterminer;
   hobbit:measuresKPI
     :tripleCountOverTime,
+    :resourceUsageOverTime,
     :truePositives,
     :macroRecall,
     :microRecall,
@@ -39,6 +40,9 @@
     :minAverageCrawlDelayFulfillment,
     :maxAverageCrawlDelayFulfillment,
     :ratioOfRequestedDisallowedResources,
+    :totalCpuUsage,
+    :averageDiskUsage,
+    :averageMemoryUsage,
     :runtime;
   hobbit:hasAPI :Api .
 
@@ -245,3 +249,27 @@
   rdfs:comment "The number of triples the crawler has stored over time."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range <http://purl.org/linked-data/cube#DataSet> .
+
+:resourceUsageOverTime a hobbit:KPI ;
+  rdfs:label "Resource usage over time"@en;
+  rdfs:comment "Various resource usage of the crawler over time."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range <http://purl.org/linked-data/cube#DataSet> .
+
+:totalCpuUsage a hobbit:KPI ;
+  rdfs:label "Total CPU usage"@en;
+  rdfs:comment "The sum of the overall CPU usage in ms."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:long .
+
+:averageDiskUsage a hobbit:KPI ;
+  rdfs:label "Average file system usage in bytes."@en;
+  rdfs:comment ""@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:long .
+
+:averageMemoryUsage a hobbit:KPI ;
+  rdfs:label "Average memory usage in bytes."@en;
+  rdfs:comment ""@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:long .

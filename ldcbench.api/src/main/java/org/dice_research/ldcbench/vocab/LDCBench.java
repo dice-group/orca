@@ -34,6 +34,8 @@ public class LDCBench {
     // Properties sorted alphabetically
     public static final Property averageCrawlDelay = property("averageCrawlDelay");
     public static final Property averageDisallowedRatio = property("averageDisallowedRatio");
+    public static final Property averageDiskUsage = property("averageDiskUsage");
+    public static final Property averageMemoryUsage = property("averageMemoryUsage");
     public static final Property averageNodeGraphDegree = property("averageNodeGraphDegree");
     public static final Property averageRdfGraphDegree = property("averageRdfGraphDegree");
     public static final Property averageTriplesPerNode = property("averageTriplesPerNode");
@@ -48,9 +50,11 @@ public class LDCBench {
     public static final Property nodeSizeDeterminer = property("nodeSizeDeterminer");
     public static final Property numberOfDisallowedResources = property("numberOfDisallowedResources");
     public static final Property ratioOfRequestedDisallowedResources = property("ratioOfRequestedDisallowedResources");
+    public static final Property resourceUsageOverTime = property("resourceUsageOverTime");
     public static final Property runtime = property("runtime");
     public static final Property seed = property("seed");
     public static final Property sparqlNodeWeight = property("sparqlNodeWeight");
+    public static final Property totalCpuUsage = property("totalCpuUsage");
     public static final Property tripleCountOverTime = property("tripleCountOverTime");
     public static final Property triplesEvaluated = property("triplesEvaluated");
     public static final Property truePositives = property("truePositives");
