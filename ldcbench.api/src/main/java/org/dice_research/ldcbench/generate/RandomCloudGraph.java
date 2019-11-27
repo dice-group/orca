@@ -52,7 +52,8 @@ public class RandomCloudGraph implements GraphGenerator {
          * --> 2 while 0 --> 2 and 1 --> 0 are not allowed
          */
 
-        getRandomLOD(numberOfNodes, avgDegree, seed, 0.7, builder);
+//        getRandomLOD(numberOfNodes, avgDegree, seed, 0.7, builder);//not justified
+        getRandomLOD(numberOfNodes, avgDegree, seed, 0.5, builder);
     }
 
     @Override
@@ -453,39 +454,4 @@ public class RandomCloudGraph implements GraphGenerator {
         return (Res);
     }
 
-    /*
-     * protected int getInitGraph(int N, double degree, long seed,int[]
-     * subj,int[]obj,int[] inDeg,int m,Random generator) { int indexToEdgeList = 0;
-     * 
-     * if (degree < 1) { throw new
-     * IllegalArgumentException("Degree must be more than 1."); }
-     * 
-     * if (degree > (N-1)) {// max links created at any step is N-1 throw new
-     * IllegalArgumentException("Degree can NOT be more than (N-1)."); }
-     * 
-     * // generator = new Random(seed);// seed
-     * 
-     * if(m > 1 ) { subj[indexToEdgeList] = 1; obj[indexToEdgeList] = 2;// first
-     * edge indexToEdgeList++; inDeg[2] = 2; }
-     * 
-     * // initial part if (m > 2) { for (int i = 3; i <= m; i++) { int[] tmp =
-     * weightedSampleWithoutReplacement(i - 1, 2, inDeg,generator);// new links
-     * boolean randIndex = generator.nextBoolean(); int vto; if (randIndex) { vto =
-     * 0; } else { vto = 1; } subj[indexToEdgeList] = i; obj[indexToEdgeList] =
-     * tmp[1 - vto]; indexToEdgeList++; subj[indexToEdgeList] = tmp[vto];
-     * obj[indexToEdgeList] = i; indexToEdgeList++;// inverted link randomly } }
-     * 
-     * return(indexToEdgeList); }
-     */
-
 }
-
-/*
- * NOT Good generate bi-partite (up to 4 parts(number of types)):1000 hubs, 500
- * endpoints etc. endpoints(same part): connected to each other with power law
- * -type0,type1,type2,type3,type4: -parts p0,p1,p2,p3 up to p4: each part
- * contains 1 or more types that can connect -assign parts to types (Hard code
- * type0 as hubs): start with hubs (sort and FIFS) assign remaining -What is d?
- * d is one parameter to the algorithm. -Call graphGenerator for each part with
- * number of nodes in that part and d.
- */
