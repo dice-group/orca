@@ -47,7 +47,7 @@ public class ResourceUsageDiagrams {
         Resource structureNode = model.createResource(datasetUri + "-structure");
         model.add(dataset, DataCube.structure, structureNode);
         model.add(structureNode, RDF.type, DataCube.DataStructureDefinition);
-        Resource dimensionNode = model.createResource(datasetUri + "-dimension-component");
+        Resource dimensionNode = model.createResource(datasetUri + "-dimension-component-time");
         model.add(structureNode, DataCube.component, dimensionNode);
         model.add(dimensionNode, DataCube.dimension, time);
 
@@ -69,7 +69,7 @@ public class ResourceUsageDiagrams {
         Resource observation = model.createResource(dataset.getURI() + "-" + pointId);
         model.add(observation, RDF.type, DataCube.Observation);
         model.add(observation, DataCube.dataSet, dataset);
-        model.addLiteral(observation, LDCBenchDiagrams.time, timestamp);
+        model.addLiteral(observation, time, timestamp);
         model.addLiteral(observation, totalCpuUsage, cpuUsage);
         model.addLiteral(observation, totalDiskUsage, diskUsage);
         model.addLiteral(observation, totalMemoryUsage, memoryUsage);
