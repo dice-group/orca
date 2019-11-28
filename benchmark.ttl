@@ -257,19 +257,19 @@
   rdfs:range <http://purl.org/linked-data/cube#DataSet> .
 
 :totalCpuUsage a hobbit:KPI ;
-  rdfs:label "Total CPU usage"@en;
+  rdfs:label "Total CPU usage (in ms)"@en;
   rdfs:comment "The sum of the overall CPU usage in ms."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:long .
 
 :averageDiskUsage a hobbit:KPI ;
-  rdfs:label "Average file system usage in bytes."@en;
+  rdfs:label "Average file system usage (in bytes)."@en;
   rdfs:comment ""@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:long .
 
 :averageMemoryUsage a hobbit:KPI ;
-  rdfs:label "Average memory usage in bytes."@en;
+  rdfs:label "Average memory usage (in bytes)."@en;
   rdfs:comment ""@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:long .
