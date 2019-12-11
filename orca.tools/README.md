@@ -18,7 +18,7 @@ This class gathers the [`dcat:downloadURL`](http://www.w3.org/ns/dcat#downloadUR
   * `".*\\.tgz$"`
   * `".*\\.bz2$"`
   * `".*\\.7z$"`
-  * `".*\\.xz$"`)
+  * `".*\\.xz$"`
 * SPARQL endpoint
   * `".*/[sS]parql[/]?.*"`
 * HTML
