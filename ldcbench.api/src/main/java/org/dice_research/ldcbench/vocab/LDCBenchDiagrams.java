@@ -14,8 +14,8 @@ import org.hobbit.vocab.DataCube;
  */
 public class LDCBenchDiagrams {
 
-    protected static final String TRIPLES_PER_TIME_URI = "https://github.com/dice-group/ldcbench/triples-per-time#";
-    protected static final String TRIPLES_PER_TIME_INSTANCE_URI = "https://github.com/dice-group/ldcbench/triples-per-time/instance#";
+    protected static final String TRIPLES_PER_TIME_URI = "http://w3id.org/dice-research/orca/triples-per-time#";
+    protected static final String TRIPLES_PER_TIME_INSTANCE_URI = "http://w3id.org/dice-research/orca/triples-per-time/instance#";
 
     protected static final Property property(String local) {
         return ResourceFactory.createProperty(TRIPLES_PER_TIME_URI, local);

@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.org/dice-group/ldcbench.svg?branch=master)](https://travis-ci.org/dice-group/ldcbench) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6030450cade64e259f69dddbd4a17c14)](https://www.codacy.com/app/MichaelRoeder/ldcbench?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dice-group/ldcbench&amp;utm_campaign=Badge_Grade)
 
-# Linked Data Crawler Benchmark
+# Benchmark for Data Web Crawlers
 
-Benchmark linked data crawlers with [the HOBBIT platform](http://project-hobbit.eu/).
+Benchmark Data Web Crawlers on [the HOBBIT platform](http://project-hobbit.eu/).
 
 ## Parameters
 
@@ -48,7 +48,7 @@ A visualisation of the generated synthetic Linked Data web.
 
 System needs to declare that it
 [implements](http://w3id.org/hobbit/vocab#implementsAPI)
-[`ldcbench:api`](https://github.com/dice-group/ldcbench#api).
+[`api`](https://github.com/dice-group/ldcbench#Api).
 
 If the system extends
 [`AbstractSystemAdapter`](https://github.com/hobbit-project/core/blob/master/src/main/java/org/hobbit/core/components/AbstractSystemAdapter.java),

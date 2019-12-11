@@ -2,11 +2,11 @@
 @prefix hobbit: <http://w3id.org/hobbit/vocab#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-@prefix : <https://github.com/dice-group/ldcbench#> .
+@prefix : <http://w3id.org/dice-research/orca/ontology#> .
 
 :Benchmark a hobbit:Benchmark;
-  rdfs:label "LDC-Bench"@en;
-  rdfs:comment "Linked Data Crawler Benchmark"@en;
+  rdfs:label "ORCA"@en;
+  rdfs:comment "Benchmark for Data Web Crawlers"@en;
   hobbit:imageName "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.controller";
   hobbit:version "v1.0"@en;
   hobbit:hasParameter
@@ -44,9 +44,9 @@
     :averageDiskUsage,
     :averageMemoryUsage,
     :runtime;
-  hobbit:hasAPI :Api .
+  hobbit:hasAPI <https://github.com/dice-group/ldcbench#Api> .
 
-:Api a hobbit:API .
+<https://github.com/dice-group/ldcbench#Api> a hobbit:API .
 
 
 :seed a hobbit:Parameter, hobbit:ConfigurableParameter;

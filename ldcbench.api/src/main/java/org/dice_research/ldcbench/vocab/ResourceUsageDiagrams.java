@@ -15,8 +15,8 @@ import org.hobbit.vocab.DataCube;
  */
 public class ResourceUsageDiagrams {
 
-    protected static final String BASE_URI = "https://www2020.thewebconf.org/orca/resource-usage-per-time#";
-    protected static final String BASE_INSTANCE_URI = "https://www2020.thewebconf.org/orca/resource-usage-per-time/instance#";
+    protected static final String BASE_URI = "http://w3id.org/dice-research/orca/resource-usage-per-time#";
+    protected static final String BASE_INSTANCE_URI = "http://w3id.org/dice-research/orca/resource-usage-per-time/instance#";
 
     protected static final Property property(String local) {
         return ResourceFactory.createProperty(BASE_URI, local);

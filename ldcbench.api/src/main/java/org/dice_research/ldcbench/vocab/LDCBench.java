@@ -9,7 +9,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
  */
 public class LDCBench {
 
-    protected static final String uri = "https://github.com/dice-group/ldcbench#";
+    protected static final String uri = "http://w3id.org/dice-research/orca/ontology#";
 
     /**
      * returns the URI for this schema

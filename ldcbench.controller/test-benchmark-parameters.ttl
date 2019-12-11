@@ -1,7 +1,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix hobbit: <http://w3id.org/hobbit/vocab#> .
 @prefix experiments: <http://w3id.org/hobbit/experiments#>
-@prefix : <https://github.com/dice-group/ldcbench#> .
+@prefix : <http://w3id.org/dice-research/orca/ontology#> .
 
 experiments:New a hobbit:Experiment;
   # FIXME to test for recall > 0, the seed is manually selected for DummySystem
