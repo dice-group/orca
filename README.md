@@ -4,6 +4,11 @@
 
 Benchmark Data Web Crawlers on [the HOBBIT platform](http://project-hobbit.eu/).
 
+## System adapter implementations
+
+* [LDSpider](https://github.com/dice-group/ldcbench-ldspider-adapter)
+* [Squirrel](https://github.com/dice-group/ldcbench-squirrel-adapter)
+
 ## Parameters
 
 ### Number of nodes
