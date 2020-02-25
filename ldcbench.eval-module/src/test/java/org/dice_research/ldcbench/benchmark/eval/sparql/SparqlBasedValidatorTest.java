@@ -2,15 +2,17 @@ package org.dice_research.ldcbench.benchmark.eval.sparql;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.aksw.jena_sparql_api.core.QueryExecutionFactoryDataset;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.dice_research.ldcbench.benchmark.eval.GraphSupplier;
+import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.dice_research.ldcbench.benchmark.eval.ValidationResult;
-import org.dice_research.ldcbench.benchmark.eval.sparql.SparqlBasedValidator;
+import org.dice_research.ldcbench.benchmark.eval.supplier.pattern.GraphBasedTripleBlockStreamCreator;
+import org.dice_research.ldcbench.benchmark.eval.supplier.pattern.TripleBlockStreamSupplier;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.graph.GraphBuilder;
 import org.dice_research.ldcbench.graph.GrphBasedGraph;
@@ -21,7 +23,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class SparqlBasedValidatorTest implements GraphSupplier {
+public class SparqlBasedValidatorTest implements TripleBlockStreamSupplier {
 
     protected Dataset dataset;
     protected String[] domains;
@@ -152,21 +154,12 @@ public class SparqlBasedValidatorTest implements GraphSupplier {
     }
 
     @Override
-    public Graph getGraph(int id) {
-        if (id < graphs.length) {
-            return graphs[id];
+    public Stream<ElementTriplesBlock> getTripleBlocks(int graphId) {
+        if (graphId < graphs.length) {
+            return GraphBasedTripleBlockStreamCreator.createStreamForGraph(graphs[graphId],
+                    new SimpleQueryPatternCreator(graphId, domains, domains));
         } else {
             return null;
         }
-    }
-
-    @Override
-    public String[] getResourceUriTemplates() {
-        return domains;
-    }
-
-    @Override
-    public String[] getAccessUriTemplates() {
-        return domains;
     }
 }

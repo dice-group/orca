@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench.benchmark.eval;
+package org.dice_research.ldcbench.benchmark.eval.timer;
 
 import org.hobbit.core.data.usage.ResourceUsageInformation;
 import org.hobbit.core.components.utils.SystemResourceUsageRequester;

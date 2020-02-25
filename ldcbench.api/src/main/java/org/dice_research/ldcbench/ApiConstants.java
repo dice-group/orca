@@ -33,5 +33,8 @@ public class ApiConstants {
     public static final byte NODE_READY_SIGNAL = 124;
     public static final byte NODE_RESULTS_SIGNAL = -5;
     public static final byte NODE_URI_TEMPLATE = -2;
+    
+    public static final String FILE_ENDING_GRAPH=".graph";
+    public static final String FILE_ENDING_TTL_TAR_GZ=".ttl.tar.gz";
 
 }

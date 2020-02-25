@@ -18,7 +18,7 @@ public class CkanQueryPatternCreator implements QueryPatternCreator {
     /**
      * Constructor.
      */
-    protected CkanQueryPatternCreator(int graphId, String[] resourceUriTemplates, String[] accessUriTemplates) {
+    public CkanQueryPatternCreator(int graphId, String[] resourceUriTemplates, String[] accessUriTemplates) {
         tripleCreator = new SimpleTripleCreator(graphId, resourceUriTemplates, accessUriTemplates);
     }
 

@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench.benchmark.eval;
+package org.dice_research.ldcbench.benchmark.eval.timer;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -12,7 +12,7 @@ public class SimpleQueryPatternCreator implements QueryPatternCreator {
     /**
      * Constructor.
      */
-    protected SimpleQueryPatternCreator(int graphId, String[] resourceUriTemplates, String[] accessUriTemplates) {
+    public SimpleQueryPatternCreator(int graphId, String[] resourceUriTemplates, String[] accessUriTemplates) {
         tripleCreator = new SimpleTripleCreator(graphId, resourceUriTemplates, accessUriTemplates);
     }
 

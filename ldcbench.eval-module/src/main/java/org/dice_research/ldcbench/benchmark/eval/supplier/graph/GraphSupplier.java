@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench.benchmark.eval;
+package org.dice_research.ldcbench.benchmark.eval.supplier.graph;
 
 import org.dice_research.ldcbench.graph.Graph;
 
@@ -9,6 +9,7 @@ import org.dice_research.ldcbench.graph.Graph;
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
+@Deprecated
 public interface GraphSupplier {
 
     /**

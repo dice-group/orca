@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench.benchmark.eval;
+package org.dice_research.ldcbench.benchmark.eval.supplier.graph;
 
 import java.io.File;
 
@@ -8,6 +8,7 @@ import org.dice_research.ldcbench.graph.serialization.SerializationHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class FileBasedGraphSupplier implements GraphSupplier {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileBasedGraphSupplier.class);

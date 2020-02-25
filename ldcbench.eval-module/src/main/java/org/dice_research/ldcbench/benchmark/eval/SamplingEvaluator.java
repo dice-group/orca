@@ -6,6 +6,7 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class SamplingEvaluator implements CrawledDataEvaluator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SamplingEvaluator.class);

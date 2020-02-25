@@ -1,5 +1,7 @@
 package org.dice_research.ldcbench.benchmark.eval;
 
+import org.dice_research.ldcbench.benchmark.eval.supplier.pattern.TripleBlockStreamSupplier;
+
 /**
  * Interface for a class which can validate a crawled graph based on the given
  * graph information.
@@ -14,10 +16,10 @@ public interface GraphValidator {
      * given supplier.
      * 
      * @param supplier
-     *            graph supplier containing the ground truth graph
+     *            supplier containing the ground truth graphs
      * @param graphId
      *            the ID of the graph that should be validated
      * @return the result of the validation process
      */
-    public ValidationResult validate(GraphSupplier supplier, int graphId);
+    public ValidationResult validate(TripleBlockStreamSupplier supplier, int graphId);
 }

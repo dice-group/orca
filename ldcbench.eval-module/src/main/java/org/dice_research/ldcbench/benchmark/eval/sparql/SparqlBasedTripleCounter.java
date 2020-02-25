@@ -7,7 +7,7 @@ import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
-import org.dice_research.ldcbench.benchmark.eval.TripleCounter;
+import org.dice_research.ldcbench.benchmark.eval.timer.TripleCounter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

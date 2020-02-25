@@ -3,6 +3,8 @@ package org.dice_research.ldcbench.benchmark.eval;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.dice_research.ldcbench.benchmark.eval.supplier.pattern.TripleBlockStreamSupplier;
+
 /**
  * A simple implementation of the {@link CrawledDataEvaluator} inteface which
  * iterates over all triples of all graphs and checks whether they can be found
@@ -17,7 +19,7 @@ public class SimpleCompleteEvaluator implements CrawledDataEvaluator {
      * Supplier used to access the generated graphs, i.e., the ground truth for the
      * evaluation.
      */
-    protected GraphSupplier supplier;
+    protected TripleBlockStreamSupplier supplier;
     /**
      * The validator used to validate the single graphs.
      */
@@ -32,7 +34,7 @@ public class SimpleCompleteEvaluator implements CrawledDataEvaluator {
      * @param validator
      *            The validator used to validate the single graphs.
      */
-    public SimpleCompleteEvaluator(GraphSupplier supplier, GraphValidator validator) {
+    public SimpleCompleteEvaluator(TripleBlockStreamSupplier supplier, GraphValidator validator) {
         this.supplier = supplier;
         this.validator = validator;
     }
