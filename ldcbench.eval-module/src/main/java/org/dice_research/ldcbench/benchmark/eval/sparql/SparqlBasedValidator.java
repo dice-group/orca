@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench.benchmark.eval;
+package org.dice_research.ldcbench.benchmark.eval.sparql;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -13,6 +13,10 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
+import org.dice_research.ldcbench.benchmark.eval.GraphSupplier;
+import org.dice_research.ldcbench.benchmark.eval.GraphValidator;
+import org.dice_research.ldcbench.benchmark.eval.ValidationCounter;
+import org.dice_research.ldcbench.benchmark.eval.ValidationResult;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.rdf.TripleCreator;
 import org.slf4j.Logger;

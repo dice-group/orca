@@ -3,7 +3,7 @@ package org.dice_research.ldcbench.benchmark.eval;
 import org.dice_research.ldcbench.graph.Graph;
 
 /**
- * A simple interface that allowes the evaluation to get all necessary
+ * A simple interface that allows the evaluation to get all necessary
  * information about the generated graphs.
  * 
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)

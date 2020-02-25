@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench.benchmark.eval;
+package org.dice_research.ldcbench.benchmark.eval.sparql;
 
 import org.aksw.jena_sparql_api.core.QueryExecutionFactoryDataset;
 import org.apache.jena.query.Dataset;
@@ -6,6 +6,7 @@ import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.dice_research.ldcbench.benchmark.eval.sparql.SparqlBasedTripleCounter;
 import org.junit.Assert;
 import org.junit.Test;
 

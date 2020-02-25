@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench.benchmark.eval;
+package org.dice_research.ldcbench.benchmark.eval.sparql;
 
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;

@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench.benchmark.eval;
+package org.dice_research.ldcbench.benchmark.eval.sparql;
 
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;

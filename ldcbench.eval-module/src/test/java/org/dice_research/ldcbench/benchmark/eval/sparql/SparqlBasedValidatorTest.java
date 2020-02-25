@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench.benchmark.eval;
+package org.dice_research.ldcbench.benchmark.eval.sparql;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +8,9 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.dice_research.ldcbench.benchmark.eval.GraphSupplier;
+import org.dice_research.ldcbench.benchmark.eval.ValidationResult;
+import org.dice_research.ldcbench.benchmark.eval.sparql.SparqlBasedValidator;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.graph.GraphBuilder;
 import org.dice_research.ldcbench.graph.GrphBasedGraph;
