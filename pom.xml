@@ -52,6 +52,7 @@
     <module>ldcbench.http-node</module>
     <module>ldcbench.nodes</module>
     <module>ldcbench.parent</module>
+    <module>ldcbench.rdfa</module>
     <module>ldcbench.sparql-node</module>
     <module>ldcbench.system</module>
   </modules>
