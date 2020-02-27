@@ -1,10 +1,12 @@
 package org.dice_research.ldcbench.benchmark.eval.supplier.bytes;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.zip.GZIPInputStream;
 
@@ -29,7 +31,7 @@ public class TarGZBasedTTLModelIterator implements Iterator<Model>, AutoCloseabl
 
     @Override
     public synchronized boolean hasNext() {
-        if(model == null) {
+        if (model == null) {
             readModel();
         }
         return model != null;
@@ -48,8 +50,16 @@ public class TarGZBasedTTLModelIterator implements Iterator<Model>, AutoCloseabl
             TarArchiveEntry entry = tarStream.getNextTarEntry();
             while (entry != null) {
                 if (entry.isFile()) {
+                    int size = (int) entry.getSize();
+                    byte buffer[] = new byte[size];
+                    int readSize = tarStream.read(buffer);
+                    if (readSize != size) {
+                        LOGGER.debug("Read {} byte although {} bytes were expected", readSize, size);
+                    }
                     Model localModel = ModelFactory.createDefaultModel();
-                    localModel.read(tarStream, "", "TTL");
+                    try (InputStream is = new ByteArrayInputStream(buffer, 0, readSize)) {
+                        localModel.read(is, "", "TTL");
+                    }
                     model = localModel;
                     return;
                 }
