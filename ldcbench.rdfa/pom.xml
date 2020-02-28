@@ -18,6 +18,14 @@
       <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.data-generator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.http-node</artifactId>
+    </dependency>
     <!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
     <!-- slf4j: Logging API -->
     <dependency>

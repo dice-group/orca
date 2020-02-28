@@ -1,9 +1,10 @@
-package org.dice_research.ldcbench.rdfa;
+package org.dice_research.ldcbench.rdfa.gen;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import org.dice_research.ldcbench.rdfa.gen.ManifestProcessor;
 import org.junit.Test;
 
 import junit.framework.Assert;

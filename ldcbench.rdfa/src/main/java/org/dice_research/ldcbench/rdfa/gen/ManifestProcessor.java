@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench.rdfa;
+package org.dice_research.ldcbench.rdfa.gen;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -21,6 +21,13 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Processes the manifest.ttl files of the RDFa test suite and extracts the
+ * pairs of HTML and TTL files of all tests that are classified as "required".
+ * 
+ * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
+ *
+ */
 public class ManifestProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManifestProcessor.class);
@@ -32,6 +39,12 @@ public class ManifestProcessor {
     private static final String SELECTED_HTML_FILE = "f1";
     private static final String SELECTED_TTL_FILE = "f2";
 
+    /**
+     * Creates a mapping of html file to ttl file.
+     * 
+     * @param manifestFile
+     * @return
+     */
     public Map<String, String> loadTests(String manifestFile) {
         try (InputStream is = new BufferedInputStream(new FileInputStream(new File(manifestFile)))) {
             return loadTests(is);
