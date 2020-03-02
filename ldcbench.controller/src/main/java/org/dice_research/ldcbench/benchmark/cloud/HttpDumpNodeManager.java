@@ -32,7 +32,7 @@ public class HttpDumpNodeManager extends AbstractNodeManager {
     }
 
     @Override
-    public String getImageName() {
+    public String getNodeImageName() {
         return HTTPNODE_IMAGE_NAME;
     }
 

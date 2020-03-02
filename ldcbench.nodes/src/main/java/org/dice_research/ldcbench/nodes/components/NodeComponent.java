@@ -42,14 +42,16 @@ abstract public class NodeComponent extends AbstractCommandReceivingComponent im
     protected boolean dockerized;
 
     /**
-     * Must be set during initBeforeDataGeneration, would be used as a hostname
-     * by which this node should be accessed by the benchmarked system
-     * instead of node container's hostname.
+     * Must be set during initBeforeDataGeneration, would be used as a hostname by
+     * which this node should be accessed by the benchmarked system instead of node
+     * container's hostname.
      */
     protected String resourceUriTemplate;
     protected String accessUriTemplate;
 
     protected DataReceiver receiver;
+    protected SimpleFileReceiver fileReceiver;
+    protected GraphHandler graphHandler;
     protected ObjectStreamFanoutExchangeConsumer<NodeMetadata[]> bcBroadcastConsumer;
     protected NodeMetadata nodeMetadata[];
     protected List<Graph> graphs;
@@ -82,10 +84,7 @@ abstract public class NodeComponent extends AbstractCommandReceivingComponent im
         };
 
         // initialize graph queue
-        String queueName = EnvVariables.getString(ApiConstants.ENV_DATA_QUEUE_KEY);
-        SimpleFileReceiver receiver = SimpleFileReceiver.create(this.incomingDataQueueFactory, queueName);
-        GraphHandler graphHandler = new GraphHandler(receiver);
-        Thread receiverThread = new Thread(graphHandler);
+        Thread receiverThread = createReceiverThread();
         receiverThread.start();
 
         sendToCmdQueue(ApiConstants.NODE_START_SIGNAL, RabbitMQUtils.writeLong(cloudNodeId.get()));
@@ -98,17 +97,45 @@ abstract public class NodeComponent extends AbstractCommandReceivingComponent im
 
         nodeAcked.acquire();
         sendToCmdQueue(ApiConstants.NODE_URI_TEMPLATE, RabbitMQUtils.writeByteArrays(new byte[][] {
-            RabbitMQUtils.writeString(Integer.toString(cloudNodeId.get())),
-            RabbitMQUtils.writeString(resourceUriTemplate),
-            RabbitMQUtils.writeString(accessUriTemplate),
-        }));
+                RabbitMQUtils.writeString(Integer.toString(cloudNodeId.get())),
+                RabbitMQUtils.writeString(resourceUriTemplate), RabbitMQUtils.writeString(accessUriTemplate), }));
         LOGGER.debug("{} initialized.", this);
         sendToCmdQueue(ApiConstants.NODE_INIT_SIGNAL);
 
         // Wait for the data generation to finish
         dataGenerationFinished.acquire();
 
-        receiver.terminate();
+        joinReceiverThread(receiverThread);
+
+        initAfterDataGeneration();
+
+        LOGGER.debug("{} is ready.", this);
+        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
+    }
+
+    /**
+     * A method that creates a thread for receiving the data of from the data
+     * generator.
+     * 
+     * @return
+     * @throws IOException
+     */
+    protected Thread createReceiverThread() throws IOException {
+        String queueName = EnvVariables.getString(ApiConstants.ENV_DATA_QUEUE_KEY);
+        fileReceiver = SimpleFileReceiver.create(this.incomingDataQueueFactory, queueName);
+        graphHandler = new GraphHandler(fileReceiver);
+        return new Thread(graphHandler);
+    }
+
+    /**
+     * Method that triggers the receiver thread to terminate, waits for it to finish
+     * its work and checks the received data.
+     * 
+     * @param receiverThread
+     * @throws InterruptedException
+     */
+    protected void joinReceiverThread(Thread receiverThread) throws InterruptedException {
+        fileReceiver.terminate();
         receiverThread.join();
 
         if (graphHandler.encounteredError()) {
@@ -121,11 +148,6 @@ abstract public class NodeComponent extends AbstractCommandReceivingComponent im
         if (nodeMetadata == null) {
             throw new IllegalStateException("Didn't receive the URI templates from the benchmark controller.");
         }
-
-        initAfterDataGeneration();
-
-        LOGGER.debug("{} is ready.", this);
-        sendToCmdQueue(ApiConstants.NODE_READY_SIGNAL);
     }
 
     @Override
@@ -134,7 +156,8 @@ abstract public class NodeComponent extends AbstractCommandReceivingComponent im
         case Commands.DATA_GENERATION_FINISHED:
             LOGGER.debug("Received DATA_GENERATION_FINISHED");
             dataGenerationFinished.release();
-        break; case ApiConstants.NODE_ACK_SIGNAL:
+            break;
+        case ApiConstants.NODE_ACK_SIGNAL:
             try {
                 if (RabbitMQUtils.readLong(data) == cloudNodeId.get()) {
                     nodeAcked.release();
@@ -142,7 +165,8 @@ abstract public class NodeComponent extends AbstractCommandReceivingComponent im
             } catch (ExecutionException | InterruptedException e) {
                 throw new IllegalStateException(e);
             }
-        break; case ApiConstants.CRAWLING_FINISHED_SIGNAL:
+            break;
+        case ApiConstants.CRAWLING_FINISHED_SIGNAL:
             Model nodeResult = ModelFactory.createDefaultModel();
             Resource root = nodeResult.createResource(nodeURI);
             addResults(nodeResult, root);

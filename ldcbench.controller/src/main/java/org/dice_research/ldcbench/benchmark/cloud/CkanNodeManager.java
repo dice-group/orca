@@ -25,7 +25,7 @@ public class CkanNodeManager extends AbstractNodeManager {
     }
 
     @Override
-    public String getImageName() {
+    public String getNodeImageName() {
         return CKANNODE_IMAGE_NAME;
     }
 

@@ -3,11 +3,17 @@ package org.dice_research.ldcbench.benchmark.cloud;
 import org.apache.jena.rdf.model.Property;
 import org.dice_research.ldcbench.benchmark.DataGenerator;
 import org.dice_research.ldcbench.vocab.LDCBench;
-import static org.dice_research.ldcbench.Constants.*;
+import org.dice_research.ldcbench.Constants;
 
-public class SparqlNodeManager extends AbstractNodeManager {
+/**
+ * Manager class for an RDFa node. 
+ * 
+ * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
+ *
+ */
+public class RDFaNodeManager extends AbstractNodeManager {
     public static Property getBenchmarkParameter() {
-        return LDCBench.sparqlNodeWeight;
+        return LDCBench.rdfaNodeWeight;
     }
 
     @Override
@@ -18,19 +24,25 @@ public class SparqlNodeManager extends AbstractNodeManager {
     @Override
     public String[] getDataGeneratorEnvironment(long averageRdfGraphDegree, long triplesPerNode) {
         String[] env = new String[]{
-            DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageRdfGraphDegree,
-            DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,
+            DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 0,
+            DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + 1,
         };
         return env;
     }
 
     @Override
     public String getNodeImageName() {
-        return SPARQLNODE_IMAGE_NAME;
+        return Constants.RDFANODE_IMAGE_NAME;
     }
 
     @Override
     public String getLabel() {
-        return "SPARQL";
+        return "RDFa";
     }
+    
+    @Override
+        public String getDataGeneratorImageName() {
+            // TODO Auto-generated method stub
+            return super.getDataGeneratorImageName();
+        }
 }

@@ -22,6 +22,7 @@ import org.dice_research.ldcbench.benchmark.DataGenerator;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.rdfa.node.SimpleRDFaComponent;
+import org.dice_research.ldcbench.utils.tar.TarFileGenerator;
 import org.hobbit.core.rabbit.RabbitQueueFactory;
 import org.hobbit.core.rabbit.SimpleFileSender;
 import org.slf4j.Logger;
@@ -31,7 +32,9 @@ public class RDFaDataGenerator extends DataGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RDFaDataGenerator.class);
 
-    protected static final File ENTRANCE_FILE = new File("entrance.html");
+    public static final String ENTRANCE_FILE_NAME = "entrance.html";
+    
+    protected static final File ENTRANCE_FILE = new File(ENTRANCE_FILE_NAME);
     protected static final String RDFA_TEST_DOMAIN = "http://rdfa.info/test-suite/test-cases/";
     protected static final String TEST_ROOT_DIRECTORY = "rdfa.github.io/test-suite/test-cases/";
     protected static final String TEST_CASES[] = new String[] { "rdfa1.0/html4", "rdfa1.0/xhtml1", "rdfa1.1/html4",
@@ -65,7 +68,7 @@ public class RDFaDataGenerator extends DataGenerator {
                 getNodeId());
 
         // Generate HTML tar file
-        generateAndSendTarFile(filePrefix + ".html.tar.gz", htmlFiles, outgoingDataQueuefactory, dataQueueName);
+        generateAndSendTarFile(filePrefix + ApiConstants.FILE_ENDING_HTML_TAR_GZ, htmlFiles, outgoingDataQueuefactory, dataQueueName);
 
         // Generate TTL tar file
         generateAndSendTarFile(filePrefix + ApiConstants.FILE_ENDING_TTL_TAR_GZ, ttlFiles, outgoingDataQueuefactory,
