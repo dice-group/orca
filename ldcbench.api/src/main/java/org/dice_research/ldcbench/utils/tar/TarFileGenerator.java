@@ -1,4 +1,4 @@
-package org.dice_research.ldcbench.rdfa.gen;
+package org.dice_research.ldcbench.utils.tar;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
