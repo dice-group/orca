@@ -10,7 +10,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../ldcbench.parent</relativePath>
   </parent>
-  <artifactId>ldcbench.rdfa</artifactId>
+  <artifactId>ldcbench.rdfa-gen</artifactId>
   <packaging>jar</packaging>
 
   <dependencies>

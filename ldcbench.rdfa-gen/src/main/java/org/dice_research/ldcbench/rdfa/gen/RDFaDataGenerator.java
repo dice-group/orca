@@ -21,7 +21,6 @@ import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.benchmark.DataGenerator;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
-import org.dice_research.ldcbench.rdfa.node.SimpleRDFaComponent;
 import org.dice_research.ldcbench.utils.tar.TarFileGenerator;
 import org.hobbit.core.rabbit.RabbitQueueFactory;
 import org.hobbit.core.rabbit.SimpleFileSender;
@@ -33,6 +32,7 @@ public class RDFaDataGenerator extends DataGenerator {
     private static final Logger LOGGER = LoggerFactory.getLogger(RDFaDataGenerator.class);
 
     public static final String ENTRANCE_FILE_NAME = "entrance.html";
+    public static final String ACCESS_URI_TEMPLATE_PATTERN = "/%s-%s/%s-%s";
     
     protected static final File ENTRANCE_FILE = new File(ENTRANCE_FILE_NAME);
     protected static final String RDFA_TEST_DOMAIN = "http://rdfa.info/test-suite/test-cases/";
@@ -52,7 +52,7 @@ public class RDFaDataGenerator extends DataGenerator {
         convertTestUrisToFiles(tests.values(), ttlFiles);
 
         // Generate URL of resources on the node
-        String nodeDomain = accessUriTemplates[getNodeId()].replace(SimpleRDFaComponent.ACCESS_URI_TEMPLATE_PATTERN,
+        String nodeDomain = accessUriTemplates[getNodeId()].replace(ACCESS_URI_TEMPLATE_PATTERN,
                 "");
         // Load the tests and replace URIs
         replaceUrisInFiles(htmlFiles.values(), RDFA_TEST_DOMAIN, nodeDomain);

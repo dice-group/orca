@@ -1,3 +1,3 @@
-[submodule "ldcbench.rdfa/rdfa.github.io"]
-	path = ldcbench.rdfa/rdfa.github.io
+[submodule "ldcbench.rdfa-gen/rdfa.github.io"]
+	path = ldcbench.rdfa-gen/rdfa.github.io
 	url = https://github.com/rdfa/rdfa.github.io.git

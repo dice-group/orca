@@ -32,8 +32,6 @@ public class SimpleRDFaComponent extends SimpleHttpServerComponent {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServerComponent.class);
 
-    public static final String ACCESS_URI_TEMPLATE_PATTERN = "/%s-%s/%s-%s";
-
     protected DataHandler dataHandler;
 
     @Override
@@ -55,7 +53,7 @@ public class SimpleRDFaComponent extends SimpleHttpServerComponent {
         if (port != 80) {
             uriBuilder.append(':').append(port);
         }
-        uriBuilder.append(ACCESS_URI_TEMPLATE_PATTERN);
+        uriBuilder.append(RDFaDataGenerator.ACCESS_URI_TEMPLATE_PATTERN);
 
         accessUriTemplate = uriBuilder.toString();
         resourceUriTemplate = accessUriTemplate;
