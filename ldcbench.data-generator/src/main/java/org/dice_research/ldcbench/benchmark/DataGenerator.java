@@ -156,7 +156,8 @@ public class DataGenerator extends AbstractDataGenerator {
 
     protected void sendFinalGraph(Graph g) throws Exception {
         byte[] data = SerializationHelper.serialize(SERIALIZER_CLASS, g);
-        String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d",
+        String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d"
+                + ApiConstants.FILE_ENDING_GRAPH,
                 getNodeId());
 
         // TODO: Use RabbitMQ exchange to send the data (SimpleFileSender doesn't
