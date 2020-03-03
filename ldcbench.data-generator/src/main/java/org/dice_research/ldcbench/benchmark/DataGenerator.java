@@ -156,7 +156,8 @@ public class DataGenerator extends AbstractDataGenerator {
 
     protected void sendFinalGraph(Graph g) throws Exception {
         byte[] data = SerializationHelper.serialize(SERIALIZER_CLASS, g);
-        String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d",
+        String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d"
+                + ApiConstants.FILE_ENDING_GRAPH,
                 getNodeId());
 
         // TODO: Use RabbitMQ exchange to send the data (SimpleFileSender doesn't
@@ -199,10 +200,10 @@ public class DataGenerator extends AbstractDataGenerator {
         dataGeneratorsExchange = EnvVariables.getString(ENV_DATAGENERATOR_EXCHANGE_KEY);
         dataGeneratorsChannel = cmdQueueFactory.getConnection().createChannel();
 
-        accessUriTemplates = parseStringArray(EnvVariables.getString(ENV_ACCESS_URI_TEMPLATES_KEY, LOGGER));
-        resourceUriTemplates = parseStringArray(EnvVariables.getString(ENV_RESOURCE_URI_TEMPLATES_KEY, LOGGER));
-
         if (type == Types.RDF_GRAPH_GENERATOR) {
+            accessUriTemplates = parseStringArray(EnvVariables.getString(ENV_ACCESS_URI_TEMPLATES_KEY, LOGGER));
+            resourceUriTemplates = parseStringArray(EnvVariables.getString(ENV_RESOURCE_URI_TEMPLATES_KEY, LOGGER));
+
             // Queue for sending final graphs to BenchmarkController
             dataQueueName = EnvVariables.getString(ENV_DATA_QUEUE_KEY);
             evalDataQueueName = EnvVariables.getString(ApiConstants.ENV_EVAL_DATA_QUEUE_KEY);
