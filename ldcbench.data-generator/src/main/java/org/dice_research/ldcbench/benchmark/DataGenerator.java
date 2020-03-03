@@ -199,10 +199,10 @@ public class DataGenerator extends AbstractDataGenerator {
         dataGeneratorsExchange = EnvVariables.getString(ENV_DATAGENERATOR_EXCHANGE_KEY);
         dataGeneratorsChannel = cmdQueueFactory.getConnection().createChannel();
 
-        accessUriTemplates = parseStringArray(EnvVariables.getString(ENV_ACCESS_URI_TEMPLATES_KEY, LOGGER));
-        resourceUriTemplates = parseStringArray(EnvVariables.getString(ENV_RESOURCE_URI_TEMPLATES_KEY, LOGGER));
-
         if (type == Types.RDF_GRAPH_GENERATOR) {
+            accessUriTemplates = parseStringArray(EnvVariables.getString(ENV_ACCESS_URI_TEMPLATES_KEY, LOGGER));
+            resourceUriTemplates = parseStringArray(EnvVariables.getString(ENV_RESOURCE_URI_TEMPLATES_KEY, LOGGER));
+
             // Queue for sending final graphs to BenchmarkController
             dataQueueName = EnvVariables.getString(ENV_DATA_QUEUE_KEY);
             evalDataQueueName = EnvVariables.getString(ApiConstants.ENV_EVAL_DATA_QUEUE_KEY);
