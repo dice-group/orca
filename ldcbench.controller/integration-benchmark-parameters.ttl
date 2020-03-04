@@ -20,8 +20,8 @@ experiments:New a hobbit:Experiment;
   :useN3Dumps "true"^^xsd:boolean;
   :useRdfXmlDumps "true"^^xsd:boolean;
   :useNtDumps "true"^^xsd:boolean;
-  :rdfaNodeWeight 0;
+  :rdfaNodeWeight 1;
   :ckanNodeWeight 0.01;
   :sparqlNodeWeight 0.01;
-  :numberOfNodes 3;
+  :numberOfNodes 4;
   :averageNodeGraphDegree 2.
