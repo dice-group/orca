@@ -83,8 +83,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private Set<Future<String>> dataGenContainers = new HashSet<>();
     private List<Future<String>> nodeContainers = new ArrayList<>();
 
-    private Class<?>[] possibleNodeManagerClasses = { DereferencingHttpNodeManager.class, CkanNodeManager.class,
-            SparqlNodeManager.class, HttpDumpNodeManager.class };
+    private Class<?>[] possibleNodeManagerClasses = {
+        DereferencingHttpNodeManager.class,
+        CkanNodeManager.class,
+        SparqlNodeManager.class,
+        HttpDumpNodeManager.class,
+    };
 
     private boolean sdk;
     private boolean dockerized;
