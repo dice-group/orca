@@ -184,17 +184,18 @@ public class BenchmarkTestBase {
             Assert.fail();
         }
 
+        Model resultModel = componentsExecutor.resultModel;
         // As long as there are any HTTP nodes, dummy system should crawl something.
-        Assert.assertNotNull(componentsExecutor.resultModel);
+        Assert.assertNotNull("resultModel", resultModel);
 
-        double recall = Double.parseDouble(RdfHelper.getStringValue(componentsExecutor.resultModel, null, LDCBench.macroRecall));
+        double recall = Double.parseDouble(RdfHelper.getStringValue(resultModel, null, LDCBench.macroRecall));
         Assert.assertTrue("Macro-recall > 0", recall > 0);
 
         int dereferencingHttpNodeWeight = Integer.parseInt(RdfHelper.getStringValue(benchmarkParameters, null, LDCBench.dereferencingHttpNodeWeight));
         if (dereferencingHttpNodeWeight > 0) {
-            double minAverageCrawlDelayFulfillment = Double.parseDouble(RdfHelper.getStringValue(componentsExecutor.resultModel, null, LDCBench.minAverageCrawlDelayFulfillment));
+            double minAverageCrawlDelayFulfillment = Double.parseDouble(RdfHelper.getStringValue(resultModel, null, LDCBench.minAverageCrawlDelayFulfillment));
             Assert.assertTrue("minAverageCrawlDelayFulfillment > 1", minAverageCrawlDelayFulfillment > 1);
-            double maxAverageCrawlDelayFulfillment = Double.parseDouble(RdfHelper.getStringValue(componentsExecutor.resultModel, null, LDCBench.maxAverageCrawlDelayFulfillment));
+            double maxAverageCrawlDelayFulfillment = Double.parseDouble(RdfHelper.getStringValue(resultModel, null, LDCBench.maxAverageCrawlDelayFulfillment));
             Assert.assertTrue("maxAverageCrawlDelayFulfillment < 1.5", maxAverageCrawlDelayFulfillment < 1.5);
         } else {
             LOGGER.info("Crawl-delay assertions skipped.");
