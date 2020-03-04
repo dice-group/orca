@@ -19,6 +19,7 @@ experiments:New a hobbit:Experiment;
   :useN3Dumps "true"^^xsd:boolean;
   :useRdfXmlDumps "true"^^xsd:boolean;
   :useNtDumps "true"^^xsd:boolean;
+  :rdfaNodeWeight 0;
   :ckanNodeWeight 0.01;
   # FIXME if using SPARQL node:
   #
