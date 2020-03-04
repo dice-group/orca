@@ -324,7 +324,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                             ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                             ApiConstants.ENV_CRAWL_DELAY_KEY + "=" + averageCrawlDelay,
                             ApiConstants.ENV_DISALLOWED_RATIO_KEY + "=" + averageDisallowedRatio,
-                            ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345),
+                            ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 30000 + i),
                             ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
                             ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++,
                             ApiConstants.ENV_COMPRESSED_RATIO_KEY + "=" + httpDumpNodeCompressedRatio,
