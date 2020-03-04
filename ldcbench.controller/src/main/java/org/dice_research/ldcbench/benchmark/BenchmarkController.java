@@ -684,7 +684,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
         Files.write(dotfile, dotlangLines, Charset.defaultCharset());
 
         // Send the resultModul to the platform controller and terminate
-        LOGGER.debug("Sending result model: {}", RabbitMQUtils.writeModel2String(resultModel));
         sendResultModel(resultModel);
     }
 

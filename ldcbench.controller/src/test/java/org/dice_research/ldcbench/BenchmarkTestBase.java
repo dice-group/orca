@@ -14,8 +14,11 @@ import static org.hobbit.core.Constants.RABBIT_MQ_HOST_NAME_KEY;
 import static org.hobbit.core.Constants.SYSTEM_PARAMETERS_MODEL_KEY;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Date;
 
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.rdf.model.Model;
 import org.dice_research.ldcbench.benchmark.BenchmarkController;
 import org.dice_research.ldcbench.benchmark.DataGenerator;
@@ -187,6 +190,10 @@ public class BenchmarkTestBase {
         Model resultModel = componentsExecutor.resultModel;
         // As long as there are any HTTP nodes, dummy system should crawl something.
         Assert.assertNotNull("resultModel", resultModel);
+
+        StringWriter modelWriter = new StringWriter();
+        RDFDataMgr.write(modelWriter, resultModel, Lang.TURTLE);
+        LOGGER.info("Result model", modelWriter.toString());
 
         double recall = Double.parseDouble(RdfHelper.getStringValue(resultModel, null, LDCBench.macroRecall));
         Assert.assertTrue("Macro-recall > 0", recall > 0);
