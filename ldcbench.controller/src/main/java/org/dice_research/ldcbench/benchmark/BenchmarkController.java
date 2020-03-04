@@ -51,6 +51,7 @@ import org.dice_research.ldcbench.benchmark.cloud.CkanNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.DereferencingHttpNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.HttpDumpNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.NodeManager;
+import org.dice_research.ldcbench.benchmark.cloud.RDFaNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.SparqlNodeManager;
 import org.dice_research.ldcbench.benchmark.node.NodeSizeDeterminer;
 import org.dice_research.ldcbench.benchmark.node.NodeSizeDeterminerFactory;
@@ -88,6 +89,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         CkanNodeManager.class,
         SparqlNodeManager.class,
         HttpDumpNodeManager.class,
+        RDFaNodeManager.class,
     };
 
     private boolean sdk;
