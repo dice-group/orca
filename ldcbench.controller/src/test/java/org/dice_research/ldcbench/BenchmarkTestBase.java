@@ -193,7 +193,7 @@ public class BenchmarkTestBase {
 
         StringWriter modelWriter = new StringWriter();
         RDFDataMgr.write(modelWriter, resultModel, Lang.TURTLE);
-        LOGGER.info("Result model", modelWriter.toString());
+        LOGGER.info("Result model:\n{}", modelWriter.toString());
 
         double recall = Double.parseDouble(RdfHelper.getStringValue(resultModel, null, LDCBench.macroRecall));
         Assert.assertTrue("Macro-recall > 0", recall > 0);
