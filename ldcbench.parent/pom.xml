@@ -17,6 +17,9 @@
     <slf4j.version>1.7.10</slf4j.version>
     <junit.version>4.12</junit.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- The versions of jena and the sparql-api have to fit to each other -->
+    <jena.version>3.12.0</jena.version>
+    <jena-sparql-api.version>${jena.version}-1</jena-sparql-api.version>
   </properties>
 
   <!-- REPOSITORIES -->
@@ -143,12 +146,12 @@
       <dependency>
         <groupId>org.apache.jena</groupId>
         <artifactId>jena-arq</artifactId>
-        <version>3.6.0</version>
+        <version>${jena.version}</version>
       </dependency>
       <dependency>
         <groupId>org.aksw.jena-sparql-api</groupId>
         <artifactId>jena-sparql-api-core</artifactId>
-        <version>3.6.0-3</version>
+        <version>${jena-sparql-api.version}</version>
       </dependency>
       <!-- Grph -->
       <dependency>
