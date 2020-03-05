@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 public class DataHandler implements Runnable {
 
-private static final Logger LOGGER = LoggerFactory.getLogger(DataHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataHandler.class);
 
     protected SimpleFileReceiver receiver;
     protected int errorCount = 0;
@@ -25,6 +25,12 @@ private static final Logger LOGGER = LoggerFactory.getLogger(DataHandler.class);
         try {
             receiveOutputDir = getTempDir();
             receivedFiles = receiver.receiveData(receiveOutputDir);
+            if (!receiveOutputDir.endsWith(File.separator)) {
+                receiveOutputDir += File.separator;
+            }
+            for (int i = 0; i < receivedFiles.length; ++i) {
+                receivedFiles[i] = receiveOutputDir + receivedFiles[i];
+            }
         } catch (Exception e) {
             LOGGER.error("Error while reading graph. Increasing error count.", e);
             ++errorCount;
@@ -49,7 +55,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(DataHandler.class);
     public boolean encounteredError() {
         return errorCount > 0;
     }
-    
+
     public String[] getReceivedFiles() {
         return receivedFiles;
     }
