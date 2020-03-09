@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 public class SimpleRDFaComponent extends SimpleHttpServerComponent {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServerComponent.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleRDFaComponent.class);
 
     protected DataHandler dataHandler;
 
