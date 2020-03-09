@@ -27,7 +27,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(GraphHandler.class)
             super.run();
             if(!encounteredError()) {
                 // FIXME fix usage of file [0]
-                handleData(Files.readAllBytes(new File(receiveOutputDir, receivedFiles[0]).toPath()));
+                handleData(Files.readAllBytes(new File(receivedFiles[0]).toPath()));
             }
         } catch (Exception e) {
             LOGGER.error("Error while reading graph. Increasing error count.", e);

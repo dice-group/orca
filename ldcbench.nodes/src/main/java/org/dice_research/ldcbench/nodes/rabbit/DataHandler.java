@@ -25,11 +25,8 @@ public class DataHandler implements Runnable {
         try {
             receiveOutputDir = getTempDir();
             receivedFiles = receiver.receiveData(receiveOutputDir);
-            if (!receiveOutputDir.endsWith(File.separator)) {
-                receiveOutputDir += File.separator;
-            }
             for (int i = 0; i < receivedFiles.length; ++i) {
-                receivedFiles[i] = receiveOutputDir + receivedFiles[i];
+                receivedFiles[i] = new File(receiveOutputDir, receivedFiles[i]).getPath();
             }
         } catch (Exception e) {
             LOGGER.error("Error while reading graph. Increasing error count.", e);
