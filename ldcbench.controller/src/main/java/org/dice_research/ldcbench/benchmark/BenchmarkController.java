@@ -131,11 +131,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
         return java.util.UUID.randomUUID().toString();
     }
 
-    private void createDataGenerator(String generatorImageName, String[] envVariables) {
+    private void createDataGenerator(NodeManager nodeManager, String[] envVariables) {
         String variables[] = envVariables != null ? Arrays.copyOf(envVariables, envVariables.length + 1)
                 : new String[1];
         variables[variables.length - 1] = Constants.GENERATOR_ID_KEY + "=" + (dataGenContainers.size() + 1);
-        Future<String> container = createContainerAsync(generatorImageName, Constants.CONTAINER_TYPE_BENCHMARK,
+        Future<String> container = createContainerAsync(nodeManager.getDataGeneratorImageName(), Constants.CONTAINER_TYPE_BENCHMARK,
                 variables);
         dataGenContainers.add(container);
     }
@@ -416,7 +416,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                         DataGenerator.ENV_RESOURCE_URI_TEMPLATES_KEY + "=" + serializedResourceUris,},
                         nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree,
                                 nodeSizeDeterminer.getNodeSize()));
-                createDataGenerator(DATAGEN_IMAGE_NAME, envVariables);
+                createDataGenerator(nodeManagers.get(i), envVariables);
                 // FIXME: HOBBIT SDK workaround (setting environment for "containers")
                 if (sdk) {
                     Thread.sleep(2000);

@@ -41,8 +41,7 @@ public class RDFaNodeManager extends AbstractNodeManager {
     }
     
     @Override
-        public String getDataGeneratorImageName() {
-            // TODO Auto-generated method stub
-            return super.getDataGeneratorImageName();
-        }
+    public String getDataGeneratorImageName() {
+        return Constants.RDFADATAGEN_IMAGE_NAME;
+    }
 }
