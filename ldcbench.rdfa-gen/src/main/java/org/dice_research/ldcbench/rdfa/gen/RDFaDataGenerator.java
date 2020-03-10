@@ -136,9 +136,9 @@ public class RDFaDataGenerator extends DataGenerator {
 
     protected Map<String, String> loadTestFiles() {
         ManifestProcessor processor = new ManifestProcessor();
-        StringBuilder pathBuilder = new StringBuilder();
         Map<String, String> testFiles = new HashMap<>();
         for (int i = 0; i < TEST_CASES.length; ++i) {
+            StringBuilder pathBuilder = new StringBuilder();
             pathBuilder.append(TEST_ROOT_DIRECTORY);
             pathBuilder.append(TEST_CASES[i]);
             pathBuilder.append("/manifest.ttl");
