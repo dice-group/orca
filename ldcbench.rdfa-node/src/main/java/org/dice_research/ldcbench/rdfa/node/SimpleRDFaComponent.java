@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.SocketAddress;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -116,14 +118,14 @@ public class SimpleRDFaComponent extends SimpleHttpServerComponent {
         connection.connect(address);
     }
 
-    protected Map<String, File> createMapping(File contentDir, Set<String> files) {
+    protected Map<String, File> createMapping(File contentDir, Set<String> files) throws MalformedURLException {
         Map<String, File> mapping = new HashMap<>();
         String prefix = contentDir.getAbsolutePath() + File.separator;
         for (String f : files) {
             if (RDFaDataGenerator.ENTRANCE_FILE_NAME.equals(f)) {
-                mapping.put(String.format(accessUriTemplate, "dataset", "0", "resource", "0"), new File(prefix + f));
+                mapping.put(new URL(String.format(accessUriTemplate, "dataset", "0", "resource", "0")).getPath(), new File(prefix, f));
             } else {
-                mapping.put(f, new File(prefix + f));
+                mapping.put(new URL(f).getPath(), new File(prefix, f));
             }
         }
         return mapping;

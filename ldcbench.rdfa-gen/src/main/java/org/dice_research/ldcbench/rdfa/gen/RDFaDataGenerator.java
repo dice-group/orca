@@ -53,7 +53,7 @@ public class RDFaDataGenerator extends DataGenerator {
 
         // Generate URL of resources on the node
         String nodeDomain = accessUriTemplates[getNodeId()].replace(ACCESS_URI_TEMPLATE_PATTERN,
-                "");
+                "") + "/";
         // Load the tests and replace URIs
         replaceUrisInFiles(htmlFiles.values(), RDFA_TEST_DOMAIN, nodeDomain);
         replaceUrisInFiles(ttlFiles.values(), RDFA_TEST_DOMAIN, nodeDomain);
@@ -62,7 +62,7 @@ public class RDFaDataGenerator extends DataGenerator {
         // Generate HTML file based on the graph and the list of test files
         generateEntranceFile(graph, htmlFiles, ENTRANCE_FILE);
         // Add entrance file to the list of HTML files
-        htmlFiles.put(String.format(accessUriTemplates[getNodeId()], "dataset", "0", "resource", "0"), ENTRANCE_FILE);
+        htmlFiles.put(ENTRANCE_FILE_NAME, ENTRANCE_FILE);
 
         String filePrefix = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d",
                 getNodeId());
@@ -108,8 +108,7 @@ public class RDFaDataGenerator extends DataGenerator {
 
     protected static void convertTestUrisToFiles(Collection<String> testUris, Map<String, File> files) {
         for (String uri : testUris) {
-            uri = uri.substring(RDFA_TEST_DOMAIN.length());
-            files.put(uri, new File(TEST_ROOT_DIRECTORY + uri));
+            files.put(uri, new File(TEST_ROOT_DIRECTORY, uri.substring(RDFA_TEST_DOMAIN.length())));
         }
     }
 
