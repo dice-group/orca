@@ -22,6 +22,7 @@ public class FileBasedResource extends AbstractCrawleableResource {
 
     public FileBasedResource(Map<String, File> files, String contentType) {
         super(r -> files.containsKey(r.getPath().toString()), contentType);
+        this.files = files;
     }
 
     @Override
