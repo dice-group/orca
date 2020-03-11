@@ -36,7 +36,10 @@ public class RDFaDataGenerator extends DataGenerator {
     
     protected static final File ENTRANCE_FILE = new File(ENTRANCE_FILE_NAME);
     protected static final String RDFA_TEST_DOMAIN = "http://rdfa.info/test-suite/test-cases/";
-    protected static final String TEST_ROOT_DIRECTORY = "rdfa.github.io/test-suite/test-cases/";
+
+    // "../ldcbench.rdfa-gen/" makes it work in ldcbench.controller tests
+    protected static final String TEST_ROOT_DIRECTORY = "../ldcbench.rdfa-gen/rdfa.github.io/test-suite/test-cases/";
+
     protected static final String TEST_CASES[] = new String[] { "rdfa1.0/html4", "rdfa1.0/xhtml1", "rdfa1.1/html4",
             "rdfa1.1/html5", "rdfa1.1/xhtml1", "rdfa1.1/xhtml5" };
 
