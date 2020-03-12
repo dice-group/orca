@@ -115,7 +115,7 @@ public class RDFaDataGenerator extends DataGenerator {
         }
     }
 
-    protected SortedMap<String, File> replaceUrisInMapping(Map<String, File> uriFileMapping, String regex,
+    protected static SortedMap<String, File> replaceUrisInMapping(Map<String, File> uriFileMapping, String regex,
             String replacement) {
         final SortedMap<String, File> newMap = new TreeMap<>();
         uriFileMapping.entrySet().stream()
@@ -123,12 +123,12 @@ public class RDFaDataGenerator extends DataGenerator {
         return newMap;
     }
 
-    protected void replaceUrisInFiles(Collection<File> values, String regex, String replacement) {
+    protected static void replaceUrisInFiles(Collection<File> values, String regex, String replacement) {
         String fileContent;
         for (File f : values) {
             try {
                 fileContent = FileUtils.readFileToString(f, StandardCharsets.UTF_8);
-                fileContent.replaceAll(regex, replacement);
+                fileContent = fileContent.replaceAll(regex, replacement);
                 FileUtils.write(f, fileContent, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 LOGGER.error("Couldn't update file content of " + f.getAbsolutePath() + ". It will be ignored.", e);
