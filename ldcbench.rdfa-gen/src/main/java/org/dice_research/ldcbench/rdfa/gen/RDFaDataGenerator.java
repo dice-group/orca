@@ -61,6 +61,7 @@ public class RDFaDataGenerator extends DataGenerator {
         replaceUrisInFiles(htmlFiles.values(), RDFA_TEST_DOMAIN, nodeDomain);
         replaceUrisInFiles(ttlFiles.values(), RDFA_TEST_DOMAIN, nodeDomain);
         htmlFiles = replaceUrisInMapping(htmlFiles, RDFA_TEST_DOMAIN, nodeDomain);
+        ttlFiles = replaceUrisInMapping(ttlFiles, RDFA_TEST_DOMAIN, nodeDomain);
 
         // Generate HTML file based on the graph and the list of test files
         generateEntranceFile(graph, htmlFiles, ENTRANCE_FILE);

@@ -47,18 +47,22 @@ public class TarGZBasedTTLModelIterator implements Iterator<Model>, AutoCloseabl
 
     private void readModel() {
         try {
+            int readSize = 0;
             TarArchiveEntry entry = tarStream.getNextTarEntry();
             while (entry != null) {
                 if (entry.isFile()) {
                     int size = (int) entry.getSize();
                     byte buffer[] = new byte[size];
-                    int readSize = tarStream.read(buffer);
-                    if (readSize != size) {
-                        LOGGER.debug("Read {} byte although {} bytes were expected", readSize, size);
+                    readSize = 0;
+                    while(readSize < size) {
+                        readSize  += tarStream.read(buffer, readSize, size);
                     }
                     Model localModel = ModelFactory.createDefaultModel();
                     try (InputStream is = new ByteArrayInputStream(buffer, 0, readSize)) {
                         localModel.read(is, "", "TTL");
+                    } catch (Exception e) {
+                        System.err.println(new String(buffer));
+                        throw new IOException("Error while reading entry \"" + entry.getName() + "\".", e);
                     }
                     model = localModel;
                     return;
@@ -67,7 +71,9 @@ public class TarGZBasedTTLModelIterator implements Iterator<Model>, AutoCloseabl
                 entry = tarStream.getNextTarEntry();
             }
         } catch (Exception e) {
-            LOGGER.error("Exception while reading tar file. This is an unexpected error which causes a runtime exception.", e);
+            LOGGER.error(
+                    "Exception while reading tar file. This is an unexpected error which causes a runtime exception.",
+                    e);
             throw new IllegalStateException("Exception while reading tar file. This is an unexpected error.", e);
         }
     }
