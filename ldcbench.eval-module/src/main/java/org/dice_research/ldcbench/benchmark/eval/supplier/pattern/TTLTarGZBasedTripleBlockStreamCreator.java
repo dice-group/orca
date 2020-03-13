@@ -14,8 +14,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.benchmark.eval.sparql.QueryPatternCreator;
-import org.dice_research.ldcbench.benchmark.eval.supplier.bytes.TarGZBasedTTLModelIterator;
 import org.dice_research.ldcbench.graph.Graph;
+import org.dice_research.ldcbench.utils.tar.TarGZBasedTTLModelIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

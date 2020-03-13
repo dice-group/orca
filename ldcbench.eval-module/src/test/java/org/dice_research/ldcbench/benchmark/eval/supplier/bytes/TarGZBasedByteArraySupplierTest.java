@@ -19,6 +19,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.dice_research.ldcbench.utils.tar.TarGZBasedTTLModelIterator;
 import org.hobbit.utils.test.ModelComparisonHelper;
 import org.junit.Assert;
 import org.junit.Test;
