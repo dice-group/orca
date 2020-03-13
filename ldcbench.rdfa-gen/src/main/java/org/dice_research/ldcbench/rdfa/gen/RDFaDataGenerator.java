@@ -136,7 +136,7 @@ public class RDFaDataGenerator extends DataGenerator {
         }
     }
 
-    protected Map<String, String> loadTestFiles() {
+    protected static Map<String, String> loadTestFiles() {
         ManifestProcessor processor = new ManifestProcessor();
         Map<String, String> testFiles = new HashMap<>();
         for (int i = 0; i < TEST_CASES.length; ++i) {

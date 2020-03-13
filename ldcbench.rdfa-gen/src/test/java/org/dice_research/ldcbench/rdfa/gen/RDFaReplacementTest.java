@@ -18,7 +18,7 @@ import junit.framework.Assert;
 
 public class RDFaReplacementTest {
 
-    private static final String NODE_DOMAIN = "http://example.org/";
+    protected static final String NODE_DOMAIN = "http://example.org/";
 
     private static final String EXPECTED_HTML_FILES = "/expectedHTMLFiles/";
     private static final String EXPECTED_TTL_FILES = "/expectedTTLFiles/";
