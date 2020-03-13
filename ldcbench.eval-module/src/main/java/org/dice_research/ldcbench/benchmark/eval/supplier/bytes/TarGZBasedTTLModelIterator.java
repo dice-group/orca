@@ -67,7 +67,8 @@ public class TarGZBasedTTLModelIterator implements Iterator<Model>, AutoCloseabl
                 entry = tarStream.getNextTarEntry();
             }
         } catch (Exception e) {
-            LOGGER.error("Exception while reading tar file. Returning null.", e);
+            LOGGER.error("Exception while reading tar file. This is an unexpected error which causes a runtime exception.", e);
+            throw new IllegalStateException("Exception while reading tar file. This is an unexpected error.", e);
         }
     }
 
