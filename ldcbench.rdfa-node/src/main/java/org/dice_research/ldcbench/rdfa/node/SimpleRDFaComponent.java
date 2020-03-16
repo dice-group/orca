@@ -122,7 +122,7 @@ public class SimpleRDFaComponent extends SimpleHttpServerComponent {
         Map<String, File> mapping = new HashMap<>();
         String prefix = contentDir.getAbsolutePath() + File.separator;
         for (String f : files) {
-            if (RDFaDataGenerator.ENTRANCE_FILE_NAME.equals(f)) {
+            if (RDFaDataGenerator.ENTRANCE_HTML_FILE_NAME.equals(f)) {
                 mapping.put(new URL(String.format(accessUriTemplate, "dataset", "0", "resource", "0")).getPath(), new File(prefix, f));
             } else {
                 mapping.put(new URL(f).getPath(), new File(prefix, f));
