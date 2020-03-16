@@ -31,10 +31,12 @@ public class RDFaDataGenerator extends DataGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RDFaDataGenerator.class);
 
-    public static final String ENTRANCE_FILE_NAME = "entrance.html";
+    public static final String ENTRANCE_HTML_FILE_NAME = "entrance.html";
+    public static final String ENTRANCE_TTL_FILE_NAME = "entrance.ttl";
     public static final String ACCESS_URI_TEMPLATE_PATTERN = "/%s-%s/%s-%s";
     
-    protected static final File ENTRANCE_FILE = new File(ENTRANCE_FILE_NAME);
+    protected static final File ENTRANCE_HTML_FILE = new File(ENTRANCE_HTML_FILE_NAME);
+    protected static final File ENTRANCE_TTL_FILE = new File(ENTRANCE_TTL_FILE_NAME);
     protected static final String RDFA_TEST_DOMAIN = "http://rdfa.info/test-suite/test-cases/";
 
     // "../ldcbench.rdfa-gen/" makes it work in ldcbench.controller tests
@@ -63,10 +65,11 @@ public class RDFaDataGenerator extends DataGenerator {
         htmlFiles = replaceUrisInMapping(htmlFiles, RDFA_TEST_DOMAIN, nodeDomain);
         ttlFiles = replaceUrisInMapping(ttlFiles, RDFA_TEST_DOMAIN, nodeDomain);
 
-        // Generate HTML file based on the graph and the list of test files
-        generateEntranceFile(graph, htmlFiles, ENTRANCE_FILE);
-        // Add entrance file to the list of HTML files
-        htmlFiles.put(ENTRANCE_FILE_NAME, ENTRANCE_FILE);
+        // Generate HTML and TTL file based on the graph and the list of test files
+        generateEntranceFile(graph, htmlFiles, ENTRANCE_HTML_FILE, ENTRANCE_TTL_FILE);
+        // Add entrance file to the list of HTML and ttl files
+        htmlFiles.put(ENTRANCE_HTML_FILE_NAME, ENTRANCE_HTML_FILE);
+        ttlFiles.put(ENTRANCE_TTL_FILE_NAME, ENTRANCE_TTL_FILE);
 
         String filePrefix = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d",
                 getNodeId());
@@ -79,7 +82,7 @@ public class RDFaDataGenerator extends DataGenerator {
                 evalDataQueueName);
     }
 
-    protected void generateEntranceFile(Graph graph, Map<String, File> htmlFiles, File entranceFile)
+    protected void generateEntranceFile(Graph graph, Map<String, File> htmlFiles, File entranceFile, File entranceTTLFile)
             throws IOException {
         SimpleTripleCreator creator = new SimpleTripleCreator(getNodeId(), resourceUriTemplates, accessUriTemplates);
 
@@ -89,7 +92,7 @@ public class RDFaDataGenerator extends DataGenerator {
         String entranceUri = generateEntranceNodeUri(graph, creator);
 
         RDFaEntranceFileGenerator generator = new RDFaEntranceFileGenerator();
-        generator.generate(entranceFile, entranceUri, outgoingLinks);
+        generator.generate(entranceFile, entranceTTLFile, entranceUri, outgoingLinks);
     }
 
     protected String generateEntranceNodeUri(Graph graph, SimpleTripleCreator creator) {
