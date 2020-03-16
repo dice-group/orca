@@ -21,9 +21,11 @@ public class RDFaEntranceFileGeneratorTest {
         
         File htmlFile = File.createTempFile("rdfa-test", ".html");
         htmlFile.deleteOnExit();
+        File ttlFile = File.createTempFile("rdfa-test", ".ttl");
+        ttlFile.deleteOnExit();
         
         RDFaEntranceFileGenerator generator = new RDFaEntranceFileGenerator();
-        generator.generate(htmlFile, "http://example.org/resource0", urls);
+        generator.generate(htmlFile, ttlFile, "http://example.org/resource0", urls);
         
         String expectedFile = null;
         try(InputStream in = this.getClass().getResourceAsStream("/expectedRDFaEntranceFile.html")) {
