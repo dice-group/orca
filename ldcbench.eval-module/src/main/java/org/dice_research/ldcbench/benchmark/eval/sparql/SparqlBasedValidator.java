@@ -1,18 +1,22 @@
 package org.dice_research.ldcbench.benchmark.eval.sparql;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.http.QueryExecutionFactoryHttp;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
+import org.apache.jena.vocabulary.XSD;
 import org.dice_research.ldcbench.benchmark.eval.GraphValidator;
 import org.dice_research.ldcbench.benchmark.eval.ValidationCounter;
 import org.dice_research.ldcbench.benchmark.eval.ValidationResult;
@@ -32,6 +36,8 @@ import org.slf4j.LoggerFactory;
  */
 public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(SparqlBasedValidator.class);
+
+    protected static final long SPARQL_QUERY_DELAY = 250;
 
     /**
      * Query execution factory used for the communication with the SPARQL endpoint.
@@ -58,6 +64,7 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
      */
     public static SparqlBasedValidator create(String endpoint) {
         QueryExecutionFactory qef = new QueryExecutionFactoryHttp(endpoint);
+//        qef = new QueryExecutionFactoryDelay(qef, SPARQL_QUERY_DELAY);
         return new SparqlBasedValidator(qef);
     }
 
@@ -124,19 +131,64 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
      * @return {@code true} if the edge exists, else {@code false}
      */
     protected Boolean[] results(ElementTriplesBlock pattern) {
+        // FIXME workaround: evaluate every triple one by one.
+        List<Boolean> results = new ArrayList<>();
+        Iterator<Triple> iter = pattern.patternElts();
+        Triple t;
+        while (iter.hasNext()) {
+            t = iter.next();
+            // FIXME workaround: do not evaluate triples which have a time literal since
+            // Virtuoso seems to have an issue with them. Replace that literal with a
+            // variable.
+            if(t.getObject().isLiteral() && XSD.time.getURI().equals(t.getObject().getLiteralDatatypeURI())) {
+                t = new Triple(t.getSubject(), t.getPredicate(), NodeFactory.createVariable("v"));
+            }
+            results.add(execute(t));
+        }
+        return results.toArray(new Boolean[results.size()]);
+
+//        Query q = QueryFactory.create();
+//        q.setQueryAskType();
+//        int expected = 0;
+//        ElementTriplesBlock whereBlock = new ElementTriplesBlock();
+//        Iterator<Triple> iter = pattern.patternElts();
+//        Triple t;
+//        int vCount = 0;
+//        while (iter.hasNext()) {
+//            t = iter.next();
+//            // FIXME workaround: do not evaluate triples which have a time literal since
+//            // Virtuoso seems to have an issue with them. Replace that literal with a
+//            // variable.
+//            if (t.getObject().isLiteral() && XSD.time.getURI().equals(t.getObject().getLiteralDatatypeURI())) {
+//                // replace the literal and ensure that the next literal will get a different
+//                // variable
+//                t = new Triple(t.getSubject(), t.getPredicate(), NodeFactory.createVariable("v" + vCount));
+//                ++vCount;
+//            }
+//            whereBlock.addTriple(t);
+//            expected++;
+//        }
+//        q.setQueryPattern(pattern);
+//        try (QueryExecution qe = qef.createQueryExecution(q)) {
+//            boolean result = execAskQuery(qe, 5, 5000);
+//            if (!result) {
+//                LOGGER.debug("Didn't get expected pattern: {}", pattern.toString().replace("\n", " "));
+//            }
+//            return IntStream.range(0, expected).mapToObj(i -> result).toArray(Boolean[]::new);
+//        } catch (Exception e) {
+//            LOGGER.error("Failure when executing query: {}", q.toString().replace("\n", " "));
+//            throw e;
+//        }
+    }
+
+    protected boolean execute(Triple triple) {
         Query q = QueryFactory.create();
         q.setQueryAskType();
-        int expected = 0;
-        for (Iterator<?> i = pattern.patternElts(); i.hasNext(); i.next()) {
-            expected++;
-        }
+        ElementTriplesBlock pattern = new ElementTriplesBlock();
+        pattern.addTriple(triple);
         q.setQueryPattern(pattern);
         try (QueryExecution qe = qef.createQueryExecution(q)) {
-            boolean result = execAskQuery(qe, 5, 5000);
-            if (!result) {
-                LOGGER.debug("Didn't get expected pattern: {}", pattern.toString().replace("\n", " "));
-            }
-            return IntStream.range(0, expected).mapToObj(i -> result).toArray(Boolean[]::new);
+            return execAskQuery(qe, 5, 5000);
         } catch (Exception e) {
             LOGGER.error("Failure when executing query: {}", q.toString().replace("\n", " "));
             throw e;
