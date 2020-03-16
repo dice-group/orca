@@ -7,6 +7,7 @@ import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.Literal;
 import org.dice_research.ldcbench.benchmark.eval.timer.TripleCounter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +60,13 @@ public class SparqlBasedTripleCounter implements TripleCounter, AutoCloseable {
             ResultSet rs = qe.execSelect();
             if (rs.hasNext()) {
                 QuerySolution qs = rs.next();
-                return qs.getLiteral(COUNT_VARIABLE_NAME).getLong();
+                Literal result = qs.getLiteral(COUNT_VARIABLE_NAME);
+                if(result != null) {
+                return result.getLong();
+                } else {
+                    LOGGER.info("Did not get a valid triple count. Returning -1.");
+                    return -1;
+                }
             }
         } catch (Exception e) {
             LOGGER.error("Got an exception while querying triple count. Returning -1.", e);
