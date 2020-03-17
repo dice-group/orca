@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -130,7 +131,8 @@ public class SystemAdapter extends AbstractSystemAdapter {
                     }
 
                     Model model = ModelFactory.createDefaultModel();
-                    InputStream input = url.openStream();
+                    URLConnection con = url.openConnection();
+                    InputStream input = con.getInputStream();
                     String path = url.getPath();
                     {
                         Matcher m = Pattern.compile("^(.+)\\.(gz)$").matcher(path);
