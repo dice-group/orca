@@ -66,6 +66,12 @@
       <artifactId>ldcbench.system</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+      <version>2.1.1</version>
+      <scope>test</scope>
+    </dependency>
     <!-- HOBBIT core library -->
     <dependency>
       <groupId>org.hobbit</groupId>

@@ -1,5 +1,11 @@
 package org.dice_research.ldcbench.system;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import org.apache.any23.Any23;
+import org.apache.any23.source.StringDocumentSource;
+import org.apache.any23.writer.NTriplesWriter;
+import org.apache.any23.writer.TripleHandler;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -143,7 +149,21 @@ public class SystemAdapter extends AbstractSystemAdapter {
                             }
                         }
                     }
-                    {
+
+                    String contentType = con.getContentType();
+                    logger.info("Content-Type: {}", contentType);
+
+                    if ("text/html".equals(contentType)) {
+                        // Crawl embedded data in HTML.
+                        Any23 runner = new Any23();
+                        ByteArrayOutputStream out = new ByteArrayOutputStream();
+                        try (TripleHandler handler = new NTriplesWriter(out)) {
+                            runner.extract(new StringDocumentSource(IOUtils.toString(input, con.getContentEncoding()), uri), handler);
+                        }
+                        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+                        model.read(in, null, RDFLanguages.NTRIPLES.getName());
+                    } else {
+                        // Directly read RDF data.
                         Matcher m = Pattern.compile("^(.+)\\.([^.]+)$").matcher(path);
                         if (m.find()) {
                             model.read(input, null, RDFLanguages.fileExtToLang(m.group(2)).getName());
