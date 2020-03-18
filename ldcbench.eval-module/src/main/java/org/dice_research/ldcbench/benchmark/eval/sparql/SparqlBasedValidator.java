@@ -135,6 +135,7 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
         List<Boolean> results = new ArrayList<>();
         Iterator<Triple> iter = pattern.patternElts();
         Triple t;
+        boolean queryResult; 
         while (iter.hasNext()) {
             t = iter.next();
             // FIXME workaround: do not evaluate triples which have a time literal since
@@ -143,7 +144,11 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
             if(t.getObject().isLiteral() && XSD.time.getURI().equals(t.getObject().getLiteralDatatypeURI())) {
                 t = new Triple(t.getSubject(), t.getPredicate(), NodeFactory.createVariable("v"));
             }
-            results.add(execute(t));
+            queryResult = execute(t);
+            if(LOGGER.isInfoEnabled()) {
+                LOGGER.info("Couldn't find triple " + t.toString());
+            }
+            results.add(queryResult);
         }
         return results.toArray(new Boolean[results.size()]);
 
