@@ -159,12 +159,14 @@ public class BenchmarkTestBase {
         rabbitMqDockerizer.run();
 
 
+        String squirrelAdapterImage = "git.project-hobbit.eu:4567/ldcbench/ldcbench-squirrel-adapter";
         //comment the .systemAdapter(systemAdapter) line below to use the code for running from python
         CommandReactionsBuilder commandReactionsBuilder = new CommandReactionsBuilder(componentsExecutor, commandQueueListener)
                         .benchmarkController(benchmarkController).benchmarkControllerImageName(BENCHMARK_IMAGE_NAME)
                         .dataGenerator(dataGen).dataGeneratorImageName(dataGeneratorBuilder.getImageName())
                         .evalModule(evalModule).evalModuleImageName(evalModuleBuilder.getImageName())
-                        .systemAdapter(systemAdapter).systemAdapterImageName(SYSTEM_IMAGE_NAME)
+                        // .systemAdapter(systemAdapter).systemAdapterImageName(SYSTEM_IMAGE_NAME)
+                        .systemAdapterImageName(squirrelAdapterImage)
                         .customContainerImage(httpNode, HTTPNODE_IMAGE_NAME)
                         .customContainerImage(ckanNode, CKANNODE_IMAGE_NAME)
                         .customContainerImage(sparqlNode, SPARQLNODE_IMAGE_NAME)
@@ -190,7 +192,7 @@ public class BenchmarkTestBase {
 
         //Alternative. Start components via command queue (will be executed by the platform (if running))
         benchmarkContainerId = commandQueueListener.createContainer(benchmarkBuilder.getImageName(), "benchmark", benchmarkParamsStr);
-        systemContainerId = commandQueueListener.createContainer(systemAdapterBuilder.getImageName(), "system" , systemParamsStr);
+        systemContainerId = commandQueueListener.createContainer(squirrelAdapterImage, "system" , systemParamsStr);
 
         environmentVariables.set("BENCHMARK_CONTAINER_ID", benchmarkContainerId);
         environmentVariables.set("SYSTEM_CONTAINER_ID", systemContainerId);
@@ -235,7 +237,7 @@ public class BenchmarkTestBase {
     }
 
     public Model createSystemParameters() throws IOException {
-        return ModelsHandler.readModelFromFile("test-system-parameters.ttl");
+        return ModelsHandler.readModelFromFile("squirrel-parameters.ttl");
     }
 
     private String prettyModelString(Model model) {

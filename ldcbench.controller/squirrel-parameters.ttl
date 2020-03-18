@@ -1,0 +1,8 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix hobbit: <http://w3id.org/hobbit/vocab#> .
+@prefix experiments: <http://w3id.org/hobbit/experiments#>
+
+experiments:New a hobbit:Experiment;
+  <http://project-hobbit.eu/ldcbench-system/squirrelFrontierImage> "dicegroup/squirrel-frontier:latest" ;
+  <http://project-hobbit.eu/ldcbench-system/squirrelWorkerImage> "dicegroup/squirrel-worker:latest" ;
+  <http://project-hobbit.eu/ldcbench-system/numberOfWorkers> "1"^^xsd:integer .
