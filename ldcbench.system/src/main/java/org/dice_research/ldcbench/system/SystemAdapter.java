@@ -23,11 +23,12 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.modify.request.QuadDataAcc;
-import org.apache.jena.sparql.modify.request.UpdateDataInsert;
+import org.apache.jena.sparql.modify.request.QuadAcc;
+import org.apache.jena.sparql.modify.request.UpdateDeleteInsert;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
@@ -193,13 +194,15 @@ public class SystemAdapter extends AbstractSystemAdapter {
                         model.listObjects().forEachRemaining(this::queueURI);
                     }
 
+                    UpdateDeleteInsert update = new UpdateDeleteInsert();
+                    QuadAcc insertQuads = update.getInsertAcc();
+                    model.listStatements().toList().stream()
+                    .map(Statement::asTriple)
+                    .map(triple -> new Quad(graph, triple))
+                    .forEach(insertQuads::addQuad);
+
                     UpdateExecutionFactory.createRemoteForm(
-                        new UpdateRequest(new UpdateDataInsert(new QuadDataAcc(
-                            model.listStatements().toList().stream()
-                            .map(stmt -> stmt.asTriple())
-                            .map(tri -> new Quad(graph, tri))
-                            .collect(Collectors.toList())
-                        ))),
+                        new UpdateRequest(update),
                         sparqlUrl,
                         httpClient
                     ).execute();
