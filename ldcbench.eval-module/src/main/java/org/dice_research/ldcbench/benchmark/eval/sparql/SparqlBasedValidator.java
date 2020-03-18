@@ -146,7 +146,7 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
                 t = new Triple(t.getSubject(), t.getPredicate(), NodeFactory.createVariable("v"));
             }
             queryResult = execute(t);
-            if(debug) {
+            if(!queryResult && debug) {
                 LOGGER.debug("Couldn't find triple " + t.toString());
             }
             results.add(queryResult);
