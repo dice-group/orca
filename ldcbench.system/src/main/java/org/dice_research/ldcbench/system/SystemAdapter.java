@@ -1,5 +1,12 @@
 package org.dice_research.ldcbench.system;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import org.apache.any23.Any23;
+import org.apache.any23.source.StringDocumentSource;
+import org.apache.any23.writer.NTriplesWriter;
+import org.apache.any23.writer.TripleHandler;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -13,11 +20,15 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.riot.RDFLanguages;
+import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.modify.request.QuadDataAcc;
-import org.apache.jena.sparql.modify.request.UpdateDataInsert;
+import org.apache.jena.sparql.modify.request.QuadAcc;
+import org.apache.jena.sparql.modify.request.UpdateDeleteInsert;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
@@ -26,16 +37,19 @@ import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.vocab.HOBBIT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.apache.jena.riot.RDFLanguages.TURTLE;
 
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -49,6 +63,10 @@ import javax.json.JsonValue;
 public class SystemAdapter extends AbstractSystemAdapter {
     private static final Logger logger = LoggerFactory.getLogger(SystemAdapter.class);
     private Map<String, String> parameters = new HashMap<>();
+
+    Set<String> seedURIs;
+    Set<String> queuedURIs;
+    Set<String> processedURIs = new HashSet<>();
 
     @Override
     public void init() throws Exception {
@@ -76,15 +94,16 @@ public class SystemAdapter extends AbstractSystemAdapter {
         String sparqlUrl = RabbitMQUtils.readString(buffer);
         String sparqlUser = RabbitMQUtils.readString(buffer);
         String sparqlPwd = RabbitMQUtils.readString(buffer);
-        ArrayList<String> seedURIs = new ArrayList<>(Arrays.asList(RabbitMQUtils.readString(buffer).split("\n")));
+        seedURIs = new HashSet<>(Arrays.asList(RabbitMQUtils.readString(buffer).split("\n")));
+        queuedURIs = new HashSet<>(seedURIs);
 
-        logger.info("SPARQL endpoint: " + sparqlUrl);
+        logger.debug("SPARQL endpoint: " + sparqlUrl);
         assert sparqlUrl.length() > 0;
-        logger.info("Seed URIs: {}.", seedURIs);
-        assert seedURIs.size() > 0;
-        logger.info("SPARQL endpoint username: {}.", sparqlUser);
+        logger.debug("SPARQL endpoint username: {}", sparqlUser);
         assert sparqlUser.length() > 0;
         assert sparqlPwd.length() > 0;
+        logger.info("Seed URIs: {}", seedURIs);
+        assert seedURIs.size() > 0;
 
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(sparqlUser, sparqlPwd));
@@ -93,24 +112,29 @@ public class SystemAdapter extends AbstractSystemAdapter {
             .build();
         Node graph = NodeFactory.createURI("http://localhost:8890/sparql");
 
-        while (seedURIs.size() != 0) {
-            String uri = seedURIs.remove(0);
+        logger.info("Crawling starts.");
+
+        while (queuedURIs.size() != 0) {
+            String uri = queuedURIs.iterator().next();
+            queuedURIs.remove(uri);
+            processedURIs.add(uri);
 
             try {
+                logger.debug("URI: {}", uri);
+
                 if (uri.matches(".*:5000/")) {
-                    logger.info("Accessing CKAN {}...", uri);
+                    logger.debug("Using CKAN API...");
                     try (InputStream listStream = new URL(uri + "api/3/action/package_list").openStream()) {
                         JsonReader jr = Json.createReader(listStream);
                         for (JsonValue id : jr.readObject().getJsonArray("result")) {
                             try (InputStream showStream = new URL(uri + "api/3/action/package_show?id=" + ((JsonString)id).getString()).openStream()) {
                                 String resourceUrl = Json.createReader(showStream).readObject().getJsonObject("result").getJsonArray("resources").getJsonObject(0).getString("url");
-                                logger.info("CKAN resource: {}", resourceUrl);
-                                seedURIs.add(resourceUrl);
+                                logger.debug("Got CKAN resource: {}", resourceUrl);
+                                queueURI(resourceUrl);
                             }
                         }
                     }
                 } else {
-                    logger.info("Crawling {}...", uri);
                     URL url = new URL(uri);
 
                     Integer crawlDelay = null;
@@ -122,15 +146,18 @@ public class SystemAdapter extends AbstractSystemAdapter {
                                 .map(s -> Integer.parseInt(s.split(": ")[1]))
                                 .orElse(null);
                         if (crawlDelay != null) {
-                            logger.info("Crawl-delay is {}, waiting between accessing robots.txt and the needed URL...", crawlDelay);
+                            logger.debug("Crawl-delay is {}, waiting between accessing robots.txt and the needed URL...", crawlDelay);
                             Thread.sleep(crawlDelay * 1000);
                         }
+                    } catch (FileNotFoundException e) {
+                        // no robots.txt
                     } catch (Exception e) {
                         logger.error("Exception while trying to access robots.txt.", e);
                     }
 
                     Model model = ModelFactory.createDefaultModel();
-                    InputStream input = url.openStream();
+                    URLConnection con = url.openConnection();
+                    InputStream input = con.getInputStream();
                     String path = url.getPath();
                     {
                         Matcher m = Pattern.compile("^(.+)\\.(gz)$").matcher(path);
@@ -141,24 +168,41 @@ public class SystemAdapter extends AbstractSystemAdapter {
                             }
                         }
                     }
-                    {
-                        Matcher m = Pattern.compile("^(.+)\\.([^.]+)$").matcher(path);
-                        if (m.find()) {
-                            model.read(input, null, RDFLanguages.fileExtToLang(m.group(2)).getName());
-                        } else {
-                            model.read(input, null, RDFLanguages.TTL.getName());
+
+                    String contentType = con.getContentType();
+                    logger.debug("Content-Type: {}", contentType);
+
+                    if ("text/html".equals(contentType)) {
+                        logger.debug("Using Any23 to extract embedded data...");
+                        Any23 runner = new Any23();
+                        ByteArrayOutputStream out = new ByteArrayOutputStream();
+                        try (TripleHandler handler = new NTriplesWriter(out)) {
+                            runner.extract(new StringDocumentSource(IOUtils.toString(input, con.getContentEncoding()), uri), handler);
                         }
+                        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+                        model.read(in, null, RDFLanguages.NTRIPLES.getName());
+                    } else {
+                        Matcher m = Pattern.compile("^(.+)\\.([^.]+)$").matcher(path);
+                        Lang lang = m.find() ? RDFLanguages.fileExtToLang(m.group(2)) : TURTLE;
+                        logger.debug("Using Jena to read data as {}...", lang);
+                        model.read(input, null, lang.getName());
                     }
 
-                    logger.info("Model size for {}: {}", uri, model.size());
+                    logger.debug("Model size: {}", model.size());
+
+                    if (path.matches("/dataset-\\d+/resource-\\d+")) {
+                        model.listObjects().forEachRemaining(this::queueURI);
+                    }
+
+                    UpdateDeleteInsert update = new UpdateDeleteInsert();
+                    QuadAcc insertQuads = update.getInsertAcc();
+                    model.listStatements().toList().stream()
+                    .map(Statement::asTriple)
+                    .map(triple -> new Quad(graph, triple))
+                    .forEach(insertQuads::addQuad);
 
                     UpdateExecutionFactory.createRemoteForm(
-                        new UpdateRequest(new UpdateDataInsert(new QuadDataAcc(
-                            model.listStatements().toList().stream()
-                            .map(stmt -> stmt.asTriple())
-                            .map(tri -> new Quad(graph, tri))
-                            .collect(Collectors.toList())
-                        ))),
+                        new UpdateRequest(update),
                         sparqlUrl,
                         httpClient
                     ).execute();
@@ -166,25 +210,39 @@ public class SystemAdapter extends AbstractSystemAdapter {
                     if (crawlDelay != null) {
                         // FIXME: Only works correctly with dereferencing nodes,
                         // but at the moment only these nodes have crawlDelay
-                        logger.info("Crawl-delay is {}, will crawl again...", crawlDelay);
+                        logger.debug("Crawl-delay is {}, will crawl again...", crawlDelay);
                         Thread.sleep(crawlDelay * 1000);
                         model.read(url.openStream(), null, RDFLanguages.TTL.getName());
                     }
-
-                    logger.info("Crawled {}.", uri);
                 }
             } catch (Exception e) {
-                logger.error("Failed to crawl {}.", uri, e);
+                logger.error("Failed to process {}", uri, e);
             }
+
+            logger.info("Crawling: {} / {}", processedURIs.size(), queuedURIs.size() + processedURIs.size());
         }
+
+        logger.info("Crawling finished.");
 
         // try {
         //     Thread.sleep(6000000);
         // } catch (InterruptedException e) {
         // }
 
-        logger.info("Dummy system terminates.");
+        logger.info("System adapter will terminate.");
         terminate(null);
+    }
+
+    void queueURI(String uri) {
+        if (!processedURIs.contains(uri)) {
+            queuedURIs.add(uri);
+        }
+    }
+
+    void queueURI(RDFNode node) {
+        if (node instanceof Resource) {
+            queueURI(((Resource)node).getURI());
+        }
     }
 
     @Override

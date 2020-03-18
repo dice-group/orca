@@ -92,6 +92,16 @@
         <artifactId>ldcbench.system</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.dice_research</groupId>
+        <artifactId>ldcbench.rdfa-gen</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dice_research</groupId>
+        <artifactId>ldcbench.rdfa-node</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <!-- ~~~~~~~~~~~~~~~~~~~ End LDCBench modules ~~~~~~~~~~~~~~~~~~~~~~ -->
       <!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
       <!-- slf4j: Logging API -->
@@ -121,6 +131,11 @@
         <version>1.17.0</version>
       </dependency>
       <!-- ~~~~~~~~~~~~~~~~~~~ End Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>28.2-jre</version>
+      </dependency>
       <!-- Simple HTTP framework -->
       <dependency>
         <groupId>org.simpleframework</groupId>
@@ -176,6 +191,12 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
         <version>3.3.2</version>
+      </dependency>
+      <!-- Apache Commons Compress -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.20</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

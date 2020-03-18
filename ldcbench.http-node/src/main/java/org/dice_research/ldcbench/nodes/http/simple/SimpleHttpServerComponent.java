@@ -49,10 +49,10 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHttpServerComponent.class);
 
-    private static final int DEFAULT_PORT = 80;
+    protected static final int DEFAULT_PORT = 80;
 
     protected int port;
-    protected String pathTemplate;
+//    protected String pathTemplate;
     protected Container container;
     protected Server server;
     protected Connection connection;
@@ -79,6 +79,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
 
         // check whether this node contains dump files
         dumpFileNode = EnvVariables.getBoolean("LDCBENCH_USE_DUMP_FILE", false);
+        String pathTemplate;
         if (dumpFileNode) {
             LOGGER.debug("Init as HTTP dump file node.");
             Random random = new Random(seedGenerator.getNextSeed());

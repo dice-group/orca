@@ -20,6 +20,7 @@
     :dereferencingHttpNodeWeight,
     :ckanNodeWeight,
     :sparqlNodeWeight,
+    :rdfaNodeWeight,
     :httpDumpNodeWeight,
     :httpDumpNodeCompressedRatio,
     :useTurtleDumps,
@@ -114,6 +115,13 @@
 
 :sparqlNodeWeight a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Weight of SPARQL node occurrence"@en;
+  rdfs:comment "The proportion of nodes that should have this type. If above 0, at least one node of this type would exist."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:float;
+  hobbit:defaultValue "1"^^xsd:float .
+
+:rdfaNodeWeight a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Weight of RDFa node occurrence"@en;
   rdfs:comment "The proportion of nodes that should have this type. If above 0, at least one node of this type would exist."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:float;

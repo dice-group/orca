@@ -6,6 +6,8 @@ import static org.dice_research.ldcbench.Constants.DATAGEN_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.EVALMODULE_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.HTTPNODE_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.SPARQLNODE_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.RDFANODE_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.RDFADATAGEN_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.SYSTEM_IMAGE_NAME;
 import static org.hobbit.core.Constants.BENCHMARK_PARAMETERS_MODEL_KEY;
 import static org.hobbit.core.Constants.HOBBIT_EXPERIMENT_URI_KEY;
@@ -23,6 +25,7 @@ import org.apache.jena.rdf.model.Model;
 import org.dice_research.ldcbench.benchmark.BenchmarkController;
 import org.dice_research.ldcbench.benchmark.DataGenerator;
 import org.dice_research.ldcbench.benchmark.EvalModule;
+import org.dice_research.ldcbench.builders.LDCBenchNodeBuilder;
 import org.dice_research.ldcbench.builders.CkanNodeBuilder;
 import org.dice_research.ldcbench.builders.ExampleDockersBuilder;
 import org.dice_research.ldcbench.builders.SimpleHttpNodeBuilder;
@@ -30,6 +33,8 @@ import org.dice_research.ldcbench.builders.SparqlNodeBuilder;
 import org.dice_research.ldcbench.nodes.ckan.simple.SimpleCkanComponent;
 import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpServerComponent;
 import org.dice_research.ldcbench.nodes.sparql.simple.SimpleSparqlComponent;
+import org.dice_research.ldcbench.rdfa.node.SimpleRDFaComponent;
+import org.dice_research.ldcbench.rdfa.gen.RDFaDataGenerator;
 import org.dice_research.ldcbench.system.SystemAdapter;
 import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.core.components.Component;
@@ -69,6 +74,8 @@ public class BenchmarkTestBase {
     SimpleHttpNodeBuilder httpNodeBuilder;
     CkanNodeBuilder ckanNodeBuilder;
     SparqlNodeBuilder sparqlNodeBuilder;
+    LDCBenchNodeBuilder rdfaNodeBuilder;
+    LDCBenchNodeBuilder rdfaGenBuilder;
 
     public void init(Boolean useCachedImage) throws Exception {
 
@@ -82,6 +89,12 @@ public class BenchmarkTestBase {
         httpNodeBuilder = new SimpleHttpNodeBuilder(new ExampleDockersBuilder(SimpleHttpServerComponent.class, HTTPNODE_IMAGE_NAME).useCachedImage(useCachedImage));
         ckanNodeBuilder = new CkanNodeBuilder(new ExampleDockersBuilder(SimpleCkanComponent.class, CKANNODE_IMAGE_NAME).useCachedImage(useCachedImage));
         sparqlNodeBuilder = new SparqlNodeBuilder(new ExampleDockersBuilder(SimpleSparqlComponent.class, SPARQLNODE_IMAGE_NAME).useCachedImage(useCachedImage));
+        rdfaNodeBuilder = new LDCBenchNodeBuilder(new ExampleDockersBuilder(SimpleRDFaComponent.class, RDFANODE_IMAGE_NAME).useCachedImage(useCachedImage)) {
+            @Override public String getName() { return RDFANODE_IMAGE_NAME; }
+        };
+        rdfaGenBuilder = new LDCBenchNodeBuilder(new ExampleDockersBuilder(RDFaDataGenerator.class, RDFADATAGEN_IMAGE_NAME).useCachedImage(useCachedImage)) {
+            @Override public String getName() { return RDFADATAGEN_IMAGE_NAME; }
+        };
 
 //        benchmarkBuilder = new BenchmarkDockerBuilder(new PullBasedDockersBuilder(BENCHMARK_IMAGE_NAME));
 //        dataGeneratorBuilder = new DataGenDockerBuilder(new PullBasedDockersBuilder(DATAGEN_IMAGE_NAME));
@@ -120,6 +133,8 @@ public class BenchmarkTestBase {
         Component httpNode = new SimpleHttpServerComponent();
         Component ckanNode = new SimpleCkanComponent();
         Component sparqlNode = new SimpleSparqlComponent();
+        Component rdfaNode = new SimpleRDFaComponent();
+        Component rdfaGen = new RDFaDataGenerator();
 
         if(dockerized) {
 
@@ -130,6 +145,8 @@ public class BenchmarkTestBase {
             httpNode = httpNodeBuilder.build();
             ckanNode = ckanNodeBuilder.build();
             sparqlNode = sparqlNodeBuilder.build();
+            rdfaNode = rdfaNodeBuilder.build();
+            rdfaGen = rdfaGenBuilder.build();
         }
 
         commandQueueListener = new CommandQueueListener();
@@ -147,6 +164,8 @@ public class BenchmarkTestBase {
                         .customContainerImage(httpNode, HTTPNODE_IMAGE_NAME)
                         .customContainerImage(ckanNode, CKANNODE_IMAGE_NAME)
                         .customContainerImage(sparqlNode, SPARQLNODE_IMAGE_NAME)
+                        .customContainerImage(rdfaNode, RDFANODE_IMAGE_NAME)
+                        .customContainerImage(rdfaGen, RDFADATAGEN_IMAGE_NAME)
                         //.customContainerImage(systemAdapter, DUMMY_SYSTEM_IMAGE_NAME)
                 ;
 

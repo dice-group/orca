@@ -50,6 +50,8 @@ import org.dice_research.ldcbench.benchmark.cloud.AbstractNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.CkanNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.DereferencingHttpNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.HttpDumpNodeManager;
+import org.dice_research.ldcbench.benchmark.cloud.NodeManager;
+import org.dice_research.ldcbench.benchmark.cloud.RDFaNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.SparqlNodeManager;
 import org.dice_research.ldcbench.benchmark.node.NodeSizeDeterminer;
 import org.dice_research.ldcbench.benchmark.node.NodeSizeDeterminerFactory;
@@ -82,8 +84,13 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private Set<Future<String>> dataGenContainers = new HashSet<>();
     private List<Future<String>> nodeContainers = new ArrayList<>();
 
-    private Class<?>[] possibleNodeManagerClasses = { DereferencingHttpNodeManager.class, CkanNodeManager.class,
-            SparqlNodeManager.class, HttpDumpNodeManager.class };
+    private Class<?>[] possibleNodeManagerClasses = {
+        DereferencingHttpNodeManager.class,
+        CkanNodeManager.class,
+        SparqlNodeManager.class,
+        HttpDumpNodeManager.class,
+        RDFaNodeManager.class,
+    };
 
     private boolean sdk;
     private boolean dockerized;
@@ -96,7 +103,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private ArrayList<Integer> seedNodes;
     private ArrayList<String> seedURIs;
 
-    private ArrayList<AbstractNodeManager> nodeManagers = new ArrayList<>();
+    private ArrayList<NodeManager> nodeManagers = new ArrayList<>();
 
     private ArrayList<Semaphore> nodeStarted = new ArrayList<>();
     private Semaphore nodesInitSemaphore = new Semaphore(0);
@@ -124,11 +131,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
         return java.util.UUID.randomUUID().toString();
     }
 
-    private void createDataGenerator(String generatorImageName, String[] envVariables) {
+    private void createDataGenerator(NodeManager nodeManager, String[] envVariables) {
         String variables[] = envVariables != null ? Arrays.copyOf(envVariables, envVariables.length + 1)
                 : new String[1];
         variables[variables.length - 1] = Constants.GENERATOR_ID_KEY + "=" + (dataGenContainers.size() + 1);
-        Future<String> container = createContainerAsync(generatorImageName, Constants.CONTAINER_TYPE_BENCHMARK,
+        Future<String> container = createContainerAsync(nodeManager.getDataGeneratorImageName(), Constants.CONTAINER_TYPE_BENCHMARK,
                 variables);
         dataGenContainers.add(container);
     }
@@ -317,14 +324,14 @@ public class BenchmarkController extends AbstractBenchmarkController {
                             ApiConstants.ENV_DATA_QUEUE_KEY + "=" + dataQueues[i],
                             ApiConstants.ENV_CRAWL_DELAY_KEY + "=" + averageCrawlDelay,
                             ApiConstants.ENV_DISALLOWED_RATIO_KEY + "=" + averageDisallowedRatio,
-                            ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 12345),
+                            ApiConstants.ENV_HTTP_PORT_KEY + "=" + (dockerized ? 80 : 30000 + i),
                             ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
                             ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++,
                             ApiConstants.ENV_COMPRESSED_RATIO_KEY + "=" + httpDumpNodeCompressedRatio,
                         },
                         nodeManagers.get(i).getNodeEnvironment());
 
-                nodeContainers.add(createContainerAsync(nodeManagers.get(i).getImageName(),
+                nodeContainers.add(createContainerAsync(nodeManagers.get(i).getNodeImageName(),
                         Constants.CONTAINER_TYPE_BENCHMARK, envVariables));
 
                 // FIXME: HOBBIT SDK workaround (setting environment for "containers")
@@ -383,6 +390,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
         if (sdk) {
             Thread.sleep(2000);
         }
+        
+        String accessUris[] = Arrays.stream(nodeMetadata).map(m -> m.getAccessUriTemplate()).toArray(String[]::new);
+        String serializedAccessUris = Arrays.toString(accessUris);
+        String resourceUris[] = Arrays.stream(nodeMetadata).map(m -> m.getResourceUriTemplate()).toArray(String[]::new);
+        String serializedResourceUris = Arrays.toString(resourceUris);
 
         // RDF graph generators
         for (int batch = 0; batch < (float) nodesAmount / batchSize; batch++) {
@@ -399,10 +411,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
                         DataGenerator.ENV_DATAGENERATOR_EXCHANGE_KEY + "=" + dataGeneratorsExchange,
                         ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
-                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++, },
+                        ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++, 
+                        DataGenerator.ENV_ACCESS_URI_TEMPLATES_KEY + "=" + serializedAccessUris,
+                        DataGenerator.ENV_RESOURCE_URI_TEMPLATES_KEY + "=" + serializedResourceUris,},
                         nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree,
                                 nodeSizeDeterminer.getNodeSize()));
-                createDataGenerator(DATAGEN_IMAGE_NAME, envVariables);
+                createDataGenerator(nodeManagers.get(i), envVariables);
                 // FIXME: HOBBIT SDK workaround (setting environment for "containers")
                 if (sdk) {
                     Thread.sleep(2000);

@@ -1,0 +1,39 @@
+@base <http://rdfa.info/test-suite/test-cases/rdfa1.0/html4/manifest> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> .
+@prefix test: <http://www.w3.org/2006/03/test-description#> .
+@prefix rdfatest: <http://rdfa.info/vocabs/rdfa-test#> .
+
+<>  rdf:type mf:Manifest ;
+    rdfs:comment "RDFa rdfa1.0 tests for html4" ;
+    mf:entries (
+      <#0001>
+      <#0006>
+      <#0007>
+  ) .
+
+<#0001> a rdfatest:PositiveEvaluationTest;
+  mf:name """Test 0001: Predicate establishment with @property""";
+  rdfs:comment """Tests @property to establish the predicate; literal object is in the content of the element.""";
+  test:classification <http://www.w3.org/2006/03/test-description#required>;
+  mf:action <http://rdfa.info/test-suite/test-cases/rdfa1.0/html4/0001.html>;
+  mf:result <http://rdfa.info/test-suite/test-cases/rdfa1.0/html4/0001.ttl>;
+  .
+
+<#0006> a rdfatest:PositiveEvaluationTest;
+  mf:name """Test 0006: @rel and @rev""";
+  rdfs:comment """Tests @rev and @rel together, with the object being specified by @href, ignoring content""";
+  test:classification <http://www.w3.org/2006/03/test-description#required>;
+  mf:action <http://rdfa.info/test-suite/test-cases/rdfa1.0/html4/0006.html>;
+  mf:result <http://rdfa.info/test-suite/test-cases/rdfa1.0/html4/0006.ttl>;
+  .
+
+<#0007> a rdfatest:PositiveEvaluationTest;
+  mf:name """Test 0007: @rel, @rev, @property, @content""";
+  rdfs:comment """Tests @rel, @rev, @property, and @content together to generate several RDF triples.""";
+  test:classification <http://www.w3.org/2006/03/test-description#required>;
+  mf:action <http://rdfa.info/test-suite/test-cases/rdfa1.0/html4/0007.html>;
+  mf:result <http://rdfa.info/test-suite/test-cases/rdfa1.0/html4/0007.ttl>;
+  .
+

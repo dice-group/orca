@@ -45,6 +45,8 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_NODETYPES_KEY = "LDCBENCH_DATAGENERATOR_NODETYPES";
     public static final String ENV_ISHUB_KEY = "LDCBENCH_DATAGENERATOR_ISHUB";
     public static final String ENV_TYPECONNECTIVITY_KEY = "LDCBENCH_DATAGENERATOR_TYPECONNECTIVITY";
+    public static final String ENV_ACCESS_URI_TEMPLATES_KEY = "ACCESS_URI_TEMPLATES";
+    public static final String ENV_RESOURCE_URI_TEMPLATES_KEY = "RESOURCE_URI_TEMPLATES";
 
     public static enum Types {
         NODE_GRAPH_GENERATOR, RDF_GRAPH_GENERATOR
@@ -56,7 +58,7 @@ public class DataGenerator extends AbstractDataGenerator {
     private Map<Integer, GraphMetadata> rdfMetadata;
     private Semaphore targetMetadataReceivedSemaphore = new Semaphore(0);
 
-    private static final Class<DumbSerializer> serializerClass = DumbSerializer.class;
+    protected static final Class<DumbSerializer> SERIALIZER_CLASS = DumbSerializer.class;
 
     private Logger LOGGER;
 
@@ -70,14 +72,16 @@ public class DataGenerator extends AbstractDataGenerator {
 
     private Channel dataGeneratorsChannel;
     private String dataGeneratorsExchange;
-    private String dataQueueName;
-    private String evalDataQueueName;
+    protected String dataQueueName;
+    protected String evalDataQueueName;
 
     private GraphGenerator generator;
     private Graph nodeGraph;
-    private Integer nodeId;
 
-    private int getNodeId() {
+    protected String accessUriTemplates[];
+    protected String resourceUriTemplates[];
+
+    protected int getNodeId() {
         return getNodeId(generatorId);
     }
 
@@ -123,7 +127,7 @@ public class DataGenerator extends AbstractDataGenerator {
         dataGeneratorsChannel.basicConsume(queueName, true, consumer);
     }
 
-    private void addInterlinks(GraphBuilder g) {
+    protected void addInterlinks(GraphBuilder g) {
         int numberOfInternalNodes = g.getNumberOfNodes();
         Random random = new Random(seedGenerator.getNextSeed());
         for (Map.Entry<Integer, GraphMetadata> entry : rdfMetadata.entrySet()) {
@@ -150,10 +154,11 @@ public class DataGenerator extends AbstractDataGenerator {
         }
     }
 
-    private void sendFinalGraph(Graph g) throws Exception {
-        byte[] data = SerializationHelper.serialize(serializerClass, g);
-        String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d",
-                nodeId);
+    protected void sendFinalGraph(Graph g) throws Exception {
+        byte[] data = SerializationHelper.serialize(SERIALIZER_CLASS, g);
+        String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d"
+                + ApiConstants.FILE_ENDING_GRAPH,
+                getNodeId());
 
         // TODO: Use RabbitMQ exchange to send the data (SimpleFileSender doesn't
         // support that)
@@ -175,7 +180,8 @@ public class DataGenerator extends AbstractDataGenerator {
 
         generatorId = getGeneratorId();
         type = Types.valueOf(EnvVariables.getString(ENV_TYPE_KEY));
-        LOGGER = LoggerFactory.getLogger(DataGenerator.class + "#" + (type == Types.NODE_GRAPH_GENERATOR ? "nodeGraph" : "rdfGraph" + (generatorId - 1)));
+        LOGGER = LoggerFactory.getLogger(DataGenerator.class + "#"
+                + (type == Types.NODE_GRAPH_GENERATOR ? "nodeGraph" : "rdfGraph" + (generatorId - 1)));
 
         long seed = EnvVariables.getLong(ApiConstants.ENV_SEED_KEY);
         int numberOfComponents = EnvVariables.getInt(ApiConstants.ENV_COMPONENT_COUNT_KEY);
@@ -187,20 +193,20 @@ public class DataGenerator extends AbstractDataGenerator {
         avgDegree = Double.parseDouble(EnvVariables.getString(ENV_AVERAGE_DEGREE_KEY));
         numberOfEdges = EnvVariables.getInt(ENV_NUMBER_OF_EDGES_KEY, 0);
 
-        LOGGER.info("Seed: {}; number of nodes: {}, average degree: {}, number of edges: {}",
-                seed, numberOfNodes, avgDegree, numberOfEdges);
+        LOGGER.info("Seed: {}; number of nodes: {}, average degree: {}, number of edges: {}", seed, numberOfNodes,
+                avgDegree, numberOfEdges);
 
         // BenchmarkController and DataGenerators communication
         dataGeneratorsExchange = EnvVariables.getString(ENV_DATAGENERATOR_EXCHANGE_KEY);
         dataGeneratorsChannel = cmdQueueFactory.getConnection().createChannel();
 
         if (type == Types.RDF_GRAPH_GENERATOR) {
+            accessUriTemplates = parseStringArray(EnvVariables.getString(ENV_ACCESS_URI_TEMPLATES_KEY, LOGGER));
+            resourceUriTemplates = parseStringArray(EnvVariables.getString(ENV_RESOURCE_URI_TEMPLATES_KEY, LOGGER));
+
             // Queue for sending final graphs to BenchmarkController
             dataQueueName = EnvVariables.getString(ENV_DATA_QUEUE_KEY);
             evalDataQueueName = EnvVariables.getString(ApiConstants.ENV_EVAL_DATA_QUEUE_KEY);
-
-            // Identify node ID for this generator.
-            nodeId = getNodeId();
 
             ConsumeDataGeneratorsExchange();
         }
@@ -214,9 +220,12 @@ public class DataGenerator extends AbstractDataGenerator {
         }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
-            int[] nodetypes = Stream.of(EnvVariables.getString(ENV_NODETYPES_KEY).split(",")).mapToInt(Integer::parseInt).toArray();
-            boolean[] ishub = ArrayUtils.toPrimitive(Stream.of(EnvVariables.getString(ENV_ISHUB_KEY).split(",")).map(Boolean::parseBoolean).toArray(Boolean[]::new));
-            int[][] typeconnectivity = Stream.of(EnvVariables.getString(ENV_TYPECONNECTIVITY_KEY).split(";")).map(s -> Stream.of(s.split(",")).mapToInt(Integer::parseInt).toArray()).toArray(int[][]::new);
+            int[] nodetypes = Stream.of(EnvVariables.getString(ENV_NODETYPES_KEY).split(","))
+                    .mapToInt(Integer::parseInt).toArray();
+            boolean[] ishub = ArrayUtils.toPrimitive(Stream.of(EnvVariables.getString(ENV_ISHUB_KEY).split(","))
+                    .map(Boolean::parseBoolean).toArray(Boolean[]::new));
+            int[][] typeconnectivity = Stream.of(EnvVariables.getString(ENV_TYPECONNECTIVITY_KEY).split(";"))
+                    .map(s -> Stream.of(s.split(",")).mapToInt(Integer::parseInt).toArray()).toArray(int[][]::new);
 
             generator = new RandomCloudGraph("Graph " + generatorId, nodetypes, 0, typeconnectivity);
         } else {
@@ -230,20 +239,22 @@ public class DataGenerator extends AbstractDataGenerator {
         }
 
         if (numberOfNodes != 0) {
-            LOGGER.debug("Generator {} : Generating a graph with {} nodes {} average degree and {} seed", generatorId, numberOfNodes, avgDegree, seed);
+            LOGGER.debug("Generator {} : Generating a graph with {} nodes {} average degree and {} seed", generatorId,
+                    numberOfNodes, avgDegree, seed);
             generator.generateGraph(numberOfNodes, avgDegree, seed, graph);
         } else {
-            LOGGER.debug("Generator {} : Generating a graph with {} average degree and {} edges and {} seed", generatorId, avgDegree, numberOfEdges, seed);
+            LOGGER.debug("Generator {} : Generating a graph with {} average degree and {} edges and {} seed",
+                    generatorId, avgDegree, numberOfEdges, seed);
             generator.generateGraph(avgDegree, numberOfEdges, seed, graph);
         }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
-            LOGGER.info("Node types generated: {}", Arrays.toString(((RandomCloudGraph)generator).getNodeTypes()));
+            LOGGER.info("Node types generated: {}", Arrays.toString(((RandomCloudGraph) generator).getNodeTypes()));
             LOGGER.debug("Broadcasting the node graph...");
         } else {
             LOGGER.debug("Waiting for the node graph...");
             nodeGraphReceivedMutex.acquire();
-            LOGGER.debug("Broadcasting the rdf graph metadata...", nodeId);
+            LOGGER.debug("Broadcasting the rdf graph metadata...", getNodeId());
         }
 
         ByteBuffer header = ByteBuffer.allocate(2 * (Integer.SIZE / Byte.SIZE));
@@ -252,7 +263,7 @@ public class DataGenerator extends AbstractDataGenerator {
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
             // Broadcast our graph.
-            byte[] data = SerializationHelper.serialize(serializerClass, nodeGraph);
+            byte[] data = SerializationHelper.serialize(SERIALIZER_CLASS, nodeGraph);
             ByteBuffer buf = ByteBuffer.allocate(header.capacity() + data.length);
             buf.put(header.array());
             buf.put(data);
@@ -273,10 +284,11 @@ public class DataGenerator extends AbstractDataGenerator {
 
         if (type == Types.RDF_GRAPH_GENERATOR) {
             // Identify nodes linked from this node.
-            rdfMetadata = Arrays.stream(nodeGraph.outgoingEdgeTargets(nodeId)).boxed().collect(HashMap::new,
+            rdfMetadata = Arrays.stream(nodeGraph.outgoingEdgeTargets(getNodeId())).boxed().collect(HashMap::new,
                     (m, v) -> m.put(v, null), HashMap::putAll);
 
-            LOGGER.info("Waiting for {} rdf graphs relevant to this node... (graphs: {})", rdfMetadata.size(), rdfMetadata.keySet());
+            LOGGER.info("Waiting for {} rdf graphs relevant to this node... (graphs: {})", rdfMetadata.size(),
+                    rdfMetadata.keySet());
             nodeGraphProcessedMutex.release(nodeGraph.getNumberOfNodes() - 1);
             targetMetadataReceivedSemaphore.acquire(rdfMetadata.size());
 
@@ -289,6 +301,21 @@ public class DataGenerator extends AbstractDataGenerator {
         }
 
         LOGGER.debug("Generation done.", generatorId);
+    }
+
+    /**
+     * Parses the given string assuming that it has been generated with
+     * {@link Arrays#toString()}.
+     * 
+     * @param envValue the string containing the array
+     * @return the parsed String array
+     */
+    protected static String[] parseStringArray(String envValue) {
+        if (envValue.length() > 2) {
+            return envValue.substring(1, envValue.length() - 1).split(", ");
+        } else {
+            return new String[0];
+        }
     }
 
     @Override

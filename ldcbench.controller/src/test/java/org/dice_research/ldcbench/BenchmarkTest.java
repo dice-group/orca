@@ -1,29 +1,24 @@
 package org.dice_research.ldcbench;
 
-import org.hobbit.sdk.docker.builders.hobbit.*;
-import org.hobbit.sdk.utils.ModelsHandler;
+import static org.dice_research.ldcbench.Constants.SYSTEM_URI;
+import static org.hobbit.sdk.Constants.BENCHMARK_URI;
+import static org.hobbit.sdk.Constants.GIT_USERNAME;
 
-import java.io.IOException;
-import static org.apache.jena.datatypes.xsd.XSDDatatype.*;
-import org.apache.jena.rdf.model.*;
-import org.dice_research.ldcbench.builders.*;
-import org.dice_research.ldcbench.vocab.LDCBench;
+import org.dice_research.ldcbench.builders.CkanNodeBuilder;
+import org.dice_research.ldcbench.builders.SimpleHttpNodeBuilder;
+import org.hobbit.sdk.docker.builders.hobbit.BenchmarkDockerBuilder;
+import org.hobbit.sdk.docker.builders.hobbit.DataGenDockerBuilder;
+import org.hobbit.sdk.docker.builders.hobbit.EvalModuleDockerBuilder;
+import org.hobbit.sdk.docker.builders.hobbit.SystemAdapterDockerBuilder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static org.hobbit.sdk.Constants.BENCHMARK_URI;
-import static org.hobbit.sdk.Constants.GIT_USERNAME;
-import static org.dice_research.ldcbench.Constants.*;
 
 /**
  * @author Pavel Smirnov
  */
 
 public class BenchmarkTest extends BenchmarkTestBase {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkTest.class);
 
     public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 

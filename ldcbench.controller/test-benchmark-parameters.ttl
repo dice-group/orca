@@ -6,6 +6,7 @@
 @prefix : <http://w3id.org/dice-research/orca/ontology#> .
 
 experiments:New a hobbit:Experiment;
+  :allNodesInSeed "true"^^xsd:boolean;
   # FIXME to test for recall > 0, the seed is manually selected for DummySystem
   # to be able to crawl the type of dump node created
   :seed 2;
@@ -21,6 +22,7 @@ experiments:New a hobbit:Experiment;
   :useN3Dumps "true"^^xsd:boolean;
   :useRdfXmlDumps "true"^^xsd:boolean;
   :useNtDumps "true"^^xsd:boolean;
+  :rdfaNodeWeight 1;
   :ckanNodeWeight 0.01;
   # FIXME if using SPARQL node:
   #
@@ -30,5 +32,5 @@ experiments:New a hobbit:Experiment;
   #     Caused by: java.lang.ClassNotFoundException: org.apache.jena.atlas.web.auth.HttpAuthenticator
   #             at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:583)
   :sparqlNodeWeight 0;
-  :numberOfNodes 2;
-  :averageNodeGraphDegree 1.
+  :numberOfNodes 3;
+  :averageNodeGraphDegree 2.

@@ -17,14 +17,16 @@ import org.apache.jena.vocabulary.RDF;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.benchmark.eval.CrawledDataEvaluator;
 import org.dice_research.ldcbench.benchmark.eval.EvaluationResult;
-import org.dice_research.ldcbench.benchmark.eval.FileBasedGraphSupplier;
-import org.dice_research.ldcbench.benchmark.eval.GraphSupplier;
 import org.dice_research.ldcbench.benchmark.eval.GraphValidator;
-import org.dice_research.ldcbench.benchmark.eval.ResourceUsageTimerTask;
 import org.dice_research.ldcbench.benchmark.eval.SimpleCompleteEvaluator;
-import org.dice_research.ldcbench.benchmark.eval.SparqlBasedTripleCounter;
-import org.dice_research.ldcbench.benchmark.eval.SparqlBasedValidator;
-import org.dice_research.ldcbench.benchmark.eval.TripleCountingTimerTask;
+import org.dice_research.ldcbench.benchmark.eval.sparql.SparqlBasedTripleCounter;
+import org.dice_research.ldcbench.benchmark.eval.sparql.SparqlBasedValidator;
+import org.dice_research.ldcbench.benchmark.eval.supplier.pattern.FileBasedTripleBlockStreamSupplier;
+import org.dice_research.ldcbench.benchmark.eval.supplier.pattern.TTLTarGZBasedTripleBlockStreamCreator;
+import org.dice_research.ldcbench.benchmark.eval.supplier.pattern.GraphBasedTripleBlockStreamCreator;
+import org.dice_research.ldcbench.benchmark.eval.supplier.pattern.TripleBlockStreamSupplier;
+import org.dice_research.ldcbench.benchmark.eval.timer.ResourceUsageTimerTask;
+import org.dice_research.ldcbench.benchmark.eval.timer.TripleCountingTimerTask;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.rabbit.ObjectStreamFanoutExchangeConsumer;
 import org.dice_research.ldcbench.rabbit.SimpleFileQueueConsumer;
@@ -33,8 +35,8 @@ import org.dice_research.ldcbench.vocab.LDCBenchDiagrams;
 import org.dice_research.ldcbench.vocab.ResourceUsageDiagrams;
 import org.hobbit.core.Commands;
 import org.hobbit.core.Constants;
-import org.hobbit.core.components.utils.SystemResourceUsageRequester;
 import org.hobbit.core.components.AbstractPlatformConnectorComponent;
+import org.hobbit.core.components.utils.SystemResourceUsageRequester;
 import org.hobbit.core.data.usage.ResourceUsageInformation;
 import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.utils.EnvVariables;
@@ -189,8 +191,10 @@ public class EvalModule extends AbstractPlatformConnectorComponent {
                     PERIOD_FOR_TRIPLE_COUNTER);
 
             if (!sdk) {
-                resourcesTimerTask = new ResourceUsageTimerTask(SystemResourceUsageRequester.create(this, getHobbitSessionId()));
-                timer.schedule(resourcesTimerTask, System.currentTimeMillis() + PERIOD_FOR_RESOURCE_USAGE_REQUESTER - startTimeStamp,
+                resourcesTimerTask = new ResourceUsageTimerTask(
+                        SystemResourceUsageRequester.create(this, getHobbitSessionId()));
+                timer.schedule(resourcesTimerTask,
+                        System.currentTimeMillis() + PERIOD_FOR_RESOURCE_USAGE_REQUESTER - startTimeStamp,
                         PERIOD_FOR_RESOURCE_USAGE_REQUESTER);
             } else {
                 LOGGER.debug("Will not request resource usage.");
@@ -208,7 +212,8 @@ public class EvalModule extends AbstractPlatformConnectorComponent {
             timer.cancel();
             // Execute the counter one last time
             countingTimerTask.run();
-            // Do not execute the resource usage requester since now all the system containers are gone.
+            // Do not execute the resource usage requester since now all the system
+            // containers are gone.
         }
         crawlingFinished.release();
     }
@@ -216,10 +221,8 @@ public class EvalModule extends AbstractPlatformConnectorComponent {
     /**
      * Sends the model to the benchmark controller.
      *
-     * @param model
-     *            the model that should be sent
-     * @throws IOException
-     *             if an error occurs during the commmunication
+     * @param model the model that should be sent
+     * @throws IOException if an error occurs during the commmunication
      */
     private void sendResultModel(Model model) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -229,11 +232,10 @@ public class EvalModule extends AbstractPlatformConnectorComponent {
 
     private Map<Integer, EvaluationResult> runEvaluation() {
         // Evaluate the results based on the data from the SPARQL storage
-        GraphSupplier supplier = new FileBasedGraphSupplier(
-            graphFiles,
-            Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
-            Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new)
-        );
+        TripleBlockStreamSupplier supplier = new FileBasedTripleBlockStreamSupplier(graphFiles,
+                Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+                Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
+                new GraphBasedTripleBlockStreamCreator(), new TTLTarGZBasedTripleBlockStreamCreator());
         GraphValidator validator = SparqlBasedValidator.create(sparqlEndpoint);
         CrawledDataEvaluator evaluator = new SimpleCompleteEvaluator(supplier, validator);
         return evaluator.evaluate();
@@ -267,7 +269,8 @@ public class EvalModule extends AbstractPlatformConnectorComponent {
                     macroRecall += recall;
                     macroRecallDenominator++;
                 }
-                //model.add(model.createStatement(experimentResource, model.createProperty(LDCBench.getURI(), "node"), nodeResource));
+                // model.add(model.createStatement(experimentResource,
+                // model.createProperty(LDCBench.getURI(), "node"), nodeResource));
                 model.add(model.createLiteralStatement(nodeResource, LDCBench.microRecall, recall));
             }
         }
@@ -297,10 +300,9 @@ public class EvalModule extends AbstractPlatformConnectorComponent {
             double sumMemoryUsage = 0;
             for (int i = 0; i < timestamps.size(); ++i) {
                 ResourceUsageInformation info = values.get(i);
-                ResourceUsageDiagrams.addPoint(model, dataset, getHobbitSessionId(), i, timestamps.get(i) - startTimeStamp,
-                        info.getCpuStats().getTotalUsage(),
-                        info.getDiskStats().getFsSizeSum(),
-                        info.getMemoryStats().getUsageSum());
+                ResourceUsageDiagrams.addPoint(model, dataset, getHobbitSessionId(), i,
+                        timestamps.get(i) - startTimeStamp, info.getCpuStats().getTotalUsage(),
+                        info.getDiskStats().getFsSizeSum(), info.getMemoryStats().getUsageSum());
                 maxCpuUsage = Math.max(maxCpuUsage, info.getCpuStats().getTotalUsage());
                 sumDiskUsage += info.getDiskStats().getFsSizeSum();
                 sumMemoryUsage += info.getMemoryStats().getUsageSum();

@@ -9,9 +9,6 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   
-<properties>
-  <commons-compress>1.19</commons-compress>
-</properties>
   <name>LDC-Bench</name>
   <description>Linked Data Crawler Benchmark.</description>
 
@@ -52,6 +49,8 @@
     <module>ldcbench.http-node</module>
     <module>ldcbench.nodes</module>
     <module>ldcbench.parent</module>
+    <module>ldcbench.rdfa-gen</module>
+    <module>ldcbench.rdfa-node</module>
     <module>ldcbench.sparql-node</module>
     <module>ldcbench.system</module>
   </modules>

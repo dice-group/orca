@@ -47,6 +47,16 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.rdfa-node</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.rdfa-gen</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-math3</artifactId>
       <version>3.6.1</version>
@@ -54,6 +64,12 @@
     <dependency>
       <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.system</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+      <version>2.1.1</version>
       <scope>test</scope>
     </dependency>
     <!-- HOBBIT core library -->
