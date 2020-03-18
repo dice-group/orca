@@ -104,6 +104,10 @@ public class BenchmarkTestBase {
 
     protected void executeBenchmark(Boolean dockerized) throws Exception {
         Model benchmarkParameters = createBenchmarkParameters();
+        LOGGER.info("Benchmark parameters:\n{}", prettyModelString(benchmarkParameters));
+
+        Model systemParameters = createSystemParameters();
+        LOGGER.info("System parameters:\n{}", prettyModelString(systemParameters));
 
         String[] benchmarkParamsStr = new String[]{
             HOBBIT_EXPERIMENT_URI_KEY+"="+org.hobbit.vocab.HobbitExperiments.New.getURI(),
@@ -111,7 +115,7 @@ public class BenchmarkTestBase {
             RABBIT_MQ_HOST_NAME_KEY+"="+(dockerized ? "rabbit" : "localhost"),
         };
         String [] systemParamsStr = new String[]{
-            SYSTEM_PARAMETERS_MODEL_KEY+"="+RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(createSystemParameters(), ModelsHandler.readModelFromFile("../system.ttl"))),
+            SYSTEM_PARAMETERS_MODEL_KEY+"="+RabbitMQUtils.writeModel2String(ModelsHandler.createMergedParametersModel(systemParameters, ModelsHandler.readModelFromFile("../../ldcbench-squirrel-adapter/system.ttl"))),
             RABBIT_MQ_HOST_NAME_KEY+"="+(dockerized ? "rabbit" : "localhost"),
         };
 
@@ -210,9 +214,7 @@ public class BenchmarkTestBase {
         // As long as there are any HTTP nodes, dummy system should crawl something.
         Assert.assertNotNull("resultModel", resultModel);
 
-        StringWriter modelWriter = new StringWriter();
-        RDFDataMgr.write(modelWriter, resultModel, Lang.TURTLE);
-        LOGGER.info("Result model:\n{}", modelWriter.toString());
+        LOGGER.info("Result model:\n{}", prettyModelString(resultModel));
 
         double recall = Double.parseDouble(RdfHelper.getStringValue(resultModel, null, LDCBench.macroRecall));
         Assert.assertTrue("Macro-recall > 0", recall > 0);
@@ -234,5 +236,11 @@ public class BenchmarkTestBase {
 
     public Model createSystemParameters() throws IOException {
         return ModelsHandler.readModelFromFile("test-system-parameters.ttl");
+    }
+
+    private String prettyModelString(Model model) {
+        StringWriter writer = new StringWriter();
+        RDFDataMgr.write(writer, model, Lang.TURTLE);
+        return writer.toString();
     }
 }
