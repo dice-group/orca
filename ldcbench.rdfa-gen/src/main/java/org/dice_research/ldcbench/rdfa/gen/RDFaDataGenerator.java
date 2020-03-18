@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -60,8 +61,8 @@ public class RDFaDataGenerator extends DataGenerator {
         String nodeDomain = accessUriTemplates[getNodeId()].replace(ACCESS_URI_TEMPLATE_PATTERN,
                 "") + "/";
         // Load the tests and replace URIs
-        replaceUrisInFiles(htmlFiles.values(), RDFA_TEST_DOMAIN, nodeDomain);
-        replaceUrisInFiles(ttlFiles.values(), RDFA_TEST_DOMAIN, nodeDomain);
+        replaceUrisInFiles(htmlFiles, RDFA_TEST_DOMAIN, nodeDomain);
+        replaceUrisInFiles(ttlFiles, RDFA_TEST_DOMAIN, nodeDomain);
         htmlFiles = replaceUrisInMapping(htmlFiles, RDFA_TEST_DOMAIN, nodeDomain);
         ttlFiles = replaceUrisInMapping(ttlFiles, RDFA_TEST_DOMAIN, nodeDomain);
 
@@ -127,15 +128,21 @@ public class RDFaDataGenerator extends DataGenerator {
         return newMap;
     }
 
-    protected static void replaceUrisInFiles(Collection<File> values, String regex, String replacement) {
+    protected static void replaceUrisInFiles(Map<String, File> files, String regex, String replacement) {
         String fileContent;
-        for (File f : values) {
+        File origFile = null;
+        File newFile;
+        for (Entry<String, File> entry : files.entrySet()) {
             try {
-                fileContent = FileUtils.readFileToString(f, StandardCharsets.UTF_8);
+                origFile = entry.getValue();
+                newFile = File.createTempFile("new", origFile.getName());
+                newFile.deleteOnExit();
+                fileContent = FileUtils.readFileToString(origFile, StandardCharsets.UTF_8);
                 fileContent = fileContent.replaceAll(regex, replacement);
-                FileUtils.write(f, fileContent, StandardCharsets.UTF_8);
+                FileUtils.write(newFile, fileContent, StandardCharsets.UTF_8);
+                entry.setValue(newFile);
             } catch (IOException e) {
-                LOGGER.error("Couldn't update file content of " + f.getAbsolutePath() + ". It will be ignored.", e);
+                LOGGER.error("Couldn't update file content of " + origFile.getAbsolutePath() + ". It will be ignored.", e);
             }
         }
     }

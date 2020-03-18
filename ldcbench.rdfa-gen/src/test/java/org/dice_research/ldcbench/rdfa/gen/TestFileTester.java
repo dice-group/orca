@@ -59,10 +59,10 @@ public class TestFileTester {
         RDFaDataGenerator.convertTestUrisToFiles(tests.values(), ttlFiles);
 
         // Copy the files for our test
-        RDFaReplacementTest.copyFilesToTempDir("replacement-test-ttl", ttlFiles);
+//        RDFaReplacementTest.copyFilesToTempDir("replacement-test-ttl", ttlFiles);
 
         // Load the tests and replace URIs
-        RDFaDataGenerator.replaceUrisInFiles(ttlFiles.values(), RDFaDataGenerator.RDFA_TEST_DOMAIN,
+        RDFaDataGenerator.replaceUrisInFiles(ttlFiles, RDFaDataGenerator.RDFA_TEST_DOMAIN,
                 RDFaReplacementTest.NODE_DOMAIN);
 
         // Go through the files and try to parse them
