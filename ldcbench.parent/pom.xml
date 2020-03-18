@@ -46,6 +46,11 @@
   <!-- DEPENDENCIES -->
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>javax.activation</groupId>
+        <artifactId>activation</artifactId>
+        <version>1.1.1</version>
+      </dependency>
       <!-- ~~~~~~~~~~~~~~~~~~~ LDCBench modules ~~~~~~~~~~~~~~~~~~~~~~ -->
       <dependency>
         <groupId>org.dice_research</groupId>
