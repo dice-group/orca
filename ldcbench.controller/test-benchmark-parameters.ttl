@@ -17,13 +17,13 @@ experiments:New a hobbit:Experiment;
   :averageRdfGraphDegree 2;
   :httpDumpNodeCompressedRatio 1;
   :dereferencingHttpNodeWeight 0;
-  :httpDumpNodeWeight 1;
+  :httpDumpNodeWeight 0;
   :useTurtleDumps "true"^^xsd:boolean;
   :useN3Dumps "true"^^xsd:boolean;
   :useRdfXmlDumps "true"^^xsd:boolean;
   :useNtDumps "true"^^xsd:boolean;
   :rdfaNodeWeight 1;
-  :ckanNodeWeight 0.01;
+  :ckanNodeWeight 0;
   # FIXME if using SPARQL node:
   #
   #     ERROR [org.hobbit.sdk.utils.ComponentsExecutor] - <Error while running component SimpleSparqlComponent:>
@@ -32,5 +32,5 @@ experiments:New a hobbit:Experiment;
   #     Caused by: java.lang.ClassNotFoundException: org.apache.jena.atlas.web.auth.HttpAuthenticator
   #             at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:583)
   :sparqlNodeWeight 0;
-  :numberOfNodes 3;
-  :averageNodeGraphDegree 2.
+  :numberOfNodes 1;
+  :averageNodeGraphDegree 0.
