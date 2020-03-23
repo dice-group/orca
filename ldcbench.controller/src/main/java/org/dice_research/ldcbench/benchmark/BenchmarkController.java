@@ -667,7 +667,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     crawlDelayFulfillment, minCrawlDelay, maxCrawlDelay);
             String fillColor = Double.isNaN(recall) ? ""
                     : "/" + colorScheme + "/" + String.valueOf((int) Math.floor(recall * 8) + 1);
-            dotlangLines.add(String.format("%d [label=<%s<BR/>%s%s>, tooltip=\"%s\", fillcolor=\"%s\", style=filled]", i,
+            dotlangLines.add(String.format("%d [label=\"%s\n%s%s\", tooltip=\"%s\", fillcolor=\"%s\", style=filled]", i,
                     nodeManagers.get(i).getLabel(), Double.isNaN(recall) ? "&empty;" : String.format("%.2f", recall),
                     ratioReqDisallowed > 0 ? "!" : "",
                     tooltip, fillColor));
@@ -693,9 +693,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
             resultModel.addLiteral(experimentResource, LDCBench.ratioOfRequestedDisallowedResources, ((double)disallowedRequested) / disallowedTotal);
         }
         resultModel.add(resultModel.createLiteralStatement(experimentResource, LDCBench.graphVisualization, dotlang));
-
-        Path dotfile = Files.createTempFile("cloud", ".dot");
-        Files.write(dotfile, dotlangLines, Charset.defaultCharset());
 
         // Send the resultModul to the platform controller and terminate
         sendResultModel(resultModel);

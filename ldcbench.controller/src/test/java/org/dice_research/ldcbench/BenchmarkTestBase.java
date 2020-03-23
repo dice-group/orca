@@ -17,8 +17,13 @@ import static org.hobbit.core.Constants.SYSTEM_PARAMETERS_MODEL_KEY;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Date;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.rdf.model.Model;
@@ -215,6 +220,17 @@ public class BenchmarkTestBase {
         Assert.assertNotNull("resultModel", resultModel);
 
         LOGGER.info("Result model:\n{}", prettyModelString(resultModel));
+
+        try {
+            String dot = RdfHelper.getStringValue(resultModel, null, LDCBench.graphVisualization);
+            Path dotPath = Files.createTempFile("orca-graph-", ".dot");
+            Files.write(dotPath, Arrays.asList(dot), StandardCharsets.UTF_8);
+            ProcessBuilder pb = new ProcessBuilder("graph-easy", dotPath.toAbsolutePath().toString());
+            Process p = pb.start();
+            p.waitFor();
+            System.out.println(IOUtils.toString(p.getInputStream(), StandardCharsets.UTF_8));
+        } catch (IOException e) {
+        }
 
         double recall = Double.parseDouble(RdfHelper.getStringValue(resultModel, null, LDCBench.macroRecall));
         Assert.assertTrue("Macro-recall > 0", recall > 0);
