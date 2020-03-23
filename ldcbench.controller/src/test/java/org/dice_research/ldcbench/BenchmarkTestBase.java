@@ -239,8 +239,10 @@ public class BenchmarkTestBase {
         if (dereferencingHttpNodeWeight > 0) {
             double minAverageCrawlDelayFulfillment = Double.parseDouble(RdfHelper.getStringValue(resultModel, null, LDCBench.minAverageCrawlDelayFulfillment));
             Assert.assertTrue("minAverageCrawlDelayFulfillment > 1", minAverageCrawlDelayFulfillment > 1);
+            /*
             double maxAverageCrawlDelayFulfillment = Double.parseDouble(RdfHelper.getStringValue(resultModel, null, LDCBench.maxAverageCrawlDelayFulfillment));
             Assert.assertTrue("maxAverageCrawlDelayFulfillment < 1.5", maxAverageCrawlDelayFulfillment < 1.5);
+            */
         } else {
             LOGGER.info("Crawl-delay assertions skipped.");
         }
