@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/dice-group/ldcbench.svg?branch=master)](https://travis-ci.org/dice-group/ldcbench)
+[![Build Status](https://travis-ci.org/dice-group/orca.svg?branch=master)](https://travis-ci.org/dice-group/orca)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6030450cade64e259f69dddbd4a17c14)](https://www.codacy.com/app/MichaelRoeder/ldcbench?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dice-group/ldcbench&amp;utm_campaign=Badge_Grade)
 
 # Benchmark for Data Web Crawlers
