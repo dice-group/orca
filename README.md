@@ -4,7 +4,7 @@
 
 Benchmark Data Web Crawlers on [the HOBBIT platform](http://project-hobbit.eu/).
 
-The RDFa testing is mainly based on the RDFa test suite provided by [https://github.com/rdfa/rdfa.github.io].
+The RDFa testing is mainly based on the RDFa test suite provided by https://github.com/rdfa/rdfa.github.io.
 
 ## Parameters
 
