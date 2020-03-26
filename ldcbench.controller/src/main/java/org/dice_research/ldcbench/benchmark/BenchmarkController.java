@@ -490,7 +490,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
     protected void createEmptyServer() {
         LOGGER.info("Creating empty-server");
         createContainer(EMPTY_SERVER_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK, null,
-                new String[] { "purl.org", "www.openlinksw.com", "www.w3.org", "www.w2.org", });
+                new String[] {
+                    "purl.org",
+                    "www.openlinksw.com",
+                    "www.w2.org",
+                    "www.w3.org",
+                });
     }
 
     protected String getSeedForNode(int node) {
