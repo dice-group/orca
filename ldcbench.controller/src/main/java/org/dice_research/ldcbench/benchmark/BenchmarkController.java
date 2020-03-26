@@ -491,8 +491,22 @@ public class BenchmarkController extends AbstractBenchmarkController {
         LOGGER.info("Creating empty-server");
         createContainer(EMPTY_SERVER_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK, null,
                 new String[] {
+                    "creativecommons.org",
+                    "digitalbazaar.com",
+                    "example.com",
+                    "example.orb",
+                    "example.org",
+                    "freetime.example.org",
+                    "greggkellogg.net",
+                    "openspring.net",
                     "purl.org",
+                    "rdfa.info",
+                    "www.amazon.com",
+                    "www.blogger.com",
+                    "www.example.org",
+                    "www.ivan-herman.net",
                     "www.openlinksw.com",
+                    "www-sop.inria.fr",
                     "www.w2.org",
                     "www.w3.org",
                 });

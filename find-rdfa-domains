@@ -1,0 +1,2 @@
+#!/bin/sh
+find ldcbench.rdfa-gen/rdfa.github.io/test-suite/test-cases -type f -not -name "*.sparql" -not -name "*.ttl" |xargs -n 1 lynx -dump -force_html -listonly -nonumbers |perl -MURI -nE '$u = URI->new($_); say $u->host if $u->can("host")' |sort |uniq
