@@ -6,11 +6,15 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dice_research</groupId>
   <artifactId>ldcbench</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>${orca.version}</version>
   <packaging>pom</packaging>
   
   <name>LDC-Bench</name>
   <description>Linked Data Crawler Benchmark.</description>
+
+  <properties>
+    <orca.version>1.0</orca.version>
+  </properties>
 
   <!-- LICENSE -->
   <licenses>
