@@ -8,12 +8,12 @@
   <artifactId>ldcbench</artifactId>
   <version>${orca.version}</version>
   <packaging>pom</packaging>
-  
+
   <name>LDC-Bench</name>
   <description>Linked Data Crawler Benchmark.</description>
 
   <properties>
-    <orca.version>1.0</orca.version>
+    <orca.version>1.0.0</orca.version>
   </properties>
 
   <!-- LICENSE -->
