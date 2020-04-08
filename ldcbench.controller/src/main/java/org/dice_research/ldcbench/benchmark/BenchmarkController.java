@@ -26,8 +26,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
@@ -147,33 +147,37 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     private void waitForDataGenToBeCreated(Set<Future<String>> containers)
             throws InterruptedException, ExecutionException {
-        Set<String> containerIds = new HashSet<>();
-        LOGGER.info("Waiting for {} Data Generators to be created.", containers.size());
-
-        Executor executor = Executors.newFixedThreadPool(containers.size());
+        ExecutorService executor = Executors.newFixedThreadPool(containers.size());
         CompletionService<Void> completionService = new ExecutorCompletionService<>(executor);
 
-        for (Future<String> container : containers) {
-            completionService.submit(new Callable<Void>() {
-                public Void call() throws Exception {
-                    String containerId = container.get();
-                    if (containerId != null) {
-                        containerIds.add(containerId);
-                        // add to the set in AbstractBenchmarkController
-                        dataGenContainerIds.add(containerId);
-                        LOGGER.debug("Data generator started: {}", containerId);
-                    } else {
-                        String errorMsg = "Couldn't create generator component. Aborting.";
-                        LOGGER.error(errorMsg);
-                        throw new IllegalStateException(errorMsg);
-                    }
-                    return null;
-                }
-            });
-        }
+        try {
+            Set<String> containerIds = new HashSet<>();
+            LOGGER.info("Waiting for {} Data Generators to be created.", containers.size());
 
-        for (int i = 0; i < containers.size(); i++) {
-            completionService.take().get();
+            for (Future<String> container : containers) {
+                completionService.submit(new Callable<Void>() {
+                    public Void call() throws Exception {
+                        String containerId = container.get();
+                        if (containerId != null) {
+                            containerIds.add(containerId);
+                            // add to the set in AbstractBenchmarkController
+                            dataGenContainerIds.add(containerId);
+                            LOGGER.debug("Data generator started: {}", containerId);
+                        } else {
+                            String errorMsg = "Couldn't create generator component. Aborting.";
+                            LOGGER.error(errorMsg);
+                            throw new IllegalStateException(errorMsg);
+                        }
+                        return null;
+                    }
+                });
+            }
+
+            for (int i = 0; i < containers.size(); i++) {
+                completionService.take().get();
+            }
+        } finally {
+            executor.shutdown();
         }
     }
 
