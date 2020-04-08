@@ -140,7 +140,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         dataGenContainers.add(container);
     }
 
-    private Set<String> waitForDataGenToBeCreated(Set<Future<String>> containers)
+    private void waitForDataGenToBeCreated(Set<Future<String>> containers)
             throws InterruptedException, ExecutionException {
         Set<String> containerIds = new HashSet<>();
         LOGGER.info("Waiting for {} Data Generators to be created.", containers.size());
@@ -156,7 +156,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 throw new IllegalStateException(errorMsg);
             }
         }
-        return containerIds;
     }
 
     private void waitForNodesToBeCreated(List<Future<String>> containers) throws Exception {
