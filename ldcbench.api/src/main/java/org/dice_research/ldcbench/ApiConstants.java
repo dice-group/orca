@@ -20,7 +20,8 @@ public class ApiConstants {
     public static final String ENV_COMPONENT_ID_KEY = "LDCBENCH_COMPONENT_ID";
 
     public static final String ENV_HTTP_PORT_KEY = "HTTP_PORT";
-    
+
+    public static final String SPARQL_IMAGE = "openlink/virtuoso-opensource-7:7.2.6-r2-gf5e32aa";
     public static final String SPARQL_USER= "dba";
     public static final String SPARQL_PASSWORD = "123dice";
 

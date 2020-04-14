@@ -460,7 +460,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     protected void createSparqlEndpoint() {
         String defaultPort = "8890";
         String exposedPort = "8889";
-        String sparqlHostname = createContainer("openlink/virtuoso-opensource-7", Constants.CONTAINER_TYPE_BENCHMARK,
+        String sparqlHostname = createContainer(ApiConstants.SPARQL_IMAGE, Constants.CONTAINER_TYPE_BENCHMARK,
                 new String[] { "DBA_PASSWORD=" + VOS_PASSWORD, "HOBBIT_SDK_CONTAINER_NAME=benchmark-sparql",
                         "HOBBIT_SDK_PUBLISH_PORTS=" + exposedPort + ":" + defaultPort });
         if (sparqlHostname == null) {

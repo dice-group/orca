@@ -33,12 +33,10 @@ public class SimpleSparqlComponent extends NodeComponent implements Component {
 
     protected String sparqlContainer = null;
 
-    private static final String SPARQL_IMG = "openlink/virtuoso-opensource-7:latest";
-
     @Override
     public void initBeforeDataGeneration() throws Exception {
-        LOGGER.debug("Starting SPARQL service: {}...", SPARQL_IMG);
-        sparqlContainer = createContainer(SPARQL_IMG, CONTAINER_TYPE_BENCHMARK,
+        LOGGER.debug("Starting SPARQL service: {}...", ApiConstants.SPARQL_IMAGE);
+        sparqlContainer = createContainer(ApiConstants.SPARQL_IMAGE, CONTAINER_TYPE_BENCHMARK,
                 new String[] { "DBA_PASSWORD=" + ApiConstants.SPARQL_PASSWORD });
         resourceUriTemplate = "http://" + sparqlContainer + "/data/%s-%s/%s-%s";
         accessUriTemplate = "http://" + sparqlContainer + ":8890/sparql";
