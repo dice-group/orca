@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/dice-group/orca.svg?branch=master)](https://travis-ci.org/dice-group/orca)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6030450cade64e259f69dddbd4a17c14)](https://www.codacy.com/app/MichaelRoeder/ldcbench)
 
+<img src="orca.png" alt="" height="215">
+
 # Benchmark for Data Web Crawlers
 
 Benchmark Data Web Crawlers on [the HOBBIT platform](http://project-hobbit.eu/).
