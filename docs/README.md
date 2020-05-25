@@ -5,13 +5,23 @@
 
 # Benchmark for Data Web Crawlers
 
-Benchmark Data Web Crawlers on [the HOBBIT platform](http://project-hobbit.eu/).
+ORCA is a benchmark for Data Web Crawlers which runs on [the HOBBIT platform](http://project-hobbit.eu/).
+Currently, the following types of data nodes are available:
+- RDF data served in various formats over HTTP (dump and dereferencing variants)
+- RDFa data embedded in HTML, based on the [RDFa Test Suite](https://github.com/rdfa/rdfa.github.io)
+- SPARQL endpoints, based on [Virtuoso](https://virtuoso.openlinksw.com/)
+- [CKAN](https://ckan.org/) instances
 
-The RDFa testing is mainly based on the [RDFa Test Suite](https://github.com/rdfa/rdfa.github.io).
+## License
 
-## Source
+This project is licensed under the
+GNU Affero General Public License v3.0.
+For the full license text, see [LICENSE](../LICENSE).
 
-- [http://w3id.org/dice-research/orca/code](http://w3id.org/dice-research/orca/code)
+## Source code
+
+- Permanent URL: [http://w3id.org/dice-research/orca/code](http://w3id.org/dice-research/orca/code)
+- GitHub: [https://github.com/dice-group/orca](https://github.com/dice-group/orca)
 
 ## Documentation
 
@@ -22,8 +32,9 @@ The RDFa testing is mainly based on the [RDFa Test Suite](https://github.com/rdf
 
 ## Crawlers
 
-* [LDSpider](https://github.com/dice-group/ldcbench-ldspider-adapter)
-* [Squirrel](https://github.com/dice-group/ldcbench-squirrel-adapter)
+* **[LDSpider](https://github.com/dice-group/ldcbench-ldspider-adapter)**
+* **[Squirrel](https://github.com/dice-group/ldcbench-squirrel-adapter)**
+* [How to integrate a crawler with ORCA](adding-crawlers.md)
 
 ## Parameters
 
@@ -50,3 +61,24 @@ The RDFa testing is mainly based on the [RDFa Test Suite](https://github.com/rdf
 | Crawl delay fulfilment | The average measured delay between the requests received by a single node divided by the delay defined in the `robots.txt` file. If the measure is below 1.0 the crawler does not strictly follow the delay instruction. | [orca:minAverageCrawlDelayFulfillment](http://w3id.org/dice-research/orca/ontology#minAverageCrawlDelayFulfillment) [orca:maxAverageCrawlDelayFulfillment](http://w3id.org/dice-research/orca/ontology#maxAverageCrawlDelayFulfillment) [orca:macroAverageCrawlDelayFulfillment](http://w3id.org/dice-research/orca/ontology#macroAverageCrawlDelayFulfillment)
 | Consumed hardware resources | The RAM and CPU consumption of the benchmarked crawler. | [orca:totalCpuUsage](http://w3id.org/dice-research/orca/ontology#totalCpuUsage) [orca:averageDiskUsage](http://w3id.org/dice-research/orca/ontology#averageDiskUsage) [orca:averageMemoryUsage](http://w3id.org/dice-research/orca/ontology#averageMemoryUsage)
 | Triples over time | The number of triples in the sink over time. | [orca:tripleCountOverTime](http://w3id.org/dice-research/orca/ontology#tripleCountOverTime)
+
+## Maintenance
+
+This project is maintained by the [Data Science Group](https://w3id.org/dice-research) at [Paderborn University](https://upb.de/) within its role as a member of the special group 7 of task force 6 of the BDVA.
+
+## Citation
+
+ORCA has been submitted to a semantic web conference and is currently under review.
+For the time being, the preprint at [https://arxiv.org/abs/1912.08026](https://arxiv.org/abs/1912.08026) can be cited:
+
+```BibTeX
+@misc{orca2019,
+    title={ORCA: a Benchmark for Data Web Crawlers},
+    author={Michael R\"{o}der and Geraldo de Souza and Denis Kuchelev and Abdelmoneim Amer Desouki and Axel-Cyrille Ngonga Ngomo},
+    year={2019},
+    eprint={1912.08026},
+    archivePrefix={arXiv},
+    primaryClass={cs.DB},
+    url={https://arxiv.org/abs/1912.08026}
+}
+```
