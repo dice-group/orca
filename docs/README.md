@@ -5,7 +5,7 @@
 
 # Benchmark for Data Web Crawlers
 
-ORCA is a benchmark for Data Web Crawlers which runs on [the HOBBIT platform](http://project-hobbit.eu/).
+**OR**CA is a **C**rawler **A**nalysis benchmark for Data Web Crawlers which runs on [the HOBBIT platform](http://project-hobbit.eu/).
 Currently, the following types of data nodes are available:
 - RDF data served in various formats over HTTP (dump and dereferencing variants)
 - RDFa data embedded in HTML, based on the [RDFa Test Suite](https://github.com/rdfa/rdfa.github.io)
