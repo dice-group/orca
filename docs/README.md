@@ -68,17 +68,17 @@ This project is maintained by the [Data Science Group](https://w3id.org/dice-res
 
 ## Citation
 
-ORCA has been submitted to a semantic web conference and is currently under review.
-For the time being, the preprint at [https://arxiv.org/abs/1912.08026](https://arxiv.org/abs/1912.08026) can be cited:
+ORCA has been accepted by the IEEE International Conference on Semantic Computing (ICSC). [The paper](https://papers.dice-research.org/2021/ICSC2021_ORCA/ORCA_public.pdf) should be cited as follows:
 
 ```BibTeX
-@misc{orca2019,
-    title={ORCA: a Benchmark for Data Web Crawlers},
-    author={Michael R\"{o}der and Geraldo de Souza and Denis Kuchelev and Abdelmoneim Amer Desouki and Axel-Cyrille Ngonga Ngomo},
-    year={2019},
-    eprint={1912.08026},
-    archivePrefix={arXiv},
-    primaryClass={cs.DB},
-    url={https://arxiv.org/abs/1912.08026}
+@InProceedings{roeder2021orca,
+  author    = {Michael Röder and Geraldo de Souza Jr. and Denis Kuchelev and Abdelmoneim Amer Desouki and Axel-Cyrille Ngonga Ngomo},
+  booktitle = {Proceedings of the 15th IEEE International Conference on Semantic Computing (ICSC)},
+  title     = {ORCA – a Benchmark for Data Web Crawlers},
+  year      = {2021},
+  pages     = {62-69},
+  publisher = {IEEE Computer Society},
+  keywords  = {dice raki daikiri opal limbo sys:relevantFor:limbo sys:relevantFor:opal group_aksw roeder ngonga kuchelev gsjunior},
+  url       = {https://papers.dice-research.org/2021/ICSC2021_ORCA/ORCA_public.pdf},
 }
 ```
