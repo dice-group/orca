@@ -8,6 +8,16 @@
   rdfs:label "ORCA"@en;
   rdfs:comment "Benchmark for Data Web Crawlers"@en;
   hobbit:imageName "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.controller";
+  hobbit:usesImage
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.ckan-node",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.data-generator",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.empty-server",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.eval-module",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.http-node",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.rdfa-gen",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.rdfa-node",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.sparql-node",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.system";
   hobbit:version "v1.0"@en;
   hobbit:hasParameter
     :seed,
