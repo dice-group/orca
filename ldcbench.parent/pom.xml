@@ -14,7 +14,7 @@
   <!-- PROPERTIES -->
   <properties>
     <java.version>1.8</java.version>
-    <slf4j.version>1.7.10</slf4j.version>
+    <slf4j.version>1.7.30</slf4j.version>
     <junit.version>4.13.1</junit.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- The versions of jena and the sparql-api have to fit to each other -->
