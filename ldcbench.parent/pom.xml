@@ -28,7 +28,7 @@
     <repository>
       <id>lhogie.i3s.maven.repo</id>
       <name>Luc Hogie Maven repository</name>
-      <url>http://www.i3s.unice.fr/~hogie/maven_repository/</url>
+      <url>https://www.i3s.unice.fr/~hogie/maven_repository/</url>
     </repository>
     <!-- AKSW repo (e.g., for HOBBIT) -->
     <repository>
