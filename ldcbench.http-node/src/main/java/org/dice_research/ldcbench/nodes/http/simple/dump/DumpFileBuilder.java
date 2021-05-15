@@ -27,6 +27,9 @@ import org.dice_research.ldcbench.nodes.utils.TripleIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.aayushatharva.brotli4j.Brotli4jLoader;
+import com.aayushatharva.brotli4j.encoder.BrotliOutputStream;
+
 
 /**
  * A simple class which builds a dump file from the given graph by serializing
@@ -47,6 +50,7 @@ public class DumpFileBuilder {
             ReflectionBasedStreamFactory.create(
                     "org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream",
                     "application/x-bzip2", ".bz2"),
+            ReflectionBasedStreamFactory.create(BrotliOutputStream.class, "application/br", ".br"),
             new ZipStreamFactory());
 
     protected final int domainId;
@@ -90,6 +94,9 @@ public class DumpFileBuilder {
         OutputStream out = new FileOutputStream(dumpFile);
         out = new BufferedOutputStream(out);
         if (compression != null) {
+            if (compression.getFileNameExtension().equals(".br")) {
+                Brotli4jLoader.ensureAvailability();
+            }
             out = compression.createCompressionStream(out);
         }
         return out;
