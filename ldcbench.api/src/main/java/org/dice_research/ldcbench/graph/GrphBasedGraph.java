@@ -112,6 +112,11 @@ public class GrphBasedGraph implements GraphBuilder {
     public int[] outgoingEdgeTypes(int nodeId) {
         return orderedOutgoingEdges(nodeId).map(this::getEdgeType).toArray();
     }
+    
+    @Override
+    public int outgoingEdgeCount(int nodeId) {
+        return graph.getOutEdgeDegree(nodeId);
+    }
 
     public int[] incomingEdgeSources(int nodeId) {
         return orderedIncomingEdges(nodeId).map(graph::getDirectedSimpleEdgeTail).toArray();
@@ -119,6 +124,11 @@ public class GrphBasedGraph implements GraphBuilder {
 
     public int[] incomingEdgeTypes(int nodeId) {
         return orderedIncomingEdges(nodeId).map(this::getEdgeType).toArray();
+    }
+    
+    @Override
+    public int incomingEdgeCount(int nodeId) {
+        return graph.getInEdgeDegree(nodeId);
     }
 
     public int getNumberOfNodes() {
