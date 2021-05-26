@@ -35,6 +35,7 @@
     :httpDumpNodeWeight,
     :httpDumpNodeCompressedRatio,
     :useTurtleDumps,
+    :useJsonLdDumps,
     :useN3Dumps,
     :useRdfXmlDumps,
     :useNtDumps,

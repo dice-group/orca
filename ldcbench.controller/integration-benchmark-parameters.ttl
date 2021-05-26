@@ -19,6 +19,7 @@ experiments:New a hobbit:Experiment;
   :dereferencingHttpNodeWeight 1;
   :httpDumpNodeWeight 0;
   :useTurtleDumps "true"^^xsd:boolean;
+  :useJsonLdDumps "true"^^xsd:boolean;
   :useN3Dumps "true"^^xsd:boolean;
   :useRdfXmlDumps "true"^^xsd:boolean;
   :useNtDumps "true"^^xsd:boolean;

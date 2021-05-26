@@ -63,6 +63,7 @@ public class LDCBench {
     public static final Property useN3Dumps = property("useN3Dumps");
     public static final Property useNtDumps = property("useNtDumps");
     public static final Property useRdfXmlDumps = property("useRdfXmlDumps");
+    public static final Property useJsonLdDumps = property("useJsonLdDumps");
     public static final Property useTurtleDumps = property("useTurtleDumps");
     public static final Property microAverageCrawlDelayFulfillment = property("microAverageCrawlDelayFulfillment");
     public static final Property macroAverageCrawlDelayFulfillment = property("macroAverageCrawlDelayFulfillment");
