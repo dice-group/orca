@@ -6,6 +6,8 @@ import java.lang.reflect.Constructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.aayushatharva.brotli4j.Brotli4jLoader;
+
 /**
  * Compression factory which relies on a given compression class and the
  * assumption that this class has a constructor which takes the given, original
@@ -53,6 +55,9 @@ public class ReflectionBasedStreamFactory implements CompressionStreamFactory {
     @Override
     public OutputStream createCompressionStream(OutputStream os) {
         try {
+            if (this.getFileNameExtension() != null && this.getFileNameExtension().equals(".br")) {
+                Brotli4jLoader.ensureAvailability();
+            }
             return compressionConstructor.newInstance(os);
         } catch (Exception e) {
             LOGGER.error("Couldn't create compression instance. Returning null.", e);

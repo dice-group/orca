@@ -94,9 +94,6 @@ public class DumpFileBuilder {
         OutputStream out = new FileOutputStream(dumpFile);
         out = new BufferedOutputStream(out);
         if (compression != null) {
-            if (compression.getFileNameExtension().equals(".br")) {
-                Brotli4jLoader.ensureAvailability();
-            }
             out = compression.createCompressionStream(out);
         }
         return out;
