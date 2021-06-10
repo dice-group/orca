@@ -6,14 +6,21 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.riot.Lang;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.http.simple.AbstractCrawleableResource;
 import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpException;
+import org.dice_research.ldcbench.nodes.http.simple.dump.comp.Archiver;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
+import org.dice_research.ldcbench.nodes.http.simple.dump.comp.TarArchiver;
+import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ZipArchiver;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
@@ -24,14 +31,27 @@ import org.springframework.http.MediaType;
 public class DumpFileResource extends AbstractCrawleableResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DumpFileResource.class);
+    public static final List<Archiver> ARCHIVERS = Arrays.asList(
+    		Archiver.create("org.apache.commons.compress.archivers.tar.TarArchiveOutputStream",
+    				"application/x-tar", ".tar"),
+    		Archiver.create("org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream",
+    				"application/zip", ".zip"));
 
     public static DumpFileResource create(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates,
-            Graph[] graphs, Predicate<Request> predicate, Lang lang, CompressionStreamFactory compression) {
+            Graph[] graphs, Predicate<Request> predicate, Lang lang, CompressionStreamFactory compression, Archiver archiver) {
         DumpFileBuilder builder = new DumpFileBuilder(domainId, resourceUriTemplates, accessUriTemplates, graphs,
                 lang, compression);
         try {
             File dumpFile = builder.build();
-            return new DumpFileResource(predicate, builder.buildContentType(), dumpFile);
+            String contentType = builder.buildContentType();
+            if (archiver != null)  {
+            	//TODO support more than one file
+            	//Add dump Files to a List and put them into Archive
+            	File archive = new File("archive");
+            	archiver.buildArchive(archive,dumpFile);
+            	contentType = archiver.getMediaType();
+            }
+            return new DumpFileResource(predicate, contentType, dumpFile);
         } catch (IOException e) {
             LOGGER.error("Couldn't create dump file.", e);
         } catch (NoSuchMethodException e) {

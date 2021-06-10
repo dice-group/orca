@@ -27,6 +27,7 @@ import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.dice_research.ldcbench.nodes.components.NodeComponent;
 import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileBuilder;
 import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileResource;
+import org.dice_research.ldcbench.nodes.http.simple.dump.comp.Archiver;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ZipStreamFactory;
 import org.dice_research.ldcbench.nodes.utils.LangUtils;
@@ -65,6 +66,8 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
     protected String dumpFilePath = null;
     protected Lang dumpFileLang = null;
     protected CompressionStreamFactory dumpFileCompression = null;
+    protected Archiver dumpfileArchiver = null;
+    protected boolean enableArchiving;
 
     @Override
     public void initBeforeDataGeneration() throws Exception {
@@ -72,6 +75,8 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
         compressedRatio = Double.parseDouble(EnvVariables.getString(ApiConstants.ENV_COMPRESSED_RATIO_KEY, LOGGER));
         disallowedRatio = Double.parseDouble(EnvVariables.getString(ApiConstants.ENV_DISALLOWED_RATIO_KEY, LOGGER));
         crawlDelay = EnvVariables.getInt(ApiConstants.ENV_CRAWL_DELAY_KEY, LOGGER);
+        //USE ENVIRONMENT VARIABLE FOR ARCHIVE ?
+        enableArchiving = Boolean.parseBoolean(EnvVariables.getString(ApiConstants.ENV_ENABLE_ARCHIVING, LOGGER));
 
         String hostname = InetAddress.getLocalHost().getHostName();
         LOGGER.info("Hostname: {}", hostname);
@@ -99,6 +104,13 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
                 compressions.add(null);
             }
             dumpFileCompression = Collections.pickRandomObject(compressions, random);
+
+            //select what Archiver to use
+            if (enableArchiving) {
+            	List<Archiver> archivers = new ArrayList<>();
+            	archivers.addAll(DumpFileResource.ARCHIVERS);
+            	dumpfileArchiver = Collections.pickRandomObject(archivers, random);
+            }
 
             // Create path including the dump file name
             StringBuilder builder = new StringBuilder("/dumpFile");
@@ -179,7 +191,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
                     graphs.toArray(new Graph[graphs.size()]),
                     r -> r.getPath().toString().equals(dumpFilePath),
-                    dumpFileLang, dumpFileCompression);
+                    dumpFileLang, dumpFileCompression, dumpfileArchiver);
         } else {
             SimpleTripleCreator tripleCreator = new SimpleTripleCreator(cloudNodeId.get(), resourceUriTemplates,
                     accessUriTemplates);
