@@ -4,9 +4,12 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,6 +27,14 @@ import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamF
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ReflectionBasedStreamFactory;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ZipStreamFactory;
 import org.dice_research.ldcbench.nodes.utils.TripleIterator;
+import org.rdfhdt.hdt.enums.RDFNotation;
+import org.rdfhdt.hdt.exceptions.NotFoundException;
+import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
+import org.rdfhdt.hdt.triples.TripleString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,8 +109,13 @@ public class DumpFileBuilder {
     private void streamData(OutputStream out, Lang lang) {
         int datasetId = 0;
         StreamRDF writerStream = null;
+        HDT hdt = null;
+        
         try {
             writerStream = StreamRDFWriter.getWriterStream(out, lang);
+            LOGGER.info("writerStream: "+writerStream);
+            hdt = getHdtWriterStream(out);
+            
         } catch(RiotException e ) {
             if(e.getMessage().startsWith("No serialization for language")) {
                 LOGGER.warn("No serialization for language Lang: {}. Trying to write it from an in-memory model.", lang);
@@ -107,13 +123,19 @@ public class DumpFileBuilder {
             } else {
                 throw e;
             }
-        }
+        } catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParserException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         // The stream has been created
         if(writerStream != null) {
         writerStream.start();
         TripleIterator iterator;
-        LOGGER.info("Domain ID: " + domainId);
-        LOGGER.info("graph size: " + graphs.length);
+        LOGGER.info("Domain ID main: " + domainId);
+        LOGGER.info("graph size main: " + graphs.length);
 
         for(Graph graph: graphs) {
             for (int i = 0; i < graph.getNumberOfNodes(); ++i) {
@@ -124,9 +146,46 @@ public class DumpFileBuilder {
         }
         writerStream.finish();
         }
+        if(hdt !=null) {
+        	
+        	IteratorTripleString it = null;
+			try {
+				it = hdt.search("", "", "");
+			} catch (NotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	    while(it.hasNext()) {
+    	        TripleString ts = it.next();
+    	        LOGGER.info("TripleString: "+ts);
+    	    }
+        }
     }
 
-    private void writeData(OutputStream out, Lang lang) {
+    private HDT getHdtWriterStream(OutputStream out) throws IOException, ParserException {
+    	HDT hdt;
+    	String inputType = "ntriples";
+    	FileWriter tempFile = new FileWriter("rdfinputtemp.nt");
+    	out.flush();
+    	String rdfInput = "rdfinputtemp.nt";
+    	String hdtOutput = "hdttemptesthdt.hdt";
+    	
+    	hdt = HDTManager.generateHDT(
+		        rdfInput,         // Input RDF File
+		        "",          // Base URI
+		        RDFNotation.parse(inputType), // Input Type
+		        new HDTSpecification(),   // HDT Options
+		        null              // Progress Listener
+    			);
+		// Save generated HDT to a file
+		hdt.saveToHDT(hdtOutput, null);
+	
+		File file = new File(rdfInput);
+		file.delete();
+		return hdt;
+	}
+
+	private void writeData(OutputStream out, Lang lang) {
         TripleIterator iterator;
         LOGGER.info("Domain ID: " + domainId);
         LOGGER.info("graph size: " + graphs.length);
@@ -146,6 +205,8 @@ public class DumpFileBuilder {
         if (lang.equals(Lang.RDFXML)) {
             // Just RDFXML leads to StackOverflow exceptions
             RDFDataMgr.write(out, model, RDFFormat.RDFXML_PLAIN);
+            
+            //-----------should the code come here?
         } else {
             RDFDataMgr.write(out, model, lang);
         }
