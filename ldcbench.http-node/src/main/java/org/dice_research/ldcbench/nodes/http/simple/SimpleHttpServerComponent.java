@@ -29,7 +29,6 @@ import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileBuilder;
 import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileResource;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.Archiver;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
-import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ZipStreamFactory;
 import org.dice_research.ldcbench.nodes.utils.LangUtils;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.rdf.UriHelper;
@@ -67,7 +66,6 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
     protected Lang dumpFileLang = null;
     protected CompressionStreamFactory dumpFileCompression = null;
     protected Archiver dumpfileArchiver = null;
-    protected boolean enableArchiving;
 
     @Override
     public void initBeforeDataGeneration() throws Exception {
@@ -75,8 +73,6 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
         compressedRatio = Double.parseDouble(EnvVariables.getString(ApiConstants.ENV_COMPRESSED_RATIO_KEY, LOGGER));
         disallowedRatio = Double.parseDouble(EnvVariables.getString(ApiConstants.ENV_DISALLOWED_RATIO_KEY, LOGGER));
         crawlDelay = EnvVariables.getInt(ApiConstants.ENV_CRAWL_DELAY_KEY, LOGGER);
-        //USE ENVIRONMENT VARIABLE FOR ARCHIVE ?
-        enableArchiving = Boolean.parseBoolean(EnvVariables.getString(ApiConstants.ENV_ENABLE_ARCHIVING, LOGGER));
 
         String hostname = InetAddress.getLocalHost().getHostName();
         LOGGER.info("Hostname: {}", hostname);
@@ -96,20 +92,18 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             LOGGER.debug("Language: {}", dumpFileLang);
             LOGGER.debug("File extensions: {}", dumpFileLang.getFileExtensions());
 
-            List<CompressionStreamFactory> compressions = new ArrayList<>();
             if (random.nextDouble() < compressedRatio) {
-                compressions.addAll(DumpFileBuilder.COMPRESSIONS);
-            } else {
-                // Add the case that no compression is used
-                compressions.add(null);
-            }
-            dumpFileCompression = Collections.pickRandomObject(compressions, random);
-
-            //select what Archiver to use
-            if (enableArchiving) {
-            	List<Archiver> archivers = new ArrayList<>();
-            	archivers.addAll(DumpFileResource.ARCHIVERS);
-            	dumpfileArchiver = Collections.pickRandomObject(archivers, random);
+                if (random.nextDouble() < (DumpFileBuilder.COMPRESSIONS.size()/(DumpFileBuilder.COMPRESSIONS.size()
+                                                    + DumpFileResource.ARCHIVERS.size()))) {
+                    List<CompressionStreamFactory> compressions = new ArrayList<>();
+                    compressions.addAll(DumpFileBuilder.COMPRESSIONS);
+                    dumpFileCompression = Collections.pickRandomObject(compressions, random);
+                }
+                else {
+                    List<Archiver> archivers = new ArrayList<>();
+                    archivers.addAll(DumpFileResource.ARCHIVERS);
+                    dumpfileArchiver = Collections.pickRandomObject(archivers, random);
+                }
             }
 
             // Create path including the dump file name
@@ -117,12 +111,9 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             builder.append(".");
             builder.append(dumpFileLang.getFileExtensions().get(0));
             if (dumpFileCompression != null) {
-                // FIXME This is a bad workaround to make the ZIP compression aware of the file
-                // name of the compressed data
-                if (dumpFileCompression instanceof ZipStreamFactory) {
-                    ((ZipStreamFactory) dumpFileCompression).setCompressedFileName(builder.toString());
-                }
                 builder.append(dumpFileCompression.getFileNameExtension());
+            } else if (dumpfileArchiver != null) {
+                builder.append(dumpfileArchiver.getFileNameExtension());
             }
             dumpFilePath = builder.toString();
             LOGGER.debug("Path: {}", dumpFilePath);

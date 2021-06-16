@@ -16,6 +16,7 @@ import java.util.Random;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -28,28 +29,26 @@ public class ArchiverTest {
 
     protected static final int DATA_SIZE = 1000;
 
-    protected String archiverClassName;
+    protected Archiver archiver;
     protected String unarchiverClassName;
 
-    public ArchiverTest(String compressionClassName, String decompressionClassName) {
-        this.archiverClassName = compressionClassName;
-        this.unarchiverClassName = decompressionClassName;
+    public ArchiverTest(Archiver archiver, String unarchiverClassName) {
+        this.archiver = archiver;
+        this.unarchiverClassName = unarchiverClassName;
     }
 
     @Parameters
     public static List<Object[]> testCases() {
         List<Object[]> data = new ArrayList<>();
-
-        data.add(new Object[] { "org.apache.commons.compress.archivers.tar.TarArchiveOutputStream",
+        data.add(new Object[] {TarArchiver.createArchiver(),
         		"org.apache.commons.compress.archivers.tar.TarArchiveInputStream"});
-        data.add(new Object[] { "org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream",
-        "org.apache.commons.compress.archivers.zip.ZipArchiveInputStream"});
+        data.add(new Object[] {new ZipArchiver(),
+                "org.apache.commons.compress.archivers.zip.ZipArchiveInputStream"});
         return data;
     }
 
     @Test
     public void test() throws IOException {
-        Archiver archiver = Archiver.create(archiverClassName, null, null);
         byte[] data = generateData();
         
         //archive

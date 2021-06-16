@@ -10,8 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.riot.Lang;
 import org.dice_research.ldcbench.graph.Graph;
@@ -31,11 +29,8 @@ import org.springframework.http.MediaType;
 public class DumpFileResource extends AbstractCrawleableResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DumpFileResource.class);
-    public static final List<Archiver> ARCHIVERS = Arrays.asList(
-    		Archiver.create("org.apache.commons.compress.archivers.tar.TarArchiveOutputStream",
-    				"application/x-tar", ".tar"),
-    		Archiver.create("org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream",
-    				"application/zip", ".zip"));
+    public static final List<Archiver> ARCHIVERS = Arrays.asList(TarArchiver.createArchiver(),
+            TarArchiver.createArchiverWithGzip(), new ZipArchiver());
 
     public static DumpFileResource create(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates,
             Graph[] graphs, Predicate<Request> predicate, Lang lang, CompressionStreamFactory compression, Archiver archiver) {
@@ -47,9 +42,10 @@ public class DumpFileResource extends AbstractCrawleableResource {
             if (archiver != null)  {
             	//TODO support more than one file
             	//Add dump Files to a List and put them into Archive
-            	File archive = new File("archive");
+                File archive = File.createTempFile("ldcbench", ".archive");
             	archiver.buildArchive(archive,dumpFile);
             	contentType = archiver.getMediaType();
+                return new DumpFileResource(predicate, contentType, archive);
             }
             return new DumpFileResource(predicate, contentType, dumpFile);
         } catch (IOException e) {
