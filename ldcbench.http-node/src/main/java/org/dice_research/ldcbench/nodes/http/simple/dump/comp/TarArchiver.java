@@ -3,8 +3,6 @@ package org.dice_research.ldcbench.nodes.http.simple.dump.comp;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.zip.GZIPOutputStream;
-
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,32 +12,37 @@ public class TarArchiver extends Archiver {
     private static final Logger LOGGER = LoggerFactory.getLogger(TarArchiver.class);
 
     private static final String TAR_MEDIA_TYPE = "application/x-tar";
-    private static final String TAR_GZIP_MEDIA_TYPE = "application/x-gtar";
     private static final String TAR_FILE_NAME_EXTENSION = ".tar";
-    private static final String TAR_GZIP_FILE_NAME_EXTENSION = "tar.gz";
+    CompressionStreamFactory compressionFactory = null;
 
-    private boolean gziped;
-
-    public static TarArchiver createArchiver() {
-        return new TarArchiver(false);
+    /**
+     * Create a simple Tar Archiver
+     */
+    public TarArchiver() {
+        mediaType = TAR_MEDIA_TYPE;
+        fileNameExtension = TAR_FILE_NAME_EXTENSION;
     }
 
-    public static TarArchiver createArchiverWithGzip() {
-        return new TarArchiver(true);
+    /**
+     * create an Archiver wrapped with compression (Tar.gz for example)
+     *
+     * @param compressionFactory
+     */
+    /**
+     * @param compressionFactory
+     */
+    public TarArchiver(CompressionStreamFactory compressionFactory) {
+        this.compressionFactory = compressionFactory;
+        String compressionMediaType = compressionFactory.getMediaType();
+        mediaType = TAR_MEDIA_TYPE.concat(compressionMediaType.substring(compressionMediaType.indexOf("/")+1));
+        fileNameExtension = TAR_FILE_NAME_EXTENSION.concat(compressionFactory.getFileNameExtension());
     }
-
-    public TarArchiver(boolean gziped) {
-        this.gziped = gziped;
-        mediaType = gziped ? TAR_GZIP_MEDIA_TYPE : TAR_MEDIA_TYPE;
-        fileNameExtension = gziped ? TAR_GZIP_FILE_NAME_EXTENSION : TAR_FILE_NAME_EXTENSION;
-    }
-
 
 	@Override
 	protected TarArchiveOutputStream createStream(File archive) {
 		try {
 			return new TarArchiveOutputStream(
-					this.gziped ? new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(archive)))
+					this.compressionFactory != null ? compressionFactory.createCompressionStream(new BufferedOutputStream(new FileOutputStream(archive)))
 							: new BufferedOutputStream(new FileOutputStream(archive)));
 		} catch (Exception e) {
 			LOGGER.error("Couldn't create Archive Instance. Returning null. ", e);

@@ -17,6 +17,7 @@ import org.dice_research.ldcbench.nodes.http.simple.AbstractCrawleableResource;
 import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpException;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.Archiver;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
+import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ReflectionBasedStreamFactory;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.TarArchiver;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ZipArchiver;
 import org.simpleframework.http.Request;
@@ -29,8 +30,9 @@ import org.springframework.http.MediaType;
 public class DumpFileResource extends AbstractCrawleableResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DumpFileResource.class);
-    public static final List<Archiver> ARCHIVERS = Arrays.asList(TarArchiver.createArchiver(),
-            TarArchiver.createArchiverWithGzip(), new ZipArchiver());
+    public static final List<Archiver> ARCHIVERS = Arrays.asList(new TarArchiver(),
+            new TarArchiver(ReflectionBasedStreamFactory.create("java.util.zip.GZIPOutputStream", "application/gzip", ".gz")),
+            new ZipArchiver());
 
     public static DumpFileResource create(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates,
             Graph[] graphs, Predicate<Request> predicate, Lang lang, CompressionStreamFactory compression, Archiver archiver) {

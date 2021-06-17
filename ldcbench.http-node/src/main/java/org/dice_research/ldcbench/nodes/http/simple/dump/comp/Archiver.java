@@ -9,6 +9,11 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The abstract Archiver which defines the attributes each archiver must have
+ * and implement the logic used by all archivers to create Archives
+ *
+ */
 public abstract class Archiver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Archiver.class);

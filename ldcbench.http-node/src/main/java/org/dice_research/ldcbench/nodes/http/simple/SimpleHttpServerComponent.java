@@ -95,14 +95,10 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             if (random.nextDouble() < compressedRatio) {
                 if (random.nextDouble() < (DumpFileBuilder.COMPRESSIONS.size()/(DumpFileBuilder.COMPRESSIONS.size()
                                                     + DumpFileResource.ARCHIVERS.size()))) {
-                    List<CompressionStreamFactory> compressions = new ArrayList<>();
-                    compressions.addAll(DumpFileBuilder.COMPRESSIONS);
-                    dumpFileCompression = Collections.pickRandomObject(compressions, random);
+                    dumpFileCompression = Collections.pickRandomObject(DumpFileBuilder.COMPRESSIONS, random);
                 }
                 else {
-                    List<Archiver> archivers = new ArrayList<>();
-                    archivers.addAll(DumpFileResource.ARCHIVERS);
-                    dumpfileArchiver = Collections.pickRandomObject(archivers, random);
+                    dumpfileArchiver = Collections.pickRandomObject(DumpFileResource.ARCHIVERS, random);
                 }
             }
 
