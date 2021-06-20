@@ -113,8 +113,6 @@ public class DumpFileBuilder {
         
         try {
             writerStream = StreamRDFWriter.getWriterStream(out, lang);
-            LOGGER.info("writerStream: "+writerStream);
-            hdt = getHdtWriterStream(out);
             
         } catch(RiotException e ) {
             if(e.getMessage().startsWith("No serialization for language")) {
@@ -123,19 +121,14 @@ public class DumpFileBuilder {
             } else {
                 throw e;
             }
-        } catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParserException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        }
+        
         // The stream has been created
         if(writerStream != null) {
         writerStream.start();
         TripleIterator iterator;
-        LOGGER.info("Domain ID main: " + domainId);
-        LOGGER.info("graph size main: " + graphs.length);
+        LOGGER.info("Domain ID: " + domainId);
+        LOGGER.info("graph size: " + graphs.length);
 
         for(Graph graph: graphs) {
             for (int i = 0; i < graph.getNumberOfNodes(); ++i) {
@@ -145,44 +138,53 @@ public class DumpFileBuilder {
             datasetId++;
         }
         writerStream.finish();
-        }
-        if(hdt !=null) {
-        	
-        	IteratorTripleString it = null;
-			try {
-				it = hdt.search("", "", "");
-			} catch (NotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	    while(it.hasNext()) {
-    	        TripleString ts = it.next();
-    	        LOGGER.info("TripleString: "+ts);
-    	    }
+        
+        try {
+			getHDTStream(writerStream);
+		} catch (IOException | ParserException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        LOGGER.info("writerStream: " + writerStream);
         }
     }
 
-    private HDT getHdtWriterStream(OutputStream out) throws IOException, ParserException {
-    	HDT hdt;
-    	String inputType = "ntriples";
-    	FileWriter tempFile = new FileWriter("rdfinputtemp.nt");
-    	out.flush();
-    	String rdfInput = "rdfinputtemp.nt";
-    	String hdtOutput = "hdttemptesthdt.hdt";
-    	
-    	hdt = HDTManager.generateHDT(
-		        rdfInput,         // Input RDF File
-		        "",          // Base URI
-		        RDFNotation.parse(inputType), // Input Type
-		        new HDTSpecification(),   // HDT Options
-		        null              // Progress Listener
-    			);
-		// Save generated HDT to a file
-		hdt.saveToHDT(hdtOutput, null);
-	
-		File file = new File(rdfInput);
-		file.delete();
-		return hdt;
+	private void getHDTStream(StreamRDF writerStream) throws IOException, ParserException, NotFoundException {
+		
+		String rdfInput = "test.nt";
+		String hdtOutput = "testhdt.hdt";
+		String temp = null;
+		
+		File rdfFile = new File("test.nt");
+		FileWriter tempFile = new FileWriter(rdfInput);
+		RDFDataMgr.parse(writerStream, temp);
+		writerStream.
+		
+		LOGGER.info("temp : " + temp);
+		
+		HDT hdt = HDTManager.generateHDT(
+                rdfInput,         // Input RDF File
+                "",          // Base URI
+                RDFNotation.parse("ntriples"), // Input Type
+                new HDTSpecification(),   // HDT Options
+                null              // Progress Listener
+		);
+		
+		//hdt.saveToHDT(hdtOutput, null);
+		
+		//HDT printhdt = HDTManager.loadHDT(hdtOutput, null);
+		
+	    IteratorTripleString it = hdt.search("", "", "");
+	    while(it.hasNext()) {
+	        TripleString ts = it.next();
+	        LOGGER.info("Ts: "+ts);
+	    }
+	    rdfFile.delete();
+	    
 	}
 
 	private void writeData(OutputStream out, Lang lang) {
@@ -205,8 +207,6 @@ public class DumpFileBuilder {
         if (lang.equals(Lang.RDFXML)) {
             // Just RDFXML leads to StackOverflow exceptions
             RDFDataMgr.write(out, model, RDFFormat.RDFXML_PLAIN);
-            
-            //-----------should the code come here?
         } else {
             RDFDataMgr.write(out, model, lang);
         }
