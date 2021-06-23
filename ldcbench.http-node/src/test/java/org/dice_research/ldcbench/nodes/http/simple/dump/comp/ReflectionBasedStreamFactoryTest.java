@@ -19,8 +19,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.aayushatharva.brotli4j.Brotli4jLoader;
-
 @RunWith(Parameterized.class)
 public class ReflectionBasedStreamFactoryTest {
 
@@ -41,9 +39,6 @@ public class ReflectionBasedStreamFactoryTest {
         data.add(new Object[] { "java.util.zip.GZIPOutputStream", "java.util.zip.GZIPInputStream" });
         data.add(new Object[] { "org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream",
                 "org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream" });
-        Brotli4jLoader.ensureAvailability();
-        data.add(new Object[] { "com.aayushatharva.brotli4j.encoder.BrotliOutputStream",
-				"com.aayushatharva.brotli4j.decoder.BrotliInputStream" });
         return data;
     }
 
