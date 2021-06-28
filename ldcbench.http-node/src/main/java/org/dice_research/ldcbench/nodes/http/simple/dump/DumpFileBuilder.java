@@ -161,8 +161,13 @@ public class DumpFileBuilder {
 		
 		File rdfFile = new File("test.nt");
 		FileWriter tempFile = new FileWriter(rdfInput);
-		RDFDataMgr.parse(writerStream, temp);
-		writerStream.
+		
+		Model model = ModelFactory.createDefaultModel();
+        org.apache.jena.graph.Graph modelGraph = model.getGraph();
+		FileOutputStream out = new FileOutputStream(rdfFile);
+		StreamRDFWriter.write(out, modelGraph, Lang.NT);
+		out.flush();
+		
 		
 		LOGGER.info("temp : " + temp);
 		
