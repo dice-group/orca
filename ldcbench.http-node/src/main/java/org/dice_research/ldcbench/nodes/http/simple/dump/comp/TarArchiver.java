@@ -34,7 +34,7 @@ public class TarArchiver extends AbstractArchiver {
         this.compressionFactory = compressionFactory;
     }
 
-	@Override
+    @Override
     public TarArchiveOutputStream createStream(File archive) {
 		try {
 			return new TarArchiveOutputStream(

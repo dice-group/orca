@@ -20,7 +20,7 @@ public class ZipArchiver extends AbstractArchiver {
         super(MEDIA_TYPE, FILE_NAME_EXTENSION);
     }
 
-	@Override
+    @Override
     public ZipArchiveOutputStream createStream(File archive) {
 		try {
 			return new ZipArchiveOutputStream(new BufferedOutputStream(new FileOutputStream(archive)));
