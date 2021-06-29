@@ -20,6 +20,7 @@ import org.apache.jena.riot.system.StreamOps;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
 import org.dice_research.ldcbench.graph.Graph;
+import org.dice_research.ldcbench.nodes.http.simple.dump.comp.BrotliStreamFactory;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ReflectionBasedStreamFactory;
 import org.dice_research.ldcbench.nodes.utils.TripleIterator;
@@ -45,7 +46,8 @@ public class DumpFileBuilder {
             //ReflectionBasedStreamFactory.create("java.util.zip.ZipOutputStream", "application/zip", ".zip"),
             ReflectionBasedStreamFactory.create(
                     "org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream",
-                    "application/x-bzip2", ".bz2"));
+                    "application/x-bzip2", ".bz2"),
+            new BrotliStreamFactory());
 
     protected final int domainId;
     protected final String[] resourceUriTemplates;
