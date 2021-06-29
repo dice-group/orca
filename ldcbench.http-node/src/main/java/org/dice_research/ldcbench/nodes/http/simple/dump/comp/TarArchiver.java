@@ -7,20 +7,19 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TarArchiver extends Archiver {
+public class TarArchiver extends AbstractArchiver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TarArchiver.class);
 
     private static final String TAR_MEDIA_TYPE = "application/x-tar";
     private static final String TAR_FILE_NAME_EXTENSION = ".tar";
-    CompressionStreamFactory compressionFactory = null;
+    private CompressionStreamFactory compressionFactory = null;
 
     /**
      * Create a simple Tar Archiver
      */
     public TarArchiver() {
-        mediaType = TAR_MEDIA_TYPE;
-        fileNameExtension = TAR_FILE_NAME_EXTENSION;
+        super(TAR_MEDIA_TYPE, TAR_FILE_NAME_EXTENSION);
     }
 
     /**
@@ -28,18 +27,15 @@ public class TarArchiver extends Archiver {
      *
      * @param compressionFactory
      */
-    /**
-     * @param compressionFactory
-     */
     public TarArchiver(CompressionStreamFactory compressionFactory) {
+        super(TAR_MEDIA_TYPE.concat(compressionFactory.getMediaType().substring(
+                compressionFactory.getMediaType().indexOf("/")+1)),
+                TAR_FILE_NAME_EXTENSION.concat(compressionFactory.getFileNameExtension()));
         this.compressionFactory = compressionFactory;
-        String compressionMediaType = compressionFactory.getMediaType();
-        mediaType = TAR_MEDIA_TYPE.concat(compressionMediaType.substring(compressionMediaType.indexOf("/")+1));
-        fileNameExtension = TAR_FILE_NAME_EXTENSION.concat(compressionFactory.getFileNameExtension());
     }
 
 	@Override
-	protected TarArchiveOutputStream createStream(File archive) {
+    public TarArchiveOutputStream createStream(File archive) {
 		try {
 			return new TarArchiveOutputStream(
 					this.compressionFactory != null ? compressionFactory.createCompressionStream(new BufferedOutputStream(new FileOutputStream(archive)))
