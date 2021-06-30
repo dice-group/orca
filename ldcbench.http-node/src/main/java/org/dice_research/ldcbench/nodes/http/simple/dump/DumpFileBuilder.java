@@ -48,7 +48,10 @@ public class DumpFileBuilder {
                     "org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream",
                     "application/x-bzip2", ".bz2"),
             new BrotliStreamFactory(),
-            new ZipStreamFactory());
+            new ZipStreamFactory(),
+            ReflectionBasedStreamFactory.create(
+                    "org.apache.commons.compress.compressors.deflate.DeflateCompressorOutputStream",
+                    "application/deflate", ".deflate"));
 
     protected final int domainId;
     protected final String[] resourceUriTemplates;

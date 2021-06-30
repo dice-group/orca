@@ -39,6 +39,8 @@ public class ReflectionBasedStreamFactoryTest {
         data.add(new Object[] { "java.util.zip.GZIPOutputStream", "java.util.zip.GZIPInputStream" });
         data.add(new Object[] { "org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream",
                 "org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream" });
+        data.add(new Object[] { "org.apache.commons.compress.compressors.deflate.DeflateCompressorOutputStream",
+                "org.apache.commons.compress.compressors.deflate.DeflateCompressorInputStream"});
         return data;
     }
 
