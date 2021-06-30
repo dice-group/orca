@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -68,7 +67,7 @@ public class ArchiverTest {
         File unarchivedFile = null;
 		try {
 			ais = generateInputStream(new BufferedInputStream(fis), unarchiverClassName, decompressionClassName);
-			ArchiveEntry entry = ais.getNextEntry();
+			ais.getNextEntry();
 			unarchivedFile = File.createTempFile("dummy", ".unarchived");
 			IOUtils.copy(ais, new FileOutputStream(unarchivedFile));
 		} catch (Exception e) {
