@@ -15,7 +15,7 @@ import com.aayushatharva.brotli4j.encoder.BrotliOutputStream;
  */
 public class BrotliStreamFactory implements CompressionStreamFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ZipStreamFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BrotliStreamFactory.class);
 
     private static final String MEDIA_TYPE = "application/br";
     private static final String FILE_NAME_EXTENSION = ".br";

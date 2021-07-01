@@ -23,10 +23,10 @@ import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.BrotliStreamFactory;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ReflectionBasedStreamFactory;
-import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ZipStreamFactory;
 import org.dice_research.ldcbench.nodes.utils.TripleIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * A simple class which builds a dump file from the given graph by serializing
@@ -48,7 +48,6 @@ public class DumpFileBuilder {
                     "org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream",
                     "application/x-bzip2", ".bz2"),
             new BrotliStreamFactory(),
-            new ZipStreamFactory(),
             ReflectionBasedStreamFactory.create(
                     "org.apache.commons.compress.compressors.deflate.DeflateCompressorOutputStream",
                     "application/deflate", ".deflate"));
