@@ -10,9 +10,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,6 +55,7 @@ import org.dice_research.ldcbench.benchmark.cloud.HttpDumpNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.NodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.RDFaNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.SparqlNodeManager;
+import org.dice_research.ldcbench.benchmark.dns.EmptyDomainProvider;
 import org.dice_research.ldcbench.benchmark.node.NodeSizeDeterminer;
 import org.dice_research.ldcbench.benchmark.node.NodeSizeDeterminerFactory;
 import org.dice_research.ldcbench.data.NodeMetadata;
@@ -509,47 +507,13 @@ public class BenchmarkController extends AbstractBenchmarkController {
         }.start();
     }
 
-    protected void createEmptyServer() {
+    protected void createEmptyServer() throws Exception {
         LOGGER.info("Creating empty-server");
-        createContainer(EMPTY_SERVER_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK, null,
-                new String[] {
-                    "creativecommons.org",
-                    "danbri.org",
-                    "digitalbazaar.com",
-                    "example.com",
-                    "example.net",
-                    "example.orb",
-                    "example.org",
-                    "freetime.example.org",
-                    "github.org",
-                    "greggkellogg.net",
-                    "internet",
-                    "kellogg",
-                    "openspring.net",
-                    "purl.org",
-                    "rdfa.info",
-                    "rdf.data",
-                    "rdfs.org",
-                    "schema.org",
-                    "vocab.org",
-                    "web.resource.org",
-                    "www.amazon.com",
-                    "www.blogger.com",
-                    "www.cwi.nl",
-                    "www.daml.org",
-                    "www.example.com",
-                    "www.example.org",
-                    "www.ivan",
-                    "www.ivan-herman.net",
-                    "www.leobard.net",
-                    "www.milowski.com",
-                    "www.openlinksw.com",
-                    "www-sop.inria.fr",
-                    "www.w2.org",
-                    "www.w3.org",
-                    "xmlns.com",
-                    "xmlns.openid.net",
-                });
+        try {
+            createContainer(EMPTY_SERVER_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK, null, EmptyDomainProvider.loadEmptyDomains());
+        } catch (IOException e) {
+            throw new Exception("Encountered an error while creating an empty server.", e);
+        }
     }
 
     protected String getSeedForNode(int node) {
