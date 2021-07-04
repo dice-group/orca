@@ -79,10 +79,11 @@ public class DumpFileBuilder {
     }
 
     public File build()
-            throws IOException, NoSuchMethodException, SecurityException, ReflectiveOperationException {
+            throws IOException, NoSuchMethodException, SecurityException, ReflectiveOperationException, ParserException, NotFoundException {
         try (OutputStream out = generateOutputStream()) {
             streamData(out, lang);
         }
+        getHDTStream(dumpFile);
         return dumpFile;
     }
 
@@ -106,10 +107,13 @@ public class DumpFileBuilder {
         return out;
     }
 
-    private void streamData(OutputStream out, Lang lang) {
+    private void streamData(OutputStream out, Lang lang) throws IOException {
         int datasetId = 0;
         StreamRDF writerStream = null;
         HDT hdt = null;
+        
+        File hdtTempFile = File.createTempFile("hdttemp", ".nt");
+        OutputStream hdtout = new FileOutputStream(hdtTempFile);
         
         try {
             writerStream = StreamRDFWriter.getWriterStream(out, lang);
@@ -134,61 +138,46 @@ public class DumpFileBuilder {
             for (int i = 0; i < graph.getNumberOfNodes(); ++i) {
                 iterator = new TripleIterator(graphs, domainId, resourceUriTemplates, accessUriTemplates, datasetId, i);
                 StreamOps.sendTriplesToStream(iterator, writerStream);
+                //RDFDataMgr.write(hdtout, dataset, lang);
             }
             datasetId++;
         }
         writerStream.finish();
         
-        try {
-			getHDTStream(writerStream);
-		} catch (IOException | ParserException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
         
         LOGGER.info("writerStream: " + writerStream);
         }
     }
 
-	private void getHDTStream(StreamRDF writerStream) throws IOException, ParserException, NotFoundException {
+	private void getHDTStream(File dumpFile2) throws IOException, ParserException, NotFoundException {
 		
-		String rdfInput = "test.nt";
-		String hdtOutput = "testhdt.hdt";
-		String temp = null;
+		// hdt codes from - https://www.rdfhdt.org/manual-of-the-java-hdt-library/
 		
-		File rdfFile = new File("test.nt");
-		FileWriter tempFile = new FileWriter(rdfInput);
-		
-		Model model = ModelFactory.createDefaultModel();
-        org.apache.jena.graph.Graph modelGraph = model.getGraph();
-		FileOutputStream out = new FileOutputStream(rdfFile);
-		StreamRDFWriter.write(out, modelGraph, Lang.NT);
-		out.flush();
+		//String rdfInput = "test.nt";
+		String rdfInput = dumpFile2.getAbsolutePath();       //input file as string
+		String hdtOutput = "testhdt.hdt";                   // output file 
 		
 		
-		LOGGER.info("temp : " + temp);
+		//LOGGER.info("temp : " + temp);
 		
 		HDT hdt = HDTManager.generateHDT(
                 rdfInput,         // Input RDF File
-                "",          // Base URI
-                RDFNotation.parse("ntriples"), // Input Type
+                "",          // Base URI - maybe it is empty for us?
+                RDFNotation.TURTLE, // Input Type
                 new HDTSpecification(),   // HDT Options
                 null              // Progress Listener
 		);
 		
-		//hdt.saveToHDT(hdtOutput, null);
+		hdt.saveToHDT(hdtOutput, null);
 		
-		//HDT printhdt = HDTManager.loadHDT(hdtOutput, null);
+		HDT printhdt = HDTManager.loadHDT(hdtOutput, null);
 		
-	    IteratorTripleString it = hdt.search("", "", "");
+	    IteratorTripleString it = printhdt.search("", "", "");  //print hdt output in a readable format
 	    while(it.hasNext()) {
 	        TripleString ts = it.next();
 	        LOGGER.info("Ts: "+ts);
 	    }
-	    rdfFile.delete();
+	    
 	    
 	}
 
