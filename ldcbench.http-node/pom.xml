@@ -22,6 +22,11 @@
       <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.nodes</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.aayushatharva.brotli4j</groupId>
+      <artifactId>brotli4j</artifactId>
+      <version>1.4.2</version>
+    </dependency>
     <!-- HOBBIT core library -->
     <dependency>
       <groupId>org.hobbit</groupId>
