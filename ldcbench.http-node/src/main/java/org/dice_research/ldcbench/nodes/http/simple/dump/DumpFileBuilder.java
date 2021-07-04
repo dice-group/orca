@@ -83,7 +83,7 @@ public class DumpFileBuilder {
         try (OutputStream out = generateOutputStream()) {
             streamData(out, lang);
         }
-        getHDTStream(dumpFile);
+        getHDTStream(dumpFile, lang);
         return dumpFile;
     }
 
@@ -149,21 +149,22 @@ public class DumpFileBuilder {
         }
     }
 
-	private void getHDTStream(File dumpFile2) throws IOException, ParserException, NotFoundException {
+	private void getHDTStream(File dumpFile2, Lang lang2) throws IOException, ParserException, NotFoundException {
 		
 		// hdt codes from - https://www.rdfhdt.org/manual-of-the-java-hdt-library/
 		
 		//String rdfInput = "test.nt";
 		String rdfInput = dumpFile2.getAbsolutePath();       //input file as string
 		String hdtOutput = "testhdt.hdt";                   // output file 
-		
+		String baseURI = "http://domain0.org/dataset-0";
+		String inputType = lang.getName().replaceAll("-", "").replace('/', '-');
 		
 		//LOGGER.info("temp : " + temp);
 		
 		HDT hdt = HDTManager.generateHDT(
                 rdfInput,         // Input RDF File
-                "",          // Base URI - maybe it is empty for us?
-                RDFNotation.TURTLE, // Input Type
+                baseURI,          // Base URI - maybe it is empty for us?
+                RDFNotation.parse(inputType), // Input Type
                 new HDTSpecification(),   // HDT Options
                 null              // Progress Listener
 		);

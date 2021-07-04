@@ -25,6 +25,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.rdfhdt.hdt.exceptions.NotFoundException;
+import org.rdfhdt.hdt.exceptions.ParserException;
 
 import junit.framework.Assert;
 
@@ -52,7 +54,7 @@ public class DumpFileBuilderTest {
     }
 
     @Test
-    public void test() throws NoSuchMethodException, SecurityException, IOException, ReflectiveOperationException {
+    public void test() throws NoSuchMethodException, SecurityException, IOException, ReflectiveOperationException, ParserException, NotFoundException {
         DumpFileBuilder builder = new DumpFileBuilder(domainId, RESOURCE_URI_TEMPLATES, ACCESS_URI_TEMPLATES, graphs,
                 lang, compression);
         System.out.println(
