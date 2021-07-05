@@ -19,7 +19,7 @@ public class FileBasedRDFGraphGenerator extends DataGenerator {
     @Override
     protected GraphGenerator createRDFGraphGenerator() {
         String fileLocation = EnvVariables.getString(RDF_FILE_LOCATION_KEY, LOGGER);
-        String fileLang = EnvVariables.getString(RDF_FILE_LOCATION_KEY, LOGGER);
+        String fileLang = EnvVariables.getString(RDF_FILE_LANG_KEY, LOGGER);
         LOGGER.info("Loading data from \"{}\" using the \"{}\" serialization...", fileLocation, fileLang);
         return new FileBasedGraphGenerator(fileLocation, "", fileLang);
     }

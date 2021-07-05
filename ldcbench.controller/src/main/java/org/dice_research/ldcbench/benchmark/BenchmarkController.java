@@ -84,7 +84,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
     public static final String DEFAULT_EVAL_STORAGE_IMAGE = AbstractBenchmarkController.DEFAULT_EVAL_STORAGE_IMAGE;
 
-    private Set<Future<String>> dataGenContainers = new HashSet<>();
+    protected Set<Future<String>> dataGenContainers = new HashSet<>();
     private List<Future<String>> nodeContainers = new ArrayList<>();
 
     private Class<?>[] possibleNodeManagerClasses = {
@@ -134,7 +134,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         return java.util.UUID.randomUUID().toString();
     }
 
-    private void createDataGenerator(NodeManager nodeManager, String[] envVariables) {
+    protected void createDataGenerator(NodeManager nodeManager, String[] envVariables) {
         String variables[] = envVariables != null ? Arrays.copyOf(envVariables, envVariables.length + 1)
                 : new String[1];
         variables[variables.length - 1] = Constants.GENERATOR_ID_KEY + "=" + (dataGenContainers.size() + 1);
