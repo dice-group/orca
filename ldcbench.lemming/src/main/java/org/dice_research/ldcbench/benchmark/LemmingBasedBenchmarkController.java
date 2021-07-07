@@ -16,9 +16,14 @@ public class LemmingBasedBenchmarkController extends BenchmarkController {
 
     private static final String DATA_GEN_CLASS_NAME = "org.dice_research.ldcbench.benchmark.FileBasedRDFGraphGenerator";
     private static final String DATA_DIRECTORY = "/usr/src/app/data";
+    private static final String LEMMING_DOCKER_IMAGE = "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.lemming";
 
     private int fileId = 0;
     private File files[];
+    
+    public LemmingBasedBenchmarkController() {
+        System.out.println("LEMMING FOR THE WIN!!!!");
+    }
 
     @Override
     public void init() throws Exception {
@@ -45,6 +50,7 @@ public class LemmingBasedBenchmarkController extends BenchmarkController {
         String[] variables;
         String imageName = nodeManager.getDataGeneratorImageName();
         if (Constants.DATAGEN_IMAGE_NAME.equals(imageName)) {
+            imageName = LEMMING_DOCKER_IMAGE;
             variables = envVariables != null ? Arrays.copyOf(envVariables, envVariables.length + 4) : new String[4];
             variables[variables.length - 4] = "CLASS=" + DATA_GEN_CLASS_NAME;
             variables[variables.length - 3] = FileBasedRDFGraphGenerator.RDF_FILE_LOCATION_KEY + "=" + files[fileId];

@@ -37,16 +37,12 @@ public class GrphBasedGraph implements GraphBuilder {
 
     /**
      * Constructor for an empty GraphBuilder.
-     *
-     * @return an instance with an empty graph.
      */
     public GrphBasedGraph() {
     }
 
     /**
      * Clones speficied graph's data into this GraphBuilder.
-     *
-     * @return an instance with the specified graph cloned.
      */
     public GrphBasedGraph(Graph other) {
         int nodes = other.getNumberOfNodes();
