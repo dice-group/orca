@@ -92,7 +92,7 @@
     :graphVisualization,
     :triplesEvaluated,
     :numberOfDisallowedResources,
-    :nodeSizeDeterminer;
+    :nodeSizeDeterminer,
     :dataset;
   hobbit:measuresKPI
     :tripleCountOverTime,

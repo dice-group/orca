@@ -285,6 +285,7 @@
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>3.2.0</version>
           <configuration>
+            <source>8</source>
             <show>private</show>
             <nohelp>true</nohelp>
             <failOnError>false</failOnError>
