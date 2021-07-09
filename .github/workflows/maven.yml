@@ -22,7 +22,7 @@ jobs:
         java-version: '11'
         distribution: 'adopt'
     - name: Setup perl
-      run: apt-get install jq libgraph-easy-perl
+      run: sudo apt-get install jq libgraph-easy-perl
     - name: Get codacy assembly
       run: wget -O ~/codacy-coverage-reporter-assembly-latest.jar "https://github.com/codacy/codacy-coverage-reporter/releases/download/4.0.5/codacy-coverage-reporter-4.0.5-assembly.jar"
     - name: Build with Maven
