@@ -23,11 +23,13 @@ jobs:
         distribution: 'adopt'
     - name: Setup perl
       run: sudo apt-get install jq libgraph-easy-perl
-    - name: Get codacy assembly
-      run: wget -O ~/codacy-coverage-reporter-assembly-latest.jar "https://github.com/codacy/codacy-coverage-reporter/releases/download/4.0.5/codacy-coverage-reporter-4.0.5-assembly.jar"
+#    - name: Get codacy assembly
+#      run: wget -O ~/codacy-coverage-reporter-assembly-latest.jar "https://github.com/codacy/codacy-coverage-reporter/releases/download/4.0.5/codacy-coverage-reporter-4.0.5-assembly.jar"
+    - name: Get RDFa test suite data
+      run: git submodule init && git submodule update
     - name: Build with Maven
       run: mvn install -DskipTests=true -Dmaven.javadoc.skip=true --batch-mode --update-snapshots --show-version
     - name: Run tests
       run: mvn verify --batch-mode
-    - name: Upload test report
-      run: java -jar ~/codacy-coverage-reporter-assembly-latest.jar report -l Java -r build/reports/jacoco/test/jacocoTestReport.xml
+#    - name: Upload test report
+#      run: java -jar ~/codacy-coverage-reporter-assembly-latest.jar report -l Java -r build/reports/jacoco/test/jacocoTestReport.xml
