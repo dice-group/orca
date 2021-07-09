@@ -1,4 +1,0 @@
-@prefix hobbit: <http://w3id.org/hobbit/vocab#> .
-@prefix experiments: <http://w3id.org/hobbit/experiments#>
-
-experiments:New a hobbit:Experiment.

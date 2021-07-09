@@ -270,6 +270,7 @@
 :LemmingDataset a rdfs:Class .
 
 :LemmingSWDFDataset a :LemmingDataset;
+	:lemmingDatasetDirectory "lemming/swdf";
 	rdfs:label "Semantic Web Dog Food"@en;
 	rdfs:comment "Datasets generated based on the Semantic Web Dog Food."@en .
 

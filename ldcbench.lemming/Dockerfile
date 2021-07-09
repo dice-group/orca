@@ -1,6 +1,6 @@
 FROM maven
 
-ARG CLASS=org.dice_research.ldcbench.benchmark.DataGenerator
+ARG CLASS=org.dice_research.ldcbench.benchmark.LemmingBasedBenchmarkController
 ARG JAR_FILE
 
 RUN mkdir -p /usr/src/app

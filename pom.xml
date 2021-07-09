@@ -47,6 +47,7 @@
     <module>ldcbench.empty-server</module>
     <module>ldcbench.eval-module</module>
     <module>ldcbench.http-node</module>
+    <module>ldcbench.integration-test</module>
     <module>ldcbench.lemming</module>
     <module>ldcbench.nodes</module>
     <module>ldcbench.parent</module>

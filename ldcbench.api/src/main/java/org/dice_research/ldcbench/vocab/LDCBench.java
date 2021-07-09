@@ -69,6 +69,8 @@ public class LDCBench {
     public static final Property maxCrawlDelay = property("maxCrawlDelay");
     public static final Property minAverageCrawlDelayFulfillment = property("minAverageCrawlDelayFulfillment");
     public static final Property maxAverageCrawlDelayFulfillment = property("maxAverageCrawlDelayFulfillment");
-    public static final Property lemmingDatasetName = property("lemmingDatasetName");
+    
+    public static final Property lemmingDataset = property("lemmingDataset");
+    public static final Property lemmingDatasetDirectory = property("datasetDirectory");
 
 }
