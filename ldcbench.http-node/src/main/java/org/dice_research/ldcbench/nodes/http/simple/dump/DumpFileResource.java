@@ -20,6 +20,8 @@ import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamF
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ReflectionBasedStreamFactory;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.TarArchiver;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ZipArchiver;
+import org.rdfhdt.hdt.exceptions.NotFoundException;
+import org.rdfhdt.hdt.exceptions.ParserException;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
@@ -58,7 +60,11 @@ public class DumpFileResource extends AbstractCrawleableResource {
             LOGGER.error("Couldn't create dump file.", e);
         } catch (ReflectiveOperationException e) {
             LOGGER.error("Couldn't create dump file.", e);
-        }
+        }catch (ParserException e) {
+			LOGGER.error("Couldn't create dump file.", e);
+		} catch (NotFoundException e) {
+			LOGGER.error("Couldn't create dump file.", e);
+		}
         return null;
     }
 

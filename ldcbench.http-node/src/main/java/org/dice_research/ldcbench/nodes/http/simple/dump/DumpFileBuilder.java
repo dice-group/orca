@@ -110,10 +110,6 @@ public class DumpFileBuilder {
     private void streamData(OutputStream out, Lang lang) throws IOException {
         int datasetId = 0;
         StreamRDF writerStream = null;
-        HDT hdt = null;
-        
-        File hdtTempFile = File.createTempFile("hdttemp", ".nt");
-        OutputStream hdtout = new FileOutputStream(hdtTempFile);
         
         try {
             writerStream = StreamRDFWriter.getWriterStream(out, lang);
@@ -138,7 +134,6 @@ public class DumpFileBuilder {
             for (int i = 0; i < graph.getNumberOfNodes(); ++i) {
                 iterator = new TripleIterator(graphs, domainId, resourceUriTemplates, accessUriTemplates, datasetId, i);
                 StreamOps.sendTriplesToStream(iterator, writerStream);
-                //RDFDataMgr.write(hdtout, dataset, lang);
             }
             datasetId++;
         }
@@ -151,22 +146,20 @@ public class DumpFileBuilder {
 
 	private void getHDTStream(File dumpFile2, Lang lang2) throws IOException, ParserException, NotFoundException {
 		
-		// hdt codes from - https://www.rdfhdt.org/manual-of-the-java-hdt-library/
-		
-		//String rdfInput = "test.nt";
-		String rdfInput = dumpFile2.getAbsolutePath();       //input file as string
-		String hdtOutput = "testhdt.hdt";                   // output file 
+		String rdfInput = dumpFile2.getAbsolutePath();
+		File hdtTempFile;
 		String baseURI = "http://domain0.org/dataset-0";
 		String inputType = lang.getName().replaceAll("-", "").replace('/', '-');
 		
-		//LOGGER.info("temp : " + temp);
+		hdtTempFile = File.createTempFile("hdt_"+inputType, ".hdt");
+		String hdtOutput = hdtTempFile.getAbsolutePath();	
 		
 		HDT hdt = HDTManager.generateHDT(
-                rdfInput,         // Input RDF File
-                baseURI,          // Base URI - maybe it is empty for us?
-                RDFNotation.parse(inputType), // Input Type
-                new HDTSpecification(),   // HDT Options
-                null              // Progress Listener
+                rdfInput,
+                baseURI,
+                RDFNotation.parse(inputType),
+                new HDTSpecification(),
+                null
 		);
 		
 		hdt.saveToHDT(hdtOutput, null);
