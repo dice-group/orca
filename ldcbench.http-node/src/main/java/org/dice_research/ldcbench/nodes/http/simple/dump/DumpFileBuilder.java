@@ -83,8 +83,14 @@ public class DumpFileBuilder {
         try (OutputStream out = generateOutputStream()) {
             streamData(out, lang);
         }
-        getHDTStream(dumpFile, lang);
+        //getHDTStream(dumpFile, lang);
         return dumpFile;
+    }
+    
+    public File hdtBuild() throws IOException, ParserException, NotFoundException, NoSuchMethodException, SecurityException, ReflectiveOperationException
+    {
+    	File rdfFile = build();
+    	return getHDTStream(rdfFile, lang);
     }
 
     @SuppressWarnings("resource")
@@ -144,7 +150,7 @@ public class DumpFileBuilder {
         }
     }
 
-	private void getHDTStream(File dumpFile2, Lang lang2) throws IOException, ParserException, NotFoundException {
+	private File getHDTStream(File dumpFile2, Lang lang2) throws IOException, ParserException, NotFoundException {
 		
 		String rdfInput = dumpFile2.getAbsolutePath();
 		File hdtTempFile;
@@ -164,14 +170,14 @@ public class DumpFileBuilder {
 		
 		hdt.saveToHDT(hdtOutput, null);
 		
-		HDT printhdt = HDTManager.loadHDT(hdtOutput, null);
-		
-	    IteratorTripleString it = printhdt.search("", "", "");  //print hdt output in a readable format
-	    while(it.hasNext()) {
-	        TripleString ts = it.next();
-	        LOGGER.info("Ts: "+ts);
-	    }
-	    
+//		HDT printhdt = HDTManager.loadHDT(hdtOutput, null);
+//		
+//	    IteratorTripleString it = printhdt.search("", "", "");  //print hdt output in a readable format
+//	    while(it.hasNext()) {
+//	        TripleString ts = it.next();
+//	        LOGGER.info("Ts: "+ts);
+//	    }
+	    return hdtTempFile;
 	    
 	}
 

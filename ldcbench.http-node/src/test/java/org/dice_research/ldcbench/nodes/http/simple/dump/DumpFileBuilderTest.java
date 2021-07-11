@@ -3,6 +3,7 @@ package org.dice_research.ldcbench.nodes.http.simple.dump;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,12 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
+import org.rdfhdt.hdt.triples.TripleString;
+
+import com.jcraft.jsch.Logger;
 
 import junit.framework.Assert;
 
@@ -80,6 +87,38 @@ public class DumpFileBuilderTest {
             System.out.println(wrongStmts.toString());
         }
         Assert.assertTrue("There were missing or wrong statements.", missingStmts.isEmpty() && wrongStmts.isEmpty());
+    
+        System.out.println("Now testing HDT");
+        File hdtFile = builder.hdtBuild();
+        Model readModel = null;
+        InputStream in = null;
+        HDT hdt = null ;
+        
+        in = new FileInputStream(hdtFile);
+        hdt = HDTManager.loadHDT(hdtFile.getAbsolutePath(), null);
+        readModel = ModelFactory.createDefaultModel();
+        
+        IteratorTripleString it = hdt.search("", "", "");        
+        while(it.hasNext()) {
+        	TripleString ts = it.next();
+        	Resource subject  = readModel.createResource(ts.getSubject().toString());
+        	Property predicate = readModel.createProperty(ts.getPredicate().toString());
+        	Resource object  = readModel.createResource(ts.getObject().toString());
+        	readModel.add(subject, predicate, object);
+        }
+        
+        Set<Statement> missingHDTStmts = ModelComparisonHelper.getMissingStatements(readModel, expectedModel);
+        if (!missingHDTStmts.isEmpty()) {
+            System.out.println("Missing HDT statments: ");
+            System.out.println(missingHDTStmts.toString());
+        }
+        Set<Statement> wrongHDTStmts = ModelComparisonHelper.getMissingStatements(expectedModel, readModel);
+        if (!wrongHDTStmts.isEmpty()) {
+            System.out.println("Wrong HDT statments: ");
+            System.out.println(wrongHDTStmts.toString());
+        }
+        Assert.assertTrue("There were missing or wrong statements.", missingHDTStmts.isEmpty() && wrongHDTStmts.isEmpty());
+    
     }
 
     @Parameters
