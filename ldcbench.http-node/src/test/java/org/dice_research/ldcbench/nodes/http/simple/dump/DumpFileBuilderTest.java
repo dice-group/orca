@@ -3,7 +3,6 @@ package org.dice_research.ldcbench.nodes.http.simple.dump;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +31,6 @@ import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
-
-import com.jcraft.jsch.Logger;
 
 import junit.framework.Assert;
 
