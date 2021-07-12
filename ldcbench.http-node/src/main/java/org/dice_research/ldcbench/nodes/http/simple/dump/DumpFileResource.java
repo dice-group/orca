@@ -35,20 +35,20 @@ public class DumpFileResource extends AbstractCrawleableResource {
     public static final List<Archiver> ARCHIVERS = Arrays.asList(new TarArchiver(),
             new TarArchiver(ReflectionBasedStreamFactory.create("java.util.zip.GZIPOutputStream", "application/gzip", ".gz")),
             new ZipArchiver());
+    private static final String HDT_CONTENT_TYPE = "application/vnd.hdt";
 
     public static DumpFileResource create(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates,
             Graph[] graphs, Predicate<Request> predicate, Lang lang, CompressionStreamFactory compression, Archiver archiver) {
         DumpFileBuilder builder = new DumpFileBuilder(domainId, resourceUriTemplates, accessUriTemplates, graphs,
                 lang, compression);
         try {
-            File dumpFile = builder.build();
-            String contentType = builder.buildContentType();
+            File dumpFile = builder.buildHDT();
+            String contentType = HDT_CONTENT_TYPE;
             if (archiver != null)  {
-            	//TODO support more than one file
-            	//Add dump Files to a List and put them into Archive
+                //TODO support more than one file
+                //Add dump Files to a List and put them into Archive
                 File archive = File.createTempFile("ldcbench", ".archive");
-            	archiver.buildArchive(archive,dumpFile);
-            	contentType = archiver.getMediaType();
+                archiver.buildArchive(archive,dumpFile);
                 return new DumpFileResource(predicate, contentType, archive);
             }
             return new DumpFileResource(predicate, contentType, dumpFile);

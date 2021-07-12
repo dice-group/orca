@@ -87,17 +87,12 @@ public class DumpFileBuilderTest {
             System.out.println(wrongStmts.toString());
         }
         Assert.assertTrue("There were missing or wrong statements.", missingStmts.isEmpty() && wrongStmts.isEmpty());
-    
+
         System.out.println("Now testing HDT");
-        File hdtFile = builder.hdtBuild();
-        Model readModel = null;
-        InputStream in = null;
-        HDT hdt = null ;
-        
-        in = new FileInputStream(hdtFile);
-        hdt = HDTManager.loadHDT(hdtFile.getAbsolutePath(), null);
-        readModel = ModelFactory.createDefaultModel();
-        
+        File hdtFile = builder.buildHDT();
+        HDT hdt = HDTManager.loadHDT(hdtFile.getAbsolutePath(), null);
+        Model readModel = ModelFactory.createDefaultModel();
+
         IteratorTripleString it = hdt.search("", "", "");        
         while(it.hasNext()) {
         	TripleString ts = it.next();

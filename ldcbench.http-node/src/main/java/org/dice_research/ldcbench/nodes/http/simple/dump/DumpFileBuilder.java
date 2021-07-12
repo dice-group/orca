@@ -4,12 +4,9 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,8 +30,6 @@ import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.options.HDTSpecification;
-import org.rdfhdt.hdt.triples.IteratorTripleString;
-import org.rdfhdt.hdt.triples.TripleString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,14 +78,13 @@ public class DumpFileBuilder {
         try (OutputStream out = generateOutputStream()) {
             streamData(out, lang);
         }
-        //getHDTStream(dumpFile, lang);
         return dumpFile;
     }
     
-    public File hdtBuild() throws IOException, ParserException, NotFoundException, NoSuchMethodException, SecurityException, ReflectiveOperationException
+    public File buildHDT() throws IOException, ParserException, NotFoundException, NoSuchMethodException, SecurityException, ReflectiveOperationException
     {
-    	File rdfFile = build();
-    	return getHDTStream(rdfFile, lang);
+        File rdfFile = build();
+        return convertToHDT(rdfFile);
     }
 
     @SuppressWarnings("resource")
@@ -150,35 +144,28 @@ public class DumpFileBuilder {
         }
     }
 
-	private File getHDTStream(File dumpFile2, Lang lang2) throws IOException, ParserException, NotFoundException {
+	private File convertToHDT(File rdfFile) throws IOException, ParserException, NotFoundException {
 		
-		String rdfInput = dumpFile2.getAbsolutePath();
-		File hdtTempFile;
+		String rdfInput = rdfFile.getAbsolutePath();
 		String baseURI = "http://domain0.org/dataset-0";
+		//format language to fit RDFNotation
 		String inputType = lang.getName().replaceAll("-", "").replace('/', '-');
 		
-		hdtTempFile = File.createTempFile("hdt_"+inputType, ".hdt");
-		String hdtOutput = hdtTempFile.getAbsolutePath();	
-		
-		HDT hdt = HDTManager.generateHDT(
-                rdfInput,
-                baseURI,
-                RDFNotation.parse(inputType),
-                new HDTSpecification(),
-                null
-		);
-		
-		hdt.saveToHDT(hdtOutput, null);
-		
-//		HDT printhdt = HDTManager.loadHDT(hdtOutput, null);
-//		
-//	    IteratorTripleString it = printhdt.search("", "", "");  //print hdt output in a readable format
-//	    while(it.hasNext()) {
-//	        TripleString ts = it.next();
-//	        LOGGER.info("Ts: "+ts);
-//	    }
+		File hdtTempFile = File.createTempFile("hdt_"+inputType, ".hdt");
+		try {
+		    HDT hdt = HDTManager.generateHDT(
+                    rdfInput,
+                    baseURI,
+                    RDFNotation.parse(inputType),
+                    new HDTSpecification(),
+                    null
+		            );
+		    hdt.saveToHDT(hdtTempFile.getAbsolutePath(), null);
+		} catch (Exception e) {
+		    LOGGER.error("Failed converting "+ lang + " File to HDT. Returning " + lang + " RDF File.");
+		    return rdfFile;
+		}
 	    return hdtTempFile;
-	    
 	}
 
 	private void writeData(OutputStream out, Lang lang) {
