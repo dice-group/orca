@@ -144,10 +144,14 @@ public class DumpFileBuilder {
         }
     }
 
+    /*
+     * Converts RDF file into HDT
+     * @param The method requires an RDF file
+     * @return The method returns the HDT file
+     */
 	private File convertToHDT(File rdfFile) throws IOException, ParserException, NotFoundException {
-		
 		String rdfInput = rdfFile.getAbsolutePath();
-		String baseURI = "http://domain0.org/dataset-0";
+		String baseURI = resourceUriTemplates[0].split("%s")[0];
 		//format language to fit RDFNotation
 		String inputType = lang.getName().replaceAll("-", "").replace('/', '-');
 		
