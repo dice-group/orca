@@ -24,6 +24,7 @@ experiments:New a hobbit:Experiment;
   :useNtDumps "true"^^xsd:boolean;
   :rdfaNodeWeight 1;
   :ckanNodeWeight 0.01;
+  :jsonldNodeWeight 1;
   :sparqlNodeWeight 0.01;
   :numberOfNodes 4;
   :averageNodeGraphDegree 2.

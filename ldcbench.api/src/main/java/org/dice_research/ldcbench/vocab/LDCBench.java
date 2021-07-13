@@ -51,6 +51,7 @@ public class LDCBench {
     public static final Property numberOfDisallowedResources = property("numberOfDisallowedResources");
     public static final Property ratioOfRequestedDisallowedResources = property("ratioOfRequestedDisallowedResources");
     public static final Property rdfaNodeWeight = property("rdfaNodeWeight");
+    public static final Property jsonldNodeWeight = property("jsonldNodeWeight");
     public static final Property resourceUsageOverTime = property("resourceUsageOverTime");
     public static final Property runtime = property("runtime");
     public static final Property seed = property("seed");
