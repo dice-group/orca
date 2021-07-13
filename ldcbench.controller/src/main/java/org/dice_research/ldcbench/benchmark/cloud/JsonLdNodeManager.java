@@ -11,9 +11,9 @@ import org.dice_research.ldcbench.Constants;
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
-public class RDFaNodeManager extends AbstractNodeManager {
+public class JsonLdNodeManager extends AbstractNodeManager {
     public static Property getBenchmarkParameter() {
-        return LDCBench.rdfaNodeWeight;
+        return LDCBench.jsonldNodeWeight;
     }
 
     @Override
@@ -22,10 +22,17 @@ public class RDFaNodeManager extends AbstractNodeManager {
     }
 
     @Override
+    public String[] getNodeEnvironment() {
+        return new String[]{
+            "LDCBENCH_USE_SINGLE_FILE=" + Boolean.TRUE.toString()
+        };
+    };
+
+    @Override
     public String[] getDataGeneratorEnvironment(long averageRdfGraphDegree, long triplesPerNode) {
         String[] env = new String[]{
-            DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 0,
-            DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + 1,
+            DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + averageRdfGraphDegree,
+            DataGenerator.ENV_NUMBER_OF_EDGES_KEY + "=" + triplesPerNode,
         };
         return env;
     }
@@ -37,11 +44,11 @@ public class RDFaNodeManager extends AbstractNodeManager {
 
     @Override
     public String getLabel() {
-        return "RDFa";
+        return "JsonLD";
     }
 
     @Override
     public String getDataGeneratorImageName() {
-        return Constants.RDFADATAGEN_IMAGE_NAME;
+        return Constants.JSONLDDATAGEN_IMAGE_NAME;
     }
 }

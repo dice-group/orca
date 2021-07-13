@@ -18,7 +18,7 @@ public class Constants {
     public static final String SYSTEM_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.system";
     public static final String HTTPNODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.http-node";
     public static final String CKANNODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.ckan-node";
-    public static final String RDFANODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.html-embd-node"; //ThorenG: TODO rename RDFA to HTML-EMBD o.s.
+    public static final String HENODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.html-embd-node";
     public static final String RDFADATAGEN_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.rdfa-gen";
     public static final String JSONLDDATAGEN_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.jsonld-gen";
     public static final String SPARQLNODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.sparql-node";

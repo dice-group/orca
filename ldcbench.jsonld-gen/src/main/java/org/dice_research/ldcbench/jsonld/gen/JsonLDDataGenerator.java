@@ -28,16 +28,6 @@ public class JsonLDDataGenerator extends DataGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonLDDataGenerator.class);
 
-    //TODO wtf is this?
-    // protected static final String[] RESOURCE_URI_TEMPLATES = new String[] { "http://domain0.org/%s-%s/%s-%s",
-    // "http://domain1.org/%s-%s/%s-%s", "http://domain2.org/%s-%s/%s-%s", "http://domain3.org/%s-%s/%s-%s",
-    // "http://domain4.org/%s-%s/%s-%s", "http://domain5.org/%s-%s/%s-%s", "http://domain6.org/%s-%s/%s-%s",
-    // "http://domain7.org/%s-%s/%s-%s", "http://domain8.org/%s-%s/%s-%s", "http://domain9.org/%s-%s/%s-%s"};
-    // protected static final String[] ACCESS_URI_TEMPLATES = new String[] { "http://domain0.org/%s-%s/%s-%s",
-    // "http://domain1.org/%s-%s/%s-%s", "http://domain2.org/%s-%s/%s-%s", "http://domain3.org/%s-%s/%s-%s",
-    // "http://domain4.org/%s-%s/%s-%s", "http://domain5.org/%s-%s/%s-%s", "http://domain6.org/%s-%s/%s-%s",
-    // "http://domain7.org/%s-%s/%s-%s", "http://domain8.org/%s-%s/%s-%s", "http://domain9.org/%s-%s/%s-%s"};
-
 
     protected static final String HTML_PREFIX = "<!DOCTYPE>\r\n<html>\r\n<head>\r\n   <title>Test</title>\r\n</head>\r\n<body>";
     protected static final String HTML_SUFFIX = "</body>\n</html>";
@@ -109,32 +99,6 @@ public class JsonLDDataGenerator extends DataGenerator {
 
     @Override
     protected void sendFinalGraph(Graph graph) throws Exception {
-        // iterate over the available test sets
-        // LOGGER.info("Reading manifest files of different test cases...");
-        // Map<String, String> tests = loadTestFiles();
-        // LOGGER.info("Found {} test files. Processing them...", tests.size());
-        // SortedMap<String, File> htmlFiles = new TreeMap<>();
-        // SortedMap<String, File> ttlFiles = new TreeMap<>();
-        // convertTestUrisToFiles(tests.keySet(), htmlFiles);
-        // convertTestUrisToFiles(tests.values(), ttlFiles);
-
-        // // Generate URL of resources on the node
-        // String nodeDomain = accessUriTemplates[getNodeId()].replace(ACCESS_URI_TEMPLATE_PATTERN,
-        //         "") + "/";
-        // // Load the tests and replace URIs
-        // replaceUrisInFiles(htmlFiles, RDFA_TEST_DOMAIN, nodeDomain);
-        // replaceUrisInFiles(ttlFiles, RDFA_TEST_DOMAIN, nodeDomain);
-        // htmlFiles = replaceUrisInMapping(htmlFiles, RDFA_TEST_DOMAIN, nodeDomain);
-        // ttlFiles = replaceUrisInMapping(ttlFiles, RDFA_TEST_DOMAIN, nodeDomain);
-
-        // // Generate HTML and TTL file based on the graph and the list of test files
-        // generateEntranceFile(graph, htmlFiles, ENTRANCE_HTML_FILE, ENTRANCE_TTL_FILE);
-        // // Add entrance file to the list of HTML and ttl files
-        // htmlFiles.put(ENTRANCE_HTML_FILE_NAME, ENTRANCE_HTML_FILE);
-        // ttlFiles.put(ENTRANCE_TTL_FILE_NAME, ENTRANCE_TTL_FILE);
-
-        // String filePrefix = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d",
-        //         getNodeId());
 
         File htmlOut = new File(SimpleHEComponent.SINGLE_FILE_NAME);
 

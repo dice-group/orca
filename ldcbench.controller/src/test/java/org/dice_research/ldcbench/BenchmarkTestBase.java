@@ -6,7 +6,7 @@ import static org.dice_research.ldcbench.Constants.DATAGEN_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.EVALMODULE_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.HTTPNODE_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.SPARQLNODE_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.RDFANODE_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.HENODE_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.JSONLDDATAGEN_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.RDFADATAGEN_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.SYSTEM_IMAGE_NAME;
@@ -99,14 +99,14 @@ public class BenchmarkTestBase {
         httpNodeBuilder = new SimpleHttpNodeBuilder(new ExampleDockersBuilder(SimpleHttpServerComponent.class, HTTPNODE_IMAGE_NAME).useCachedImage(useCachedImage));
         ckanNodeBuilder = new CkanNodeBuilder(new ExampleDockersBuilder(SimpleCkanComponent.class, CKANNODE_IMAGE_NAME).useCachedImage(useCachedImage));
         sparqlNodeBuilder = new SparqlNodeBuilder(new ExampleDockersBuilder(SimpleSparqlComponent.class, SPARQLNODE_IMAGE_NAME).useCachedImage(useCachedImage));
-        rdfaNodeBuilder = new LDCBenchNodeBuilder(new ExampleDockersBuilder(SimpleHEComponent.class, RDFANODE_IMAGE_NAME).useCachedImage(useCachedImage)) {
-            @Override public String getName() { return RDFANODE_IMAGE_NAME; }
+        rdfaNodeBuilder = new LDCBenchNodeBuilder(new ExampleDockersBuilder(SimpleHEComponent.class, HENODE_IMAGE_NAME).useCachedImage(useCachedImage)) {
+            @Override public String getName() { return HENODE_IMAGE_NAME; }
         };
         rdfaGenBuilder = new LDCBenchNodeBuilder(new ExampleDockersBuilder(RDFaDataGenerator.class, RDFADATAGEN_IMAGE_NAME).useCachedImage(useCachedImage)) {
             @Override public String getName() { return RDFADATAGEN_IMAGE_NAME; }
         };
-        jsonLdNodeBuilder = new LDCBenchNodeBuilder(new ExampleDockersBuilder(SimpleHEComponent.class, RDFANODE_IMAGE_NAME).useCachedImage(useCachedImage)) {
-            @Override public String getName() { return RDFANODE_IMAGE_NAME; }
+        jsonLdNodeBuilder = new LDCBenchNodeBuilder(new ExampleDockersBuilder(SimpleHEComponent.class, HENODE_IMAGE_NAME).useCachedImage(useCachedImage)) {
+            @Override public String getName() { return HENODE_IMAGE_NAME; }
         };
         jsonLdGenBuilder = new LDCBenchNodeBuilder(new ExampleDockersBuilder(JsonLDDataGenerator.class, JSONLDDATAGEN_IMAGE_NAME).useCachedImage(useCachedImage)) {
             @Override public String getName() { return JSONLDDATAGEN_IMAGE_NAME; }
@@ -151,7 +151,7 @@ public class BenchmarkTestBase {
         Component systemAdapter = new SystemAdapter();
         Component evalModule = new EvalModule();
         Component httpNode = new SimpleHttpServerComponent();
-        // Component ckanNode = new SimpleCkanComponent();
+        Component ckanNode = new SimpleCkanComponent();
         Component sparqlNode = new SimpleSparqlComponent();
         Component rdfaNode = new SimpleHEComponent();//new SimpleRDFaComponent();
         Component rdfaGen = new RDFaDataGenerator();
@@ -188,9 +188,9 @@ public class BenchmarkTestBase {
                         .customContainerImage(httpNode, HTTPNODE_IMAGE_NAME)
                         .customContainerImage(ckanNode, CKANNODE_IMAGE_NAME)
                         .customContainerImage(sparqlNode, SPARQLNODE_IMAGE_NAME)
-                        .customContainerImage(rdfaNode, RDFANODE_IMAGE_NAME)
+                        .customContainerImage(rdfaNode, HENODE_IMAGE_NAME)
                         .customContainerImage(rdfaGen, RDFADATAGEN_IMAGE_NAME)
-                        .customContainerImage(jsonldNode, RDFANODE_IMAGE_NAME)
+                        .customContainerImage(jsonldNode, HENODE_IMAGE_NAME)
                         .customContainerImage(jsonldGen, JSONLDDATAGEN_IMAGE_NAME)
                         //.customContainerImage(systemAdapter, DUMMY_SYSTEM_IMAGE_NAME)
                 ;

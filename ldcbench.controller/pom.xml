@@ -47,11 +47,6 @@
       <artifactId>ldcbench.html-embd-node</artifactId>
       <scope>test</scope>
     </dependency>
-    <!--<dependency>
-      <groupId>org.dice_research</groupId>
-      <artifactId>ldcbench.rdfa-node</artifactId>
-      <version>${project.version}</version>
-    </dependency>-->
     <dependency>
       <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.rdfa-gen</artifactId>

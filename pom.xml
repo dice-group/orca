@@ -51,7 +51,6 @@
     <module>ldcbench.parent</module>
     <module>ldcbench.rdfa-gen</module>
     <module>ldcbench.jsonld-gen</module>
-    <!-- <module>ldcbench.rdfa-node</module> -->
     <module>ldcbench.html-embd-node</module>
     <module>ldcbench.sparql-node</module>
     <module>ldcbench.system</module>
