@@ -13,7 +13,6 @@ import org.hobbit.sdk.docker.builders.hobbit.DataGenDockerBuilder;
 import org.hobbit.sdk.docker.builders.hobbit.EvalModuleDockerBuilder;
 import org.hobbit.sdk.docker.builders.hobbit.SystemAdapterDockerBuilder;
 import org.hobbit.sdk.utils.ModelsHandler;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
@@ -25,12 +24,12 @@ public class BenchmarkTestLemming extends BenchmarkTestBase {
 
     public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
-    BenchmarkDockerBuilder benchmarkBuilder;
-    DataGenDockerBuilder dataGeneratorBuilder;
-    SystemAdapterDockerBuilder systemAdapterBuilder;
-    EvalModuleDockerBuilder evalModuleBuilder;
-    SimpleHttpNodeBuilder httpNodeBuilder;
-    CkanNodeBuilder ckanNodeBuilder;
+    protected BenchmarkDockerBuilder benchmarkBuilder;
+    protected DataGenDockerBuilder dataGeneratorBuilder;
+    protected SystemAdapterDockerBuilder systemAdapterBuilder;
+    protected EvalModuleDockerBuilder evalModuleBuilder;
+    protected SimpleHttpNodeBuilder httpNodeBuilder;
+    protected CkanNodeBuilder ckanNodeBuilder;
 
     @Test
     public void executeBenchmark() throws Exception {
@@ -38,16 +37,16 @@ public class BenchmarkTestLemming extends BenchmarkTestBase {
     }
 
     //Flush a queue of a locally running platform
-    @Test
-    @Ignore
+    //@Test
+    //@Ignore
     public void flushQueue(){
         QueueClient queueClient = new QueueClient(GIT_USERNAME);
         queueClient.flushQueue();
     }
 
     //Submit benchmark to a queue of a locally running platform
-    @Test
-    @Ignore
+    //@Test
+    //@Ignore
     public void submitToQueue() throws Exception {
         QueueClient queueClient = new QueueClient(GIT_USERNAME);
         queueClient.submitToQueue("", SYSTEM_URI, createBenchmarkParameters());

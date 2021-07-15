@@ -793,9 +793,11 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 LOGGER.error("Sparql container {} terminated with exitCode={}.", containerName, exitCode);
                 containerCrashed(containerName);
             }
+            break;
         }
         default: {
             // nothing to do
+            break;
         }
         }
         super.receiveCommand(command, data);
