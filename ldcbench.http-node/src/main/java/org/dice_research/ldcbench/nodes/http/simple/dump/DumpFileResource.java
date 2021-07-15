@@ -42,8 +42,8 @@ public class DumpFileResource extends AbstractCrawleableResource {
         DumpFileBuilder builder = new DumpFileBuilder(domainId, resourceUriTemplates, accessUriTemplates, graphs,
                 lang, compression);
         try {
-            File dumpFile = builder.buildHDT();
-            String contentType = HDT_CONTENT_TYPE;
+            File dumpFile = builder.build();
+            String contentType = builder.buildContentType();
             if (archiver != null)  {
                 //TODO support more than one file
                 //Add dump Files to a List and put them into Archive

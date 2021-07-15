@@ -153,6 +153,9 @@ public class DumpFileBuilder {
 		String rdfInput = rdfFile.getAbsolutePath();
 		String baseURI = resourceUriTemplates[0].split("%s")[0];
 		//format language to fit RDFNotation
+		LOGGER.info("lang.getName()"+lang.getName());
+		LOGGER.info("lang.toString()"+lang.toString());
+		System.out.println("lang.getLabel()()"+lang.getLabel());
 		String inputType = lang.getName().replaceAll("-", "").replace('/', '-');
 		
 		File hdtTempFile = File.createTempFile("hdt_"+inputType, ".hdt");
