@@ -7,7 +7,7 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # Copy data
-COPY data/lemming /usr/src/app/data
+COPY data /usr/src/app/data
 
 COPY target/lib /usr/src/app/lib
 COPY log4j.properties /usr/src/app
