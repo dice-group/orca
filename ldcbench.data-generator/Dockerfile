@@ -1,4 +1,4 @@
-FROM maven
+FROM openjdk:8-alpine
 
 ARG CLASS=org.dice_research.ldcbench.benchmark.DataGenerator
 ARG JAR_FILE
