@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -63,6 +62,7 @@ import org.dice_research.ldcbench.generate.SeedGenerator;
 import org.dice_research.ldcbench.generate.SequentialSeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
+import org.dice_research.ldcbench.utils.CloseableHelper;
 import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.core.Commands;
 import org.hobbit.core.Constants;
@@ -95,7 +95,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
         RDFaNodeManager.class,
     };
 
-    private boolean sdk;
     private boolean dockerized;
     private int nodesAmount;
 
@@ -206,7 +205,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     public void init() throws Exception {
         super.init();
 
-        sdk = EnvVariables.getBoolean(ApiConstants.ENV_SDK_KEY, false, LOGGER);
+        boolean sdk = EnvVariables.getBoolean(ApiConstants.ENV_SDK_KEY, false, LOGGER);
         dockerized = EnvVariables.getBoolean(ApiConstants.ENV_DOCKERIZED_KEY, true, LOGGER);
 
         // Start SPARQL endpoint
@@ -795,6 +794,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 containerCrashed(containerName);
             }
         }
+        default: {
+            // nothing to do
+        }
         }
         super.receiveCommand(command, data);
     }
@@ -803,8 +805,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
     public void close() throws IOException {
         LOGGER.debug("BenchmarkController.close()");
         // Free the resources you requested here
-        IOUtils.closeQuietly(systemDataSender);
-        IOUtils.closeQuietly(systemTaskSender);
+        CloseableHelper.closeQuietly(systemDataSender);
+        CloseableHelper.closeQuietly(systemTaskSender);
         if (nodeMetadata != null) {
             for (int i = 0; i < nodeMetadata.length; ++i) {
                 if (!nodeMetadata[i].isTerminated()) {

@@ -14,7 +14,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -32,6 +31,7 @@ import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ZipStreamFactory;
 import org.dice_research.ldcbench.nodes.utils.LangUtils;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.rdf.UriHelper;
+import org.dice_research.ldcbench.utils.CloseableHelper;
 import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.core.components.Component;
 import org.hobbit.utils.EnvVariables;
@@ -240,14 +240,14 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             LOGGER.error("Couldn't read model file. Returning null.", e);
             return null;
         } finally {
-            IOUtils.closeQuietly(fin);
+            CloseableHelper.closeQuietly(fin);
         }
         return model;
     }
 
     @Override
     public void close() throws IOException {
-        IOUtils.closeQuietly(connection);
+        CloseableHelper.closeQuietly(connection);
         try {
             if (server != null) {
                 server.stop();

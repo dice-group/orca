@@ -2,8 +2,8 @@ package org.dice_research.ldcbench.nodes.ckan.simple;
 
 import static org.hobbit.core.Constants.CONTAINER_TYPE_BENCHMARK;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.SocketException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -12,12 +12,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.ckan.Constants;
 import org.dice_research.ldcbench.nodes.ckan.dao.CkanDAO;
 import org.dice_research.ldcbench.nodes.components.NodeComponent;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
+import org.dice_research.ldcbench.utils.CloseableHelper;
 import org.hobbit.core.components.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -231,7 +231,7 @@ public class SimpleCkanComponent extends NodeComponent implements Component {
             ckanDao.deleteDataSource(dataset.getName());
         }
 
-        IOUtils.closeQuietly(receiver);
+        CloseableHelper.closeQuietly(receiver);
         if (bcBroadcastConsumer != null) {
             //bcBroadcastConsumer.close();
         }

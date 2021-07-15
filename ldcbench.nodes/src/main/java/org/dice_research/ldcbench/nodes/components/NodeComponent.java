@@ -1,17 +1,14 @@
 package org.dice_research.ldcbench.nodes.components;
 
-import org.hobbit.core.Constants;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 
-import com.google.common.util.concurrent.SettableFuture;
-import org.apache.commons.io.IOUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.generate.SeedGenerator;
@@ -19,14 +16,18 @@ import org.dice_research.ldcbench.generate.SequentialSeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.rabbit.GraphHandler;
 import org.dice_research.ldcbench.rabbit.ObjectStreamFanoutExchangeConsumer;
+import org.dice_research.ldcbench.utils.CloseableHelper;
 import org.hobbit.core.Commands;
+import org.hobbit.core.Constants;
 import org.hobbit.core.components.AbstractCommandReceivingComponent;
 import org.hobbit.core.rabbit.DataReceiver;
-import org.hobbit.core.rabbit.SimpleFileReceiver;
 import org.hobbit.core.rabbit.RabbitMQUtils;
+import org.hobbit.core.rabbit.SimpleFileReceiver;
 import org.hobbit.utils.EnvVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.util.concurrent.SettableFuture;
 
 abstract public class NodeComponent extends AbstractCommandReceivingComponent implements AbstractNodeComponent {
 
@@ -191,7 +192,7 @@ abstract public class NodeComponent extends AbstractCommandReceivingComponent im
 
     @Override
     public void close() throws IOException {
-        IOUtils.closeQuietly(receiver);
+        CloseableHelper.closeQuietly(receiver);
         if (bcBroadcastConsumer != null) {
             bcBroadcastConsumer.close();
         }
