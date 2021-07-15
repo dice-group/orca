@@ -506,12 +506,12 @@ public class BenchmarkController extends AbstractBenchmarkController {
         }.start();
     }
 
-    protected void createEmptyServer() throws Exception {
+    protected void createEmptyServer() throws IOException {
         LOGGER.info("Creating empty-server");
         try {
             createContainer(EMPTY_SERVER_IMAGE_NAME, Constants.CONTAINER_TYPE_BENCHMARK, null, EmptyDomainProvider.loadEmptyDomains());
         } catch (IOException e) {
-            throw new Exception("Encountered an error while creating an empty server.", e);
+            throw new IOException("Encountered an error while creating an empty server.", e);
         }
     }
 
