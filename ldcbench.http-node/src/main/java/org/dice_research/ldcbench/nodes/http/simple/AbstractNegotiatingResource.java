@@ -9,7 +9,8 @@ import java.util.stream.Collectors;
 import org.simpleframework.http.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
+
+import com.google.common.net.MediaType;
 
 public abstract class AbstractNegotiatingResource extends AbstractCrawleableResource {
 
@@ -19,7 +20,7 @@ public abstract class AbstractNegotiatingResource extends AbstractCrawleableReso
 
     public AbstractNegotiatingResource(Predicate<Request> predicate, String[] contentTypes) {
         super(predicate);
-        this.availableContentTypes = Arrays.stream(contentTypes).map(c -> MediaType.parseMediaType(c))
+        this.availableContentTypes = Arrays.stream(contentTypes).map(c -> MediaType.parse(c))
                 .collect(Collectors.toSet());
     }
 
@@ -37,9 +38,9 @@ public abstract class AbstractNegotiatingResource extends AbstractCrawleableReso
         while (iterator.hasNext()) {
             typeString = iterator.next();
             try {
-                requestedType = MediaType.parseMediaType(typeString);
+                requestedType = MediaType.parse(typeString);
                 for (MediaType availableType : availableContentTypes) {
-                    if (requestedType.includes(availableType)) {
+                    if (availableType.is(requestedType)) {
                         return availableType;
                     }
                 }

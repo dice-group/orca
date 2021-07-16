@@ -219,18 +219,6 @@
         <artifactId>commons-compress</artifactId>
         <version>1.20</version>
       </dependency>
-
-      <!-- Spring Framework -->
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-core</artifactId>
-        <version>5.3.6</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-webmvc</artifactId>
-        <version>5.3.6</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
