@@ -7,11 +7,13 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.jena.rdf.model.Model;
@@ -142,7 +144,8 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             if (crawlDelay != 0) {
                 Double averageDelay = graphBasedResource.getAverageDelay();
                 if (averageDelay != null) {
-                    model.addLiteral(root, LDCBench.microAverageCrawlDelayFulfillment, averageDelay / (crawlDelay * 1000));
+                    model.addLiteral(root, LDCBench.microAverageCrawlDelayFulfillment,
+                            averageDelay / (crawlDelay * 1000));
                 }
             }
             Long minDelay = graphBasedResource.getMinDelay();
@@ -159,8 +162,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             model.addLiteral(root, LDCBench.numberOfDisallowedResources, total);
             if (total != 0) {
                 model.addLiteral(root, LDCBench.ratioOfRequestedDisallowedResources,
-                        ((double) disallowedResource.getRequestedAmount())
-                                / ((double) total));
+                        ((double) disallowedResource.getRequestedAmount()) / ((double) total));
             }
         }
     }
@@ -177,8 +179,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             resource = DumpFileResource.create(cloudNodeId.get(),
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                    graphs.toArray(new Graph[graphs.size()]),
-                    r -> r.getPath().toString().equals(dumpFilePath),
+                    graphs.toArray(new Graph[graphs.size()]), r -> r.getPath().toString().equals(dumpFilePath),
                     dumpFileLang, dumpFileCompression);
         } else {
             SimpleTripleCreator tripleCreator = new SimpleTripleCreator(cloudNodeId.get(), resourceUriTemplates,
@@ -188,7 +189,8 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             for (int g = 0; g < graphs.size(); g++) {
                 GraphBuilder gb = new GrphBasedGraph(graphs.get(g));
                 int nodes = gb.getNumberOfNodes();
-                int disallowedAmount = Math.max((int)(nodes * disallowedRatio / (1 - disallowedRatio)), disallowedRatio == 0 ? 0 : 1);
+                int disallowedAmount = Math.max((int) (nodes * disallowedRatio / (1 - disallowedRatio)),
+                        disallowedRatio == 0 ? 0 : 1);
                 LOGGER.debug("Adding {} disallowed resources...", disallowedAmount);
                 for (int i = 0; i < disallowedAmount; i++) {
                     int linkingNode = random.nextInt(nodes);
@@ -210,13 +212,12 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             resources.add(disallowedResource);
 
             // Create list of available content types
-            Set<String> contentTypes = new HashSet<String>();
-            for (Lang lang : RDFLanguages.getRegisteredLanguages()) {
-                if (!RDFLanguages.RDFNULL.equals(lang)) {
-                    contentTypes.add(lang.getContentType().getContentType());
-                    contentTypes.addAll(lang.getAltContentTypes());
-                }
-            }
+            final Set<Lang> unsupportedContentTypes = new HashSet<>(Arrays.asList(Lang.RDFNULL, Lang.CSV, Lang.TSV));
+            Set<String> contentTypes = RDFLanguages.getRegisteredLanguages().stream()
+                    .filter(lang -> !unsupportedContentTypes.contains(lang))
+                    .flatMap(lang -> Stream.concat(Stream.of(lang.getContentType().getContentType()),
+                            lang.getAltContentTypes().stream()))
+                    .filter(s -> !s.contains("sparql")).collect(Collectors.toSet());
             // Create the container based on the information that has been received
             graphBasedResource = new GraphBasedResource(cloudNodeId.get(), resourceUriTemplates, accessUriTemplates,
                     graphsArray,

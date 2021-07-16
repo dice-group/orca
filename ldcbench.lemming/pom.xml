@@ -130,48 +130,6 @@
         <groupId>com.spotify</groupId>
         <artifactId>dockerfile-maven-plugin</artifactId>
       </plugin>
-      <!-- Shade plugin (still needed for tests) -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.4</version>
-        <executions>
-          <execution>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <!-- Mark the shaded artifact instead of overwriting the original 
-            artifact. It should also neither be installed nor deployed together with 
-            other artifacts. -->
-          <finalName>${project.artifactId}-shaded</finalName>
-          <!-- filter all the META-INF files of other artifacts -->
-          <filters>
-            <filter>
-              <artifact>*:*</artifact>
-              <excludes>
-                <exclude>META-INF/*.SF</exclude>
-                <exclude>META-INF/*.DSA</exclude>
-                <exclude>META-INF/*.RSA</exclude>
-              </excludes>
-            </filter>
-          </filters>
-          <transformers>
-            <transformer
-              implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-              <manifestEntries>
-                <X-Compile-Source-JDK>${maven.compile.source}</X-Compile-Source-JDK>
-                <X-Compile-Target-JDK>${maven.compile.target}</X-Compile-Target-JDK>
-              </manifestEntries>
-            </transformer>
-            <transformer
-              implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-          </transformers>
-        </configuration>
-      </plugin>
       <!-- Surefire plugin mentioned here to make sure that the shade plugin is executed before the tests are started -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

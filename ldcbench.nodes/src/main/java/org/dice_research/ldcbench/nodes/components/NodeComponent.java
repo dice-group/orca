@@ -56,6 +56,10 @@ abstract public class NodeComponent extends AbstractCommandReceivingComponent im
     protected ObjectStreamFanoutExchangeConsumer<NodeMetadata[]> bcBroadcastConsumer;
     protected NodeMetadata nodeMetadata[];
     protected List<Graph> graphs;
+    /**
+     * This mutex is used to decide whether the node should be terminated.
+     */
+    protected Semaphore runMutex = new Semaphore(0);
 
     @Override
     public void init() throws Exception {
@@ -177,6 +181,8 @@ abstract public class NodeComponent extends AbstractCommandReceivingComponent im
                 LOGGER.error("Failed to write node result model.", e);
                 throw new IllegalStateException(e);
             }
+            // Shutdown by notifying this object; this should release the run method
+            runMutex.release();
         }
     }
 
@@ -201,9 +207,7 @@ abstract public class NodeComponent extends AbstractCommandReceivingComponent im
 
     @Override
     public void run() throws Exception {
-        synchronized (this) {
-            this.wait();
-        }
+        runMutex.acquire();
     }
 
     @Override

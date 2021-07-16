@@ -109,6 +109,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private Semaphore nodeGraphMutex = new Semaphore(0);
     private Semaphore evaluationStorageReady = new Semaphore(0);
 
+    protected boolean nodesShouldTerminate = false;
+
     protected Channel dataGeneratorsChannel;
 
     protected String dataGeneratorsExchange;
@@ -612,6 +614,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // Create a model so we can store information about nodes.
         resultModel = ModelFactory.createDefaultModel();
         nodesResultSemaphore = new Semaphore(0);
+        nodesShouldTerminate = true;
         sendToCmdQueue(ApiConstants.CRAWLING_FINISHED_SIGNAL, RabbitMQUtils.writeLong(new Date().getTime()));
 
         nodesResultSemaphore.acquire(nodesAmount);
@@ -785,8 +788,10 @@ public class BenchmarkController extends AbstractBenchmarkController {
             if (nodeContainerMap.containsKey(containerName)) {
                 LOGGER.error("Node container {} terminated with exitCode={}.", containerName, exitCode);
                 nodeContainerMap.get(containerName).setTerminated(true);
-                // FIXME: only do this when container terminates unexpectedly
-                containerCrashed(containerName);
+                // In case a node terminates while the controller didn't expect it
+                if (!nodesShouldTerminate) {
+                    containerCrashed(containerName);
+                }
             }
             if (dataGenContainerIds.contains(containerName)) {
                 LOGGER.error("Data generator container {} terminated with exitCode={}.", containerName, exitCode);

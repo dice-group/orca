@@ -26,8 +26,8 @@ public abstract class AbstractNegotiatingResource extends AbstractCrawleableReso
 
     protected MediaType getResponseType(Iterator<String> iterator) {
         // If the request header is empty
-        if(!iterator.hasNext()) {
-            if(availableContentTypes.size() > 0) {
+        if (!iterator.hasNext()) {
+            if (availableContentTypes.size() > 0) {
                 return availableContentTypes.stream().findFirst().get();
             } else {
                 return null;
@@ -38,6 +38,10 @@ public abstract class AbstractNegotiatingResource extends AbstractCrawleableReso
         while (iterator.hasNext()) {
             typeString = iterator.next();
             try {
+                // A single star is not allowed in the MediaType class that we use
+                if ("*".equals(typeString)) {
+                    typeString = "*/*";
+                }
                 requestedType = MediaType.parse(typeString);
                 for (MediaType availableType : availableContentTypes) {
                     if (availableType.is(requestedType)) {
