@@ -1,6 +1,7 @@
 # Used at "mvn test" which is run with "make test-benchmark".
 
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix hobbit: <http://w3id.org/hobbit/vocab#> .
 @prefix experiments: <http://w3id.org/hobbit/experiments#>
 @prefix : <http://w3id.org/dice-research/orca/ontology#> .
@@ -10,11 +11,11 @@ experiments:New a hobbit:Experiment;
   :seed 2;
   :nodeSizeDeterminer :StaticNodeSize;
   :averageTriplesPerNode 5;
-  :averageCrawlDelay 5;
-  :averageDisallowedRatio 0.5;
+  :averageCrawlDelay 1;
+  :averageDisallowedRatio 0.0;
   :averageRdfGraphDegree 2;
   :httpDumpNodeCompressedRatio 1;
-  :dereferencingHttpNodeWeight 0;
+  :dereferencingHttpNodeWeight 1;
   :httpDumpNodeWeight 0;
   :useTurtleDumps "true"^^xsd:boolean;
   :useN3Dumps "true"^^xsd:boolean;

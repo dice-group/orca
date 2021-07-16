@@ -4,16 +4,11 @@ import java.io.IOException;
 
 import org.apache.jena.rdf.model.Model;
 import org.hobbit.sdk.utils.ModelsHandler;
-import org.junit.Test;
 
 /**
  * @author Pavel Smirnov
  */
-public class BenchmarkITLemming extends BenchmarkTestBase {
-    @Test
-    public void executeBenchmark() throws Exception {
-        executeBenchmark(true);
-    }
+public class BenchmarkLemmingIT extends BenchmarkIT {
 
     @Override
     public Model createBenchmarkParameters() throws IOException {

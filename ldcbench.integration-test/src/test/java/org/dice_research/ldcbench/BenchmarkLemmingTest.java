@@ -20,7 +20,7 @@ import org.junit.contrib.java.lang.system.EnvironmentVariables;
  * @author Pavel Smirnov
  */
 
-public class BenchmarkTestLemming extends BenchmarkTestBase {
+public class BenchmarkLemmingTest extends BenchmarkTestBase {
 
     public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
