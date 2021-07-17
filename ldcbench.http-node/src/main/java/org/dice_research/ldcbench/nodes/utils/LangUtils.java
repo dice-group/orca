@@ -6,9 +6,11 @@ import java.util.List;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.LangBuilder;
 import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.utils.rdf.RdfHelper;
 import org.hobbit.vocab.HOBBIT;
+import org.rdfhdt.hdt.enums.RDFNotation;
 
 import java.util.Random;
 /**
@@ -20,6 +22,8 @@ import java.util.Random;
  */
 
 public class LangUtils {
+
+    public static final Lang HDT_LANG = LangBuilder.create("HDT", "application/vnd.hdt").build();
 
     /**
      *
@@ -61,7 +65,7 @@ public class LangUtils {
             langlist.add(Lang.NT);
         }
         if (Boolean.parseBoolean(RdfHelper.getStringValue(benchmarkParamModel, null, LDCBench.useHDTDumps))) {
-            langlist.add(Lang.N3);
+            langlist.add(HDT_LANG);
         }
 
         return langlist;
@@ -79,6 +83,24 @@ public class LangUtils {
         List<Lang> langlist = getAllowedLangs(benchmarkParamModel);
         int langPos = rand.nextInt(langlist.size());
         return langlist.get(langPos);
+    }
+
+    /**
+    *
+    * Method that returns the RDFNotation of a Language
+    *
+    * @return a RDFNotation
+    */
+    public static RDFNotation getRDFNotation(Lang lang) {
+        if (lang.equals(Lang.NT))
+            return RDFNotation.NTRIPLES;
+        if (lang.equals(Lang.TTL))
+            return RDFNotation.TURTLE;
+        if (lang.equals(Lang.RDFXML))
+            return RDFNotation.RDFXML;
+        if (lang.equals(Lang.N3))
+            return RDFNotation.N3;
+        return null;
     }
 
 }

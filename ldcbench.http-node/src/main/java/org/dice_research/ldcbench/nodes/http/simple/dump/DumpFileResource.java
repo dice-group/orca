@@ -35,7 +35,6 @@ public class DumpFileResource extends AbstractCrawleableResource {
     public static final List<Archiver> ARCHIVERS = Arrays.asList(new TarArchiver(),
             new TarArchiver(ReflectionBasedStreamFactory.create("java.util.zip.GZIPOutputStream", "application/gzip", ".gz")),
             new ZipArchiver());
-    private static final String HDT_CONTENT_TYPE = "application/vnd.hdt";
 
     public static DumpFileResource create(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates,
             Graph[] graphs, Predicate<Request> predicate, Lang lang, CompressionStreamFactory compression, Archiver archiver) {

@@ -23,6 +23,7 @@ import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.BrotliStreamFactory;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ReflectionBasedStreamFactory;
+import org.dice_research.ldcbench.nodes.utils.LangUtils;
 import org.dice_research.ldcbench.nodes.utils.TripleIterator;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
@@ -76,15 +77,13 @@ public class DumpFileBuilder {
     public File build()
             throws IOException, NoSuchMethodException, SecurityException, ReflectiveOperationException, ParserException, NotFoundException {
         try (OutputStream out = generateOutputStream()) {
+            if (lang.equals(LangUtils.HDT_LANG)) {
+                streamData(out, Lang.NT);
+                return convertToHDT(dumpFile, Lang.NT);
+            }
             streamData(out, lang);
         }
         return dumpFile;
-    }
-    
-    public File buildHDT() throws IOException, ParserException, NotFoundException, NoSuchMethodException, SecurityException, ReflectiveOperationException
-    {
-        File rdfFile = build();
-        return convertToHDT(rdfFile);
     }
 
     @SuppressWarnings("resource")
@@ -149,21 +148,17 @@ public class DumpFileBuilder {
      * @param The method requires an RDF file
      * @return The method returns the HDT file
      */
-	private File convertToHDT(File rdfFile) throws IOException, ParserException, NotFoundException {
+	private File convertToHDT(File rdfFile, Lang rdfFileLang) throws IOException, ParserException, NotFoundException {
 		String rdfInput = rdfFile.getAbsolutePath();
 		String baseURI = resourceUriTemplates[0].split("%s")[0];
-		//format language to fit RDFNotation
-		LOGGER.info("lang.getName()"+lang.getName());
-		LOGGER.info("lang.toString()"+lang.toString());
-		System.out.println("lang.getLabel()()"+lang.getLabel());
-		String inputType = lang.getName().replaceAll("-", "").replace('/', '-');
-		
-		File hdtTempFile = File.createTempFile("hdt_"+inputType, ".hdt");
+		RDFNotation inputLang = LangUtils.getRDFNotation(rdfFileLang);
+
+		File hdtTempFile = File.createTempFile("ldcbench", ".hdt");
 		try {
 		    HDT hdt = HDTManager.generateHDT(
                     rdfInput,
                     baseURI,
-                    RDFNotation.parse(inputType),
+                    inputLang,
                     new HDTSpecification(),
                     null
 		            );
