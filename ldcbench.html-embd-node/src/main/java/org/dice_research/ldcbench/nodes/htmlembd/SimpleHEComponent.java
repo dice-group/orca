@@ -39,13 +39,12 @@ public class SimpleHEComponent extends SimpleHttpServerComponent {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHEComponent.class);
 
-    //From RDFa Generator: TODO adapt
     public static final String ACCESS_URI_TEMPLATE_PATTERN = "/%s-%s/%s-%s";
     public static final String ENTRANCE_HTML_FILE_NAME = "entrance.html";
     public static final String ENTRANCE_TTL_FILE_NAME = "entrance.ttl";
 
     public static final String CONTENT_EXTRACTION_DIR = "content/";
-    public static final String SINGLE_FILE_NAME = "singeFile.html";
+    public static final String SINGLE_FILE_NAME = "singleFile.html";
 
     protected DataHandler dataHandler;
 

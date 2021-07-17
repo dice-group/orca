@@ -6,9 +6,9 @@ import org.dice_research.ldcbench.vocab.LDCBench;
 import org.dice_research.ldcbench.Constants;
 
 /**
- * Manager class for an RDFa node.
+ * Manager class for an JsonLD node.
  *
- * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
+ * @author Thoren Grüttemeier (thoreng@uni-paderborn.de)
  *
  */
 public class JsonLdNodeManager extends AbstractNodeManager {

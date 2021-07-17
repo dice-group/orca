@@ -1,11 +1,13 @@
 package org.dice_research.ldcbench.jsonld.gen;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -35,13 +37,8 @@ public class JsonLDDataGenerator extends DataGenerator {
     protected static final String JSON_LD_PREFIX = "<script type=\"application/ld+json\">";
     protected static final String JSON_LD_SUFFIX = "</script>\r\n";
 
-    protected void generateHtmlFiles(Graph[] graphs, File htmlOut) {
-
-
-        String htmlFileContent = new String();
+    protected void generateHtmlFiles(Graph[] graphs, File htmlOut) throws IOException {
         int domainId = 1;
-
-        htmlFileContent += HTML_PREFIX;
 
         TripleIterator iterator;
         // convert Graph to jena.graph s.t. we can use the RDFDataMgr
@@ -58,48 +55,19 @@ public class JsonLDDataGenerator extends DataGenerator {
             datasetId++;
         }
 
-        OutputStream outputJLD = new OutputStream() {
-            private StringBuilder string = new StringBuilder();
+        BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(htmlOut));
 
-            @Override
-            public void write(int b) throws IOException {
-                this.string.append((char) b );
-            }
+        out.write(HTML_PREFIX.getBytes(StandardCharsets.UTF_8));
+        out.write(JSON_LD_PREFIX.getBytes(StandardCharsets.UTF_8));
+        RDFDataMgr.write(out, model, Lang.JSONLD);
+        out.write(JSON_LD_SUFFIX.getBytes(StandardCharsets.UTF_8));
+        out.write(HTML_SUFFIX.getBytes(StandardCharsets.UTF_8));
 
-            public String toString() {
-                return this.string.toString();
-            }
-        };
-        RDFDataMgr.write(outputJLD, model, Lang.JSONLD);
-
-        htmlFileContent += JSON_LD_PREFIX;
-        htmlFileContent += outputJLD.toString();
-        htmlFileContent += JSON_LD_SUFFIX;
-
-        htmlFileContent += HTML_SUFFIX;
-        System.out.println(htmlFileContent);
-
-        // //create TTL file
-
-        // OutputStream outputTTL = new OutputStream() {
-        //     private StringBuilder string = new StringBuilder();
-
-        //     @Override
-        //     public void write(int b) throws IOException {
-        //         this.string.append((char) b );
-        //     }
-
-        //     public String toString() {
-        //         return this.string.toString();
-        //     }
-        // };
-        // RDFDataMgr.write(outputTTL, model, Lang.TTL);
-        // System.out.println("TTL: " + outputTTL.toString());
+        out.close();
     }
 
     @Override
     protected void sendFinalGraph(Graph graph) throws Exception {
-
         File htmlOut = new File(SimpleHEComponent.SINGLE_FILE_NAME);
 
         Graph[] g = {graph};
@@ -111,13 +79,8 @@ public class JsonLDDataGenerator extends DataGenerator {
         htmlFiles.put(SimpleHEComponent.SINGLE_FILE_NAME, htmlOut);
         // SortedMap<String, File> ttlFiles = new TreeMap<>();
 
-
         // Generate HTML tar file
         generateAndSendTarFile(SimpleHEComponent.SINGLE_FILE_NAME + ApiConstants.FILE_ENDING_HTML_TAR_GZ, htmlFiles, outgoingDataQueuefactory, dataQueueName);
-
-        // // Generate TTL tar file
-        // generateAndSendTarFile(filePrefix + ApiConstants.FILE_ENDING_TTL_TAR_GZ, ttlFiles, outgoingDataQueuefactory,
-        //         evalDataQueueName);
     }
 
 
