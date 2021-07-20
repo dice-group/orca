@@ -28,8 +28,8 @@ import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.dice_research.ldcbench.nodes.components.NodeComponent;
 import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileBuilder;
 import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileResource;
+import org.dice_research.ldcbench.nodes.http.simple.dump.comp.Archiver;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
-import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ZipStreamFactory;
 import org.dice_research.ldcbench.nodes.utils.LangUtils;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.rdf.UriHelper;
@@ -67,6 +67,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
     protected String dumpFilePath = null;
     protected Lang dumpFileLang = null;
     protected CompressionStreamFactory dumpFileCompression = null;
+    protected Archiver dumpfileArchiver = null;
 
     @Override
     public void initBeforeDataGeneration() throws Exception {
@@ -93,26 +94,24 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             LOGGER.debug("Language: {}", dumpFileLang);
             LOGGER.debug("File extensions: {}", dumpFileLang.getFileExtensions());
 
-            List<CompressionStreamFactory> compressions = new ArrayList<>();
             if (random.nextDouble() < compressedRatio) {
-                compressions.addAll(DumpFileBuilder.COMPRESSIONS);
-            } else {
-                // Add the case that no compression is used
-                compressions.add(null);
+                if (random.nextDouble() < (DumpFileBuilder.COMPRESSIONS.size()/(DumpFileBuilder.COMPRESSIONS.size()
+                                                    + DumpFileResource.ARCHIVERS.size()))) {
+                    dumpFileCompression = Collections.pickRandomObject(DumpFileBuilder.COMPRESSIONS, random);
+                }
+                else {
+                    dumpfileArchiver = Collections.pickRandomObject(DumpFileResource.ARCHIVERS, random);
+                }
             }
-            dumpFileCompression = Collections.pickRandomObject(compressions, random);
 
             // Create path including the dump file name
             StringBuilder builder = new StringBuilder("/dumpFile");
             builder.append(".");
             builder.append(dumpFileLang.getFileExtensions().get(0));
             if (dumpFileCompression != null) {
-                // FIXME This is a bad workaround to make the ZIP compression aware of the file
-                // name of the compressed data
-                if (dumpFileCompression instanceof ZipStreamFactory) {
-                    ((ZipStreamFactory) dumpFileCompression).setCompressedFileName(builder.toString());
-                }
                 builder.append(dumpFileCompression.getFileNameExtension());
+            } else if (dumpfileArchiver != null) {
+                builder.append(dumpfileArchiver.getFileNameExtension());
             }
             dumpFilePath = builder.toString();
             LOGGER.debug("Path: {}", dumpFilePath);
@@ -179,8 +178,9 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
             resource = DumpFileResource.create(cloudNodeId.get(),
                     Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                    graphs.toArray(new Graph[graphs.size()]), r -> r.getPath().toString().equals(dumpFilePath),
-                    dumpFileLang, dumpFileCompression);
+                    graphs.toArray(new Graph[graphs.size()]),
+                    r -> r.getPath().toString().equals(dumpFilePath),
+                    dumpFileLang, dumpFileCompression, dumpfileArchiver);
         } else {
             SimpleTripleCreator tripleCreator = new SimpleTripleCreator(cloudNodeId.get(), resourceUriTemplates,
                     accessUriTemplates);
