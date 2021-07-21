@@ -1,5 +1,5 @@
 [![Java CI with Maven](https://github.com/dice-group/orca/actions/workflows/maven.yml/badge.svg)](https://github.com/dice-group/orca/actions/workflows/maven.yml)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/6030450cade64e259f69dddbd4a17c14)](https://www.codacy.com/app/MichaelRoeder/ldcbench)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/20727955dc2f42f392bc915347669ca6)](https://www.codacy.com/gh/dice-group/orca/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dice-group/orca&amp;utm_campaign=Badge_Grade)
 
 <img src="orca.png" alt="" height="215">
 
