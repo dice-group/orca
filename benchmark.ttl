@@ -255,7 +255,7 @@
   rdfs:comment "The method how the size of a single node is defined."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range :NodeSizeDeterminer;
-  hobbit:defaultValue :ExponentialDistNodeSize .
+  hobbit:defaultValue :StaticNodeSize .
 
 :NodeSizeDeterminer a rdfs:Class .
 
