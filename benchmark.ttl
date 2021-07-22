@@ -274,7 +274,7 @@
 	rdfs:label "Semantic Web Dog Food"@en;
 	rdfs:comment "Datasets generated based on the Semantic Web Dog Food."@en .
 
-:dataset a hobbit:Parameter, hobbit:ConfigurableParameter;
+:lemmingDataset a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Dataset"@en;
   rdfs:comment "The name of the Lemming dataset that is used."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
