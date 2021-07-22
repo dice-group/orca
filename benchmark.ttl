@@ -93,7 +93,7 @@
     :triplesEvaluated,
     :numberOfDisallowedResources,
     :nodeSizeDeterminer,
-    :dataset;
+    :lemmingDataset;
   hobbit:measuresKPI
     :tripleCountOverTime,
     :resourceUsageOverTime,
