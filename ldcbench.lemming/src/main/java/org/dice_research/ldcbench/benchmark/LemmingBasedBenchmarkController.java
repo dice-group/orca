@@ -1,23 +1,38 @@
 package org.dice_research.ldcbench.benchmark;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.concurrent.Future;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.Constants;
 import org.dice_research.ldcbench.benchmark.cloud.NodeManager;
 import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.utils.rdf.RdfHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LemmingBasedBenchmarkController extends BenchmarkController {
 
-    // private static final Logger LOGGER =
-    // LoggerFactory.getLogger(LemmingBasedBenchmarkController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LemmingBasedBenchmarkController.class);
 
     private static final String DATA_GEN_CLASS_NAME = "org.dice_research.ldcbench.benchmark.FileBasedRDFGraphGenerator";
     private static final String DATA_DIRECTORY = "/usr/src/app/data";
-    private static final String LEMMING_DOCKER_IMAGE = "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.lemming";
+    private static final String LOCAL_TESTING_DATA_DIRECTORY = "../ldcbench.lemming/data";
+    public static final String LEMMING_DOCKER_IMAGE = "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.lemming";
+
+    /**
+     * Only 20% of the triples should be used for evaluation.
+     */
+    private static final double EVALUATION_RATIO = 0.2;
 
     /**
      * The ID of the file that will be used by the next data generator created.
@@ -29,16 +44,30 @@ public class LemmingBasedBenchmarkController extends BenchmarkController {
     private File files[];
 
     @Override
-    public void init() throws Exception {
-        super.init();
+    public void postAbstractInit() throws Exception {
         // Read dataset name
         Resource dataset = RdfHelper.getObjectResource(benchmarkParamModel, null, LDCBench.lemmingDataset);
         if (dataset == null) {
+            LOGGER.error(
+                    "The lemming dataset is missing! I will throw an exception. Before, I will dump the parameter model: {}",
+                    benchmarkParamModel.toString());
             throw new IllegalArgumentException("The lemming dataset is missing!");
         }
-        String directory = RdfHelper.getStringValue(benchmarkParamModel, dataset, LDCBench.lemmingDatasetDirectory);
+        Model benchmarkModel = readBenchmarkModel();
+        if (benchmarkModel == null) {
+            throw new IllegalArgumentException("Couldn't load the benchmark.ttl model of this benchmark. Aborting.");
+        }
+        String directory = RdfHelper.getStringValue(benchmarkModel, dataset, LDCBench.lemmingDatasetDirectory);
+        if (directory == null) {
+            LOGGER.error(
+                    "The directory of the lemming dataset is missing! I will throw an exception. Before, I will dump the benchmark model: {}",
+                    benchmarkModel.toString());
+            throw new IllegalArgumentException("The directory of the lemming dataset is missing!");
+        }
         // Get all files of a dataset
-        File dataDir = new File(DATA_DIRECTORY + File.separator + directory);
+        String absolutDataDir = dockerized ? DATA_DIRECTORY
+                : (new File(LOCAL_TESTING_DATA_DIRECTORY)).getAbsolutePath();
+        File dataDir = new File(absolutDataDir + File.separator + directory);
         if (!dataDir.exists() || !dataDir.isDirectory()) {
             throw new IllegalArgumentException(
                     "The given dataset directory (" + dataDir.getAbsolutePath() + ") does not exist!");
@@ -48,6 +77,15 @@ public class LemmingBasedBenchmarkController extends BenchmarkController {
             throw new IllegalArgumentException(
                     "The given dataset directory (" + dataDir.getAbsolutePath() + ") does not contain any files!");
         }
+    }
+
+    protected Model readBenchmarkModel() throws IOException {
+        Model model = ModelFactory.createDefaultModel();
+        try (InputStream is = this.dockerized ? this.getClass().getResourceAsStream("/benchmark.ttl")
+                : (new BufferedInputStream(new FileInputStream("../benchmark.ttl")))) {
+            model.read(is, "", "TURTLE");
+        }
+        return model;
     }
 
     protected void createDataGenerator(NodeManager nodeManager, String[] envVariables) {
@@ -73,4 +111,11 @@ public class LemmingBasedBenchmarkController extends BenchmarkController {
                 variables);
         dataGenContainers.add(container);
     }
+
+    @Override
+    protected void createEvaluationModule(String evalModuleImageName, String[] envVariables) {
+        super.createEvaluationModule(evalModuleImageName,
+                ArrayUtils.add(envVariables, ApiConstants.ENV_EVALUATION_RATIO_KEY + "=" + EVALUATION_RATIO));
+    }
+
 }

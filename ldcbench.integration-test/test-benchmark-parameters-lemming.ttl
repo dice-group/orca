@@ -25,10 +25,10 @@ experiments:New a hobbit:Experiment;
   :ckanNodeWeight 0;
   :sparqlNodeWeight 0;
   :numberOfNodes 3;
-  :dataset :LemmingTestDataset;
+  :lemmingDataset :LemmingTestDataset;
   :averageNodeGraphDegree 2.
 
 :LemmingTestDataset a :LemmingDataset;
-	:lemmingDatasetDirectory "lemming/test";
+	:lemmingDatasetDirectory "test";
 	rdfs:label "Test dataset"@en;
 	rdfs:comment "A simple dataset used for testing."@en .

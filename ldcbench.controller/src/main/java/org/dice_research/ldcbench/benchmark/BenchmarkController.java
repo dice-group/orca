@@ -90,7 +90,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private Class<?>[] possibleNodeManagerClasses = { DereferencingHttpNodeManager.class, CkanNodeManager.class,
             SparqlNodeManager.class, HttpDumpNodeManager.class, RDFaNodeManager.class, };
 
-    private boolean dockerized;
+    protected boolean dockerized;
     private int nodesAmount;
 
     private String sparqlContainer;
@@ -204,6 +204,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         boolean sdk = EnvVariables.getBoolean(ApiConstants.ENV_SDK_KEY, false, LOGGER);
         dockerized = EnvVariables.getBoolean(ApiConstants.ENV_DOCKERIZED_KEY, true, LOGGER);
+
+        postAbstractInit();
 
         // Start SPARQL endpoint
         createSparqlEndpoint();
@@ -371,6 +373,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 new String[] { ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
                         ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=" + sparqlUrl,
+                        ApiConstants.ENV_SEED_KEY + "=" + seed,
                         ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
                         ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++, });
 
@@ -452,6 +455,15 @@ public class BenchmarkController extends AbstractBenchmarkController {
 
         LOGGER.debug("Waiting for components to initialize...");
         waitForComponentsToInitialize();
+    }
+
+    /**
+     * A simple method that is called after the init() method of the super class has
+     * been finished and the internal attributes like the benchmark parameter model
+     * can be accessed.
+     */
+    protected void postAbstractInit() throws Exception {
+        // nothing to do here
     }
 
     protected void createSparqlEndpoint() {

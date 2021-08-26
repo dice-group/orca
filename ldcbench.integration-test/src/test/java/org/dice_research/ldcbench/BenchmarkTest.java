@@ -4,12 +4,6 @@ import static org.dice_research.ldcbench.Constants.SYSTEM_URI;
 import static org.hobbit.sdk.Constants.BENCHMARK_URI;
 import static org.hobbit.sdk.Constants.GIT_USERNAME;
 
-import org.dice_research.ldcbench.builders.CkanNodeBuilder;
-import org.dice_research.ldcbench.builders.SimpleHttpNodeBuilder;
-import org.hobbit.sdk.docker.builders.hobbit.BenchmarkDockerBuilder;
-import org.hobbit.sdk.docker.builders.hobbit.DataGenDockerBuilder;
-import org.hobbit.sdk.docker.builders.hobbit.EvalModuleDockerBuilder;
-import org.hobbit.sdk.docker.builders.hobbit.SystemAdapterDockerBuilder;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
@@ -21,12 +15,12 @@ public class BenchmarkTest extends BenchmarkTestBase {
 
     public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
-    protected BenchmarkDockerBuilder benchmarkBuilder;
-    protected DataGenDockerBuilder dataGeneratorBuilder;
-    protected SystemAdapterDockerBuilder systemAdapterBuilder;
-    protected EvalModuleDockerBuilder evalModuleBuilder;
-    protected SimpleHttpNodeBuilder httpNodeBuilder;
-    protected CkanNodeBuilder ckanNodeBuilder;
+//    protected BenchmarkDockerBuilder benchmarkBuilder;
+//    protected DataGenDockerBuilder dataGeneratorBuilder;
+//    protected SystemAdapterDockerBuilder systemAdapterBuilder;
+//    protected EvalModuleDockerBuilder evalModuleBuilder;
+//    protected SimpleHttpNodeBuilder httpNodeBuilder;
+//    protected CkanNodeBuilder ckanNodeBuilder;
 
     @Test
     public void executeBenchmark() throws Exception {

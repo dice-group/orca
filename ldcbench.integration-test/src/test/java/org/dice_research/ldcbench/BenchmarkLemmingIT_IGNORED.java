@@ -6,10 +6,10 @@ import org.apache.jena.rdf.model.Model;
 import org.hobbit.sdk.utils.ModelsHandler;
 
 /**
- * @author Pavel Smirnov
+ * @author Michael R&ouml;der
  */
-public class BenchmarkLemmingIT extends BenchmarkIT {
-
+public class BenchmarkLemmingIT_IGNORED extends BenchmarkIT {
+    
     @Override
     public Model createBenchmarkParameters() throws IOException {
         return ModelsHandler.readModelFromFile("integration-benchmark-parameters-lemming.ttl");
