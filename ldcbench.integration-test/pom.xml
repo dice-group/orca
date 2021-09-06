@@ -117,7 +117,7 @@
     <dependency>
       <groupId>org.hobbit</groupId>
       <artifactId>hobbit-java-sdk</artifactId>
-      <version>1.1.18</version>
+      <version>1.1.19-SNAPSHOT</version>
     </dependency>
     <!-- HOBBIT controller -->
     <dependency>
