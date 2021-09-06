@@ -106,6 +106,7 @@ public class SamplingTripleBlockStreamDecorator implements TripleBlockStreamSupp
          */
         public DecoratedTripleBlockStreamFilter(double acceptanceRate, Random random) {
             this.random = random;
+            this.acceptanceRate = acceptanceRate;
         }
 
         @Override
