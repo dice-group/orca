@@ -243,6 +243,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
         int componentCount = (2 * nodesAmount) + 3;
         int componentId = 0;
 
+        nodeMetadata = new NodeMetadata[nodesAmount];
+        graphMetadata = new GraphMetadata[nodesAmount];
+
         // Create a seed generator for the benchmark controller. Do not send these seeds
         // to other components!
         SeedGenerator localSeedGenerator = new SequentialSeedGenerator(seed, componentId, componentCount);
@@ -350,8 +353,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
             throw new IllegalStateException("The experiment configuration does not define any nodes.");
         }
 
-        nodeMetadata = new NodeMetadata[nodesAmount];
-        graphMetadata = new GraphMetadata[nodesAmount];
         int batchSize = dockerized ? 20 : 1;
         for (int batch = 0; batch < (float) nodesAmount / batchSize; batch++) {
             for (int i = batch * batchSize; i < (batch + 1) * batchSize && i < nodesAmount; i++) {
