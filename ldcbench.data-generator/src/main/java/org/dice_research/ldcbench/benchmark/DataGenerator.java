@@ -201,27 +201,29 @@ public class DataGenerator extends AbstractDataGenerator {
     protected void addInterlinks(GraphBuilder g) {
         int numberOfInternalNodes = g.getNumberOfNodes();
         Random random = new Random(seedGenerator.getNextSeed());
+        // Iterate over the graphs to which links should be created
         for (Map.Entry<Integer, GraphMetadata> entry : rdfMetadata.entrySet()) {
             int targetNodeGraph = entry.getKey();
-//            GraphMetadata gm = entry.getValue();
+            GraphMetadata gm = entry.getValue();
 
-            // use random node
-            int nodeWithOutgoingLink = random.nextInt(numberOfInternalNodes);
-//            if (gm.entranceNodes.length == 0) {
-//                throw new IllegalStateException("Node " + nodeId + " needs to link to node " + targetNodeGraph
-//                        + " but there are no entrypoints.");
-//            }
-            // get node in target graph
-            int entranceInTargetGraph = 0;// FIXME use gm.entranceNodes[random.nextInt(gm.entranceNodes.length)];
-            // add a new node
-            int externalNode = g.addNode();
-            g.setGraphIdOfNode(externalNode, targetNodeGraph, entranceInTargetGraph);
+            if (gm.entranceNodes.length == 0) {
+                throw new IllegalStateException(
+                        "There are no entrance nodes for target graph " + targetNodeGraph + ".");
+            }
 
-            // FIXME don't always use edge type 0
-            int propertyId = 0;
-            g.addEdge(nodeWithOutgoingLink, externalNode, propertyId);
-            LOGGER.debug("Added the edge ({}, {}, {}) where the target is node {} in graph {}.", nodeWithOutgoingLink,
-                    propertyId, externalNode, entranceInTargetGraph, targetNodeGraph);
+            // Iterate over the entrance nodes; we need at least one triple for each of them
+            for (int targetNodeId : gm.entranceNodes) {
+                // use random source node
+                int nodeWithOutgoingLink = random.nextInt(numberOfInternalNodes);
+                // add a new node
+                int externalNode = g.addNode();
+                g.setGraphIdOfNode(externalNode, targetNodeGraph, targetNodeId);
+                // FIXME don't always use edge type 0
+                int propertyId = 0;
+                g.addEdge(nodeWithOutgoingLink, externalNode, propertyId);
+                LOGGER.info("Added the edge ({}, {}, {}) where the target is node {} in graph {}.",
+                        nodeWithOutgoingLink, propertyId, externalNode, targetNodeId, targetNodeGraph);
+            }
         }
     }
 
