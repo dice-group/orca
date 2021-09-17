@@ -59,11 +59,14 @@ public class LemmingBasedBenchmarkController extends BenchmarkController {
         }
         String directory = RdfHelper.getStringValue(benchmarkModel, dataset, LDCBench.lemmingDatasetDirectory);
         if (directory == null) {
+            // Check the model of this experiment (helps a lot when testing locally)
+            directory = RdfHelper.getStringValue(benchmarkParamModel, dataset, LDCBench.lemmingDatasetDirectory);
+            if (directory == null) {
             LOGGER.error(
                     "The directory of the lemming dataset is missing! I will throw an exception. Before, I will dump the benchmark model: {}",
                     benchmarkModel.toString());
             throw new IllegalArgumentException("The directory of the lemming dataset is missing!");
-        }
+        }}
         // Get all files of a dataset
         String absolutDataDir = dockerized ? DATA_DIRECTORY
                 : (new File(LOCAL_TESTING_DATA_DIRECTORY)).getAbsolutePath();
