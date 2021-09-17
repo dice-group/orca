@@ -13,10 +13,10 @@ experiments:New a hobbit:Experiment;
   :averageTriplesPerNode 5;
   :averageCrawlDelay 1;
   :averageDisallowedRatio 0.0;
-  :averageRdfGraphDegree 2;
-  :httpDumpNodeCompressedRatio 1;
+  :averageRdfGraphDegree 1;
+  :httpDumpNodeCompressedRatio 0;
   :dereferencingHttpNodeWeight 1;
-  :httpDumpNodeWeight 0;
+  :httpDumpNodeWeight 1;
   :useTurtleDumps "true"^^xsd:boolean;
   :useN3Dumps "true"^^xsd:boolean;
   :useRdfXmlDumps "true"^^xsd:boolean;
@@ -24,7 +24,7 @@ experiments:New a hobbit:Experiment;
   :rdfaNodeWeight 0;
   :ckanNodeWeight 0;
   :sparqlNodeWeight 0;
-  :numberOfNodes 3;
+  :numberOfNodes 2;
   :lemmingDataset :LemmingTestDataset;
   :averageNodeGraphDegree 2.
 
