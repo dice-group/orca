@@ -1,14 +1,5 @@
 package org.dice_research.ldcbench;
 
-import static org.dice_research.ldcbench.Constants.BENCHMARK_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.CKANNODE_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.DATAGEN_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.EVALMODULE_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.HTTPNODE_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.SPARQLNODE_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.RDFANODE_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.RDFADATAGEN_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.SYSTEM_IMAGE_NAME;
 import static org.hobbit.core.Constants.BENCHMARK_PARAMETERS_MODEL_KEY;
 import static org.hobbit.core.Constants.HOBBIT_EXPERIMENT_URI_KEY;
 import static org.hobbit.core.Constants.HOBBIT_SESSION_ID_KEY;
@@ -57,6 +48,7 @@ import org.hobbit.sdk.utils.ModelsHandler;
 import org.hobbit.sdk.utils.commandreactions.CommandReactionsBuilder;
 import org.hobbit.utils.rdf.RdfHelper;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,10 +60,21 @@ import org.slf4j.LoggerFactory;
 public class BenchmarkTestBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkTestBase.class);
 
+    @Rule
     public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
     // private AbstractDockerizer rabbitMqDockerizer;
     private ComponentsExecutor componentsExecutor;
     // private CommandQueueListener commandQueueListener;
+
+    protected String benchmarkImage = org.dice_research.ldcbench.Constants.BENCHMARK_IMAGE_NAME;
+    protected String dataGeneratorImage = org.dice_research.ldcbench.Constants.DATAGEN_IMAGE_NAME;
+    protected String systemAdapterImage = org.dice_research.ldcbench.Constants.SYSTEM_IMAGE_NAME;
+    protected String evalModuleImage = org.dice_research.ldcbench.Constants.EVALMODULE_IMAGE_NAME;
+    protected String httpNodeImage = org.dice_research.ldcbench.Constants.HTTPNODE_IMAGE_NAME;
+    protected String ckanNodeImage = org.dice_research.ldcbench.Constants.CKANNODE_IMAGE_NAME;
+    protected String sparqlNodeImage = org.dice_research.ldcbench.Constants.SPARQLNODE_IMAGE_NAME;
+    protected String rdfaNodeImage = org.dice_research.ldcbench.Constants.RDFANODE_IMAGE_NAME;
+    protected String rdfaGenImage = org.dice_research.ldcbench.Constants.RDFADATAGEN_IMAGE_NAME;
 
     protected BenchmarkDockerBuilder benchmarkBuilder;
     protected DataGenDockerBuilder dataGeneratorBuilder;
@@ -83,61 +86,71 @@ public class BenchmarkTestBase {
     protected LDCBenchNodeBuilder rdfaNodeBuilder;
     protected LDCBenchNodeBuilder rdfaGenBuilder;
 
+    protected Class<? extends Component> benchmarkClass = BenchmarkController.class;
+    protected Class<? extends Component> dataGeneratorClass = DataGenerator.class;
+    protected Class<? extends Component> systemAdapterClass = SystemAdapter.class;
+    protected Class<? extends Component> evalModuleClass = EvalModule.class;
+    protected Class<? extends Component> httpNodeClass = SimpleHttpServerComponent.class;
+    protected Class<? extends Component> ckanNodeClass = SimpleCkanComponent.class;
+    protected Class<? extends Component> sparqlNodeClass = SimpleSparqlComponent.class;
+    protected Class<? extends Component> rdfaNodeClass = SimpleRDFaComponent.class;
+    protected Class<? extends Component> rdfaGenClass = RDFaDataGenerator.class;
+
     public void init(Boolean useCachedImage) throws Exception {
 
         if (benchmarkBuilder == null) {
             benchmarkBuilder = new BenchmarkDockerBuilder(
-                    new ExampleDockersBuilder(BenchmarkController.class, BENCHMARK_IMAGE_NAME)
+                    new ExampleDockersBuilder(benchmarkClass, benchmarkImage)
                             .useCachedImage(useCachedImage));
         }
         if (dataGeneratorBuilder == null) {
             dataGeneratorBuilder = new DataGenDockerBuilder(
-                    new ExampleDockersBuilder(DataGenerator.class, DATAGEN_IMAGE_NAME).useCachedImage(useCachedImage)
+                    new ExampleDockersBuilder(dataGeneratorClass, dataGeneratorImage).useCachedImage(useCachedImage)
                             .addFileOrFolder("data"));
         }
 
         if (systemAdapterBuilder == null) {
             systemAdapterBuilder = new SystemAdapterDockerBuilder(
-                    new ExampleDockersBuilder(SystemAdapter.class, SYSTEM_IMAGE_NAME).useCachedImage(useCachedImage));
+                    new ExampleDockersBuilder(systemAdapterClass, systemAdapterImage).useCachedImage(useCachedImage));
         }
         if (evalModuleBuilder == null) {
             evalModuleBuilder = new EvalModuleDockerBuilder(
-                    new ExampleDockersBuilder(EvalModule.class, EVALMODULE_IMAGE_NAME).useCachedImage(useCachedImage));
+                    new ExampleDockersBuilder(evalModuleClass, evalModuleImage).useCachedImage(useCachedImage));
         }
 
         // FIXME do not build node images as part of this project
         if (httpNodeBuilder == null) {
             httpNodeBuilder = new SimpleHttpNodeBuilder(
-                    new ExampleDockersBuilder(SimpleHttpServerComponent.class, HTTPNODE_IMAGE_NAME)
+                    new ExampleDockersBuilder(httpNodeClass, httpNodeImage)
                             .useCachedImage(useCachedImage));
         }
         if (ckanNodeBuilder == null) {
             ckanNodeBuilder = new CkanNodeBuilder(
-                    new ExampleDockersBuilder(SimpleCkanComponent.class, CKANNODE_IMAGE_NAME)
+                    new ExampleDockersBuilder(ckanNodeClass, ckanNodeImage)
                             .useCachedImage(useCachedImage));
         }
         if (sparqlNodeBuilder == null) {
             sparqlNodeBuilder = new SparqlNodeBuilder(
-                    new ExampleDockersBuilder(SimpleSparqlComponent.class, SPARQLNODE_IMAGE_NAME)
+                    new ExampleDockersBuilder(sparqlNodeClass, sparqlNodeImage)
                             .useCachedImage(useCachedImage));
         }
         if (rdfaNodeBuilder == null) {
             rdfaNodeBuilder = new LDCBenchNodeBuilder(
-                    new ExampleDockersBuilder(SimpleRDFaComponent.class, RDFANODE_IMAGE_NAME)
+                    new ExampleDockersBuilder(rdfaNodeClass, rdfaNodeImage)
                             .useCachedImage(useCachedImage)) {
                 @Override
                 public String getName() {
-                    return RDFANODE_IMAGE_NAME;
+                    return rdfaNodeImage;
                 }
             };
         }
         if (rdfaGenBuilder == null) {
             rdfaGenBuilder = new LDCBenchNodeBuilder(
-                    new ExampleDockersBuilder(RDFaDataGenerator.class, RDFADATAGEN_IMAGE_NAME)
+                    new ExampleDockersBuilder(rdfaGenClass, rdfaGenImage)
                             .useCachedImage(useCachedImage)) {
                 @Override
                 public String getName() {
-                    return RDFADATAGEN_IMAGE_NAME;
+                    return rdfaGenImage;
                 }
             };
         }
@@ -148,7 +161,6 @@ public class BenchmarkTestBase {
 
     }
 
-    @SuppressWarnings("resource")
     protected void executeBenchmark(Boolean dockerized) throws Exception {
         Model benchmarkParameters = createBenchmarkParameters();
         LOGGER.info("Benchmark parameters:\n{}", prettyModelString(benchmarkParameters));
@@ -172,10 +184,11 @@ public class BenchmarkTestBase {
         init(useCachedImages);
 
         AbstractDockerizer rabbitMqDockerizer = RabbitMqDockerizer.builder().useCachedContainer().build();
+        rabbitMqDockerizer.run();
 
         environmentVariables.set(ApiConstants.ENV_SDK_KEY, "true");
         environmentVariables.set(ApiConstants.ENV_DOCKERIZED_KEY, dockerized.toString());
-        environmentVariables.set(RABBIT_MQ_HOST_NAME_KEY, "localhost"); // rabbit hostname for things running on the
+        environmentVariables.set(RABBIT_MQ_HOST_NAME_KEY, (dockerized ? "rabbit" : "localhost")); // rabbit hostname for things running on the
                                                                         // host directly
         environmentVariables.set(HOBBIT_SESSION_ID_KEY, "session_" + String.valueOf(new Date().getTime()));
 
@@ -204,8 +217,6 @@ public class BenchmarkTestBase {
 
         CommandQueueListener commandQueueListener = new CommandQueueListener();
         componentsExecutor = new ComponentsExecutor();
-
-        rabbitMqDockerizer.run();
 
         // comment the .systemAdapter(systemAdapter) line below to use the code for
         // running from python
@@ -340,40 +351,41 @@ public class BenchmarkTestBase {
         }
         return null;
     }
+    
 
     protected Component getController(boolean dockerized) {
-        return getComponent(dockerized, BenchmarkController.class, benchmarkBuilder);
+        return getComponent(dockerized, benchmarkClass, benchmarkBuilder);
     }
 
     protected Component getDataGen(boolean dockerized) {
-        return getComponent(dockerized, DataGenerator.class, dataGeneratorBuilder);
+        return getComponent(dockerized, dataGeneratorClass, dataGeneratorBuilder);
     }
 
     protected Component getSystemAdapter(boolean dockerized) {
-        return getComponent(dockerized, SystemAdapter.class, systemAdapterBuilder);
+        return getComponent(dockerized, systemAdapterClass, systemAdapterBuilder);
     }
 
     protected Component getEvalModule(boolean dockerized) {
-        return getComponent(dockerized, EvalModule.class, evalModuleBuilder);
+        return getComponent(dockerized, evalModuleClass, evalModuleBuilder);
     }
 
     protected Component getHttpNode(boolean dockerized) {
-        return getComponent(dockerized, SimpleHttpServerComponent.class, httpNodeBuilder);
+        return getComponent(dockerized, httpNodeClass, httpNodeBuilder);
     }
 
     protected Component getCkanNode(boolean dockerized) {
-        return getComponent(dockerized, SimpleCkanComponent.class, ckanNodeBuilder);
+        return getComponent(dockerized, ckanNodeClass, ckanNodeBuilder);
     }
 
     protected Component getSparqlNode(boolean dockerized) {
-        return getComponent(dockerized, SimpleSparqlComponent.class, sparqlNodeBuilder);
+        return getComponent(dockerized, sparqlNodeClass, sparqlNodeBuilder);
     }
 
     protected Component getRdfaNode(boolean dockerized) {
-        return getComponent(dockerized, SimpleRDFaComponent.class, rdfaNodeBuilder);
+        return getComponent(dockerized, rdfaNodeClass, rdfaNodeBuilder);
     }
 
     protected Component getRdfaGen(boolean dockerized) {
-        return getComponent(dockerized, RDFaDataGenerator.class, rdfaGenBuilder);
+        return getComponent(dockerized, rdfaGenClass, rdfaGenBuilder);
     }
 }
