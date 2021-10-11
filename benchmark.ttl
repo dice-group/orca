@@ -93,7 +93,7 @@
     :triplesEvaluated,
     :numberOfDisallowedResources,
     :nodeSizeDeterminer,
-    :dataset;
+    :lemmingDataset;
   hobbit:measuresKPI
     :tripleCountOverTime,
     :resourceUsageOverTime,
@@ -255,7 +255,7 @@
   rdfs:comment "The method how the size of a single node is defined."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range :NodeSizeDeterminer;
-  hobbit:defaultValue :ExponentialDistNodeSize .
+  hobbit:defaultValue :StaticNodeSize .
 
 :NodeSizeDeterminer a rdfs:Class .
 
@@ -274,7 +274,7 @@
 	rdfs:label "Semantic Web Dog Food"@en;
 	rdfs:comment "Datasets generated based on the Semantic Web Dog Food."@en .
 
-:dataset a hobbit:Parameter, hobbit:ConfigurableParameter;
+:lemmingDataset a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Dataset"@en;
   rdfs:comment "The name of the Lemming dataset that is used."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;

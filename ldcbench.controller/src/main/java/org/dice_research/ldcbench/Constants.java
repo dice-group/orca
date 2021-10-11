@@ -13,6 +13,10 @@ public class Constants {
     //use these constants within BenchmarkController
     public static final String BENCHMARK_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.controller";
     public static final String DATAGEN_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.data-generator";
+    /**
+     * @deprecated the project does not make use of an evaluation storage. It uses a triple store instead.
+     */
+    @Deprecated
     public static final String EVAL_STORAGE_IMAGE_NAME = BenchmarkController.DEFAULT_EVAL_STORAGE_IMAGE;
     public static final String EVALMODULE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.eval-module";
     public static final String SYSTEM_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.system";

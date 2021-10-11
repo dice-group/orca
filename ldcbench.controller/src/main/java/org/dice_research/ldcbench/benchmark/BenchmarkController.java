@@ -61,6 +61,7 @@ import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.generate.SeedGenerator;
 import org.dice_research.ldcbench.generate.SequentialSeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
+import org.dice_research.ldcbench.graph.GraphMetadata;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.utils.CloseableHelper;
 import org.dice_research.ldcbench.vocab.LDCBench;
@@ -90,7 +91,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
     private Class<?>[] possibleNodeManagerClasses = { DereferencingHttpNodeManager.class, CkanNodeManager.class,
             SparqlNodeManager.class, HttpDumpNodeManager.class, RDFaNodeManager.class, };
 
-    private boolean dockerized;
+    protected boolean dockerized;
     private int nodesAmount;
 
     private String sparqlContainer;
@@ -117,6 +118,15 @@ public class BenchmarkController extends AbstractBenchmarkController {
     protected DataSender systemDataSender;
     protected DataSender systemTaskSender;
     protected NodeMetadata[] nodeMetadata = null;
+    /**
+     * An array that stores the metadata of the single graphs in the nodes.
+     */
+    private GraphMetadata[] graphMetadata = null;
+    /**
+     * Semaphore used to ensure that all graph metadata of all nodes have
+     * been received and written to {@link #graphMetadata}.
+     */
+    private Semaphore graphMetadataReceived = new Semaphore(0);
     protected Map<String, NodeMetadata> nodeContainerMap = new HashMap<>();
     private Graph nodeGraph;
 
@@ -205,6 +215,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
         boolean sdk = EnvVariables.getBoolean(ApiConstants.ENV_SDK_KEY, false, LOGGER);
         dockerized = EnvVariables.getBoolean(ApiConstants.ENV_DOCKERIZED_KEY, true, LOGGER);
 
+        postAbstractInit();
+
         // Start SPARQL endpoint
         createSparqlEndpoint();
 
@@ -230,6 +242,9 @@ public class BenchmarkController extends AbstractBenchmarkController {
          */
         int componentCount = (2 * nodesAmount) + 3;
         int componentId = 0;
+
+        nodeMetadata = new NodeMetadata[nodesAmount];
+        graphMetadata = new GraphMetadata[nodesAmount];
 
         // Create a seed generator for the benchmark controller. Do not send these seeds
         // to other components!
@@ -261,6 +276,15 @@ public class BenchmarkController extends AbstractBenchmarkController {
                     }
                     nodeGraph = g;
                     nodeGraphMutex.release();
+                }
+            }
+
+            @Override
+            public void handleRdfGraph(int senderId, GraphMetadata gm) {
+                if (senderId > 0) {
+                    LOGGER.info("Got the rdf graph metadata for node {}", senderId - 1);
+                    graphMetadata[senderId - 1] = gm;
+                    graphMetadataReceived.release();
                 }
             }
         };
@@ -329,7 +353,6 @@ public class BenchmarkController extends AbstractBenchmarkController {
             throw new IllegalStateException("The experiment configuration does not define any nodes.");
         }
 
-        nodeMetadata = new NodeMetadata[nodesAmount];
         int batchSize = dockerized ? 20 : 1;
         for (int batch = 0; batch < (float) nodesAmount / batchSize; batch++) {
             for (int i = batch * batchSize; i < (batch + 1) * batchSize && i < nodesAmount; i++) {
@@ -370,7 +393,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         createEvaluationModule(EVALMODULE_IMAGE_NAME,
                 new String[] { ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY + "=" + benchmarkExchange,
                         ApiConstants.ENV_EVAL_DATA_QUEUE_KEY + "=" + evalDataQueueName,
-                        ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=" + sparqlUrl,
+                        ApiConstants.ENV_SPARQL_ENDPOINT_KEY + "=" + sparqlUrl, ApiConstants.ENV_SEED_KEY + "=" + seed,
                         ApiConstants.ENV_COMPONENT_COUNT_KEY + "=" + componentCount,
                         ApiConstants.ENV_COMPONENT_ID_KEY + "=" + componentId++, });
 
@@ -454,6 +477,15 @@ public class BenchmarkController extends AbstractBenchmarkController {
         waitForComponentsToInitialize();
     }
 
+    /**
+     * A simple method that is called after the init() method of the super class has
+     * been finished and the internal attributes like the benchmark parameter model
+     * can be accessed.
+     */
+    protected void postAbstractInit() throws Exception {
+        // nothing to do here
+    }
+
     protected void createSparqlEndpoint() {
         String defaultPort = "8890";
         String exposedPort = "8889";
@@ -487,7 +519,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
                         up.execute();
                         success = true;
                     } catch (Exception e) {
-                        if (e.getCause() instanceof SocketException) {
+                        if ((e.getCause() instanceof SocketException)
+                                || (e.getCause() instanceof org.apache.http.NoHttpResponseException)) {
                             LOGGER.info("Cannot connect to the evaluation storage {} to clean it up, will try again...",
                                     sparqlUrl);
                         } else {
@@ -515,19 +548,34 @@ public class BenchmarkController extends AbstractBenchmarkController {
         }
     }
 
+    /**
+     * @param node the ID of the node for which a seed URI should be generated
+     * @return the generated seed URI
+     * @deprecated because it uses a hard-coded ID for the entrance node of a graph.
+     *             We use {@link #addSeedForNode(ArrayList, int)} instead.
+     */
+    @Deprecated
     protected String getSeedForNode(int node) {
         SimpleTripleCreator tripleCreator = new SimpleTripleCreator(node,
                 Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                 Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new));
+
         // FIXME use one of entrance nodes in graph instead of 0
         // FIXME better signal that we just want an externally accessible URI instead of
         // -2
         return tripleCreator.createNode(0, -1, -2, false).toString();
     }
 
-    protected void addNodeToSeed(ArrayList<String> seedURIs, int node) {
-        seedNodes.add(node);
-        seedURIs.add(getSeedForNode(node));
+    protected void addSeedForNode(ArrayList<String> seedURIs, int node) {
+        SimpleTripleCreator tripleCreator = new SimpleTripleCreator(node,
+                Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
+                Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new));
+
+        // FIXME better signal that we just want an externally accessible URI instead of
+        // -2
+        for (int id : graphMetadata[node].entranceNodes) {
+            seedURIs.add(tripleCreator.createNode(id, -1, -2, false).toString());
+        }
     }
 
     protected void getSeedURIs(Graph g) {
@@ -539,12 +587,14 @@ public class BenchmarkController extends AbstractBenchmarkController {
         if (allNodesInSeed != null && allNodesInSeed.getBoolean()) {
             // For testing purposes, include all nodes in seed.
             for (int node = 0; node < g.getNumberOfNodes(); node++) {
-                addNodeToSeed(seedURIs, node);
+                seedNodes.add(node);
+                addSeedForNode(seedURIs, node);
             }
         } else {
             int[] entranceNodes = g.getEntranceNodes();
             for (int node : entranceNodes) {
-                addNodeToSeed(seedURIs, node);
+                seedNodes.add(node);
+                addSeedForNode(seedURIs, node);
             }
         }
         if (seedURIs.size() == 0) {
@@ -585,20 +635,26 @@ public class BenchmarkController extends AbstractBenchmarkController {
         LOGGER.debug("Waiting for the node graph...");
         nodeGraphMutex.acquire();
 
-        getSeedURIs(nodeGraph);
-        LOGGER.info("Seed URIs: {}", seedURIs);
-
+        LOGGER.debug("Waiting for the data generators to be done...");
         waitForDataGenToFinish();
 
         LOGGER.debug("Waiting for nodes to be ready...");
         nodesReadySemaphore.acquire(nodesAmount);
         nodesReadySemaphore = null;
 
-        long startTime = System.currentTimeMillis();
+        LOGGER.debug("Waiting for all graph metadata to arrive...");
+        graphMetadataReceived.acquire(nodesAmount);
+        graphMetadataReceived = null;
 
         LOGGER.debug("Waiting for the evaluation storage to be ready...");
         evaluationStorageReady.acquire();
         LOGGER.debug("Evaluation storage is ready.");
+
+        LOGGER.debug("Determining seed URIs...");
+        getSeedURIs(nodeGraph);
+        LOGGER.info("Seed URIs: {}", seedURIs);
+
+        long startTime = System.currentTimeMillis();
 
         LOGGER.debug("Sending data to the system...");
         systemDataSender.sendData(RabbitMQUtils.writeByteArrays(new byte[][] { RabbitMQUtils.writeString(sparqlUrlAuth),
@@ -629,6 +685,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
         dotlangLines.add("{rank=min; S [label=seed, style=dotted]}");
         dotlangLines.add(String.format("{rank=same; %s}",
                 seedNodes.stream().map(String::valueOf).collect(Collectors.joining(" "))));
+        // FIXME Check whether the deprecated getSeedForNode method has to be replaced,
+        // here
         seedNodes.stream().map(i -> String.format("S -> %d [tooltip=\"%s\", style=dotted]", i, getSeedForNode(i)))
                 .forEach(dotlangLines::add);
 

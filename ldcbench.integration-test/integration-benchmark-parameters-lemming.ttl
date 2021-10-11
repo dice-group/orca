@@ -25,7 +25,7 @@ experiments:New a hobbit:Experiment;
   :ckanNodeWeight 0;
   :sparqlNodeWeight 0;
   :numberOfNodes 4;
-  :dataset :LemmingTestDataset;
+  :lemmingDataset :LemmingTestDataset;
   :averageNodeGraphDegree 2.
 
 :LemmingTestDataset a :LemmingDataset;

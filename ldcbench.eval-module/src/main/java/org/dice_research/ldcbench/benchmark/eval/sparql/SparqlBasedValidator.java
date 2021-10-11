@@ -152,39 +152,6 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
             results.add(queryResult);
         }
         return results.toArray(new Boolean[results.size()]);
-
-//        Query q = QueryFactory.create();
-//        q.setQueryAskType();
-//        int expected = 0;
-//        ElementTriplesBlock whereBlock = new ElementTriplesBlock();
-//        Iterator<Triple> iter = pattern.patternElts();
-//        Triple t;
-//        int vCount = 0;
-//        while (iter.hasNext()) {
-//            t = iter.next();
-//            // FIXME workaround: do not evaluate triples which have a time literal since
-//            // Virtuoso seems to have an issue with them. Replace that literal with a
-//            // variable.
-//            if (t.getObject().isLiteral() && XSD.time.getURI().equals(t.getObject().getLiteralDatatypeURI())) {
-//                // replace the literal and ensure that the next literal will get a different
-//                // variable
-//                t = new Triple(t.getSubject(), t.getPredicate(), NodeFactory.createVariable("v" + vCount));
-//                ++vCount;
-//            }
-//            whereBlock.addTriple(t);
-//            expected++;
-//        }
-//        q.setQueryPattern(pattern);
-//        try (QueryExecution qe = qef.createQueryExecution(q)) {
-//            boolean result = execAskQuery(qe, 5, 5000);
-//            if (!result) {
-//                LOGGER.debug("Didn't get expected pattern: {}", pattern.toString().replace("\n", " "));
-//            }
-//            return IntStream.range(0, expected).mapToObj(i -> result).toArray(Boolean[]::new);
-//        } catch (Exception e) {
-//            LOGGER.error("Failure when executing query: {}", q.toString().replace("\n", " "));
-//            throw e;
-//        }
     }
 
     protected boolean execute(Triple triple) {

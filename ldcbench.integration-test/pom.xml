@@ -117,13 +117,13 @@
     <dependency>
       <groupId>org.hobbit</groupId>
       <artifactId>hobbit-java-sdk</artifactId>
-      <version>1.1.18-ldcbench-SNAPSHOT</version>
+      <version>1.1.19-SNAPSHOT</version>
     </dependency>
     <!-- HOBBIT controller -->
     <dependency>
       <groupId>org.hobbit</groupId>
       <artifactId>platform-controller</artifactId>
-      <version>2.0.5</version>
+      <version>2.0.15</version>
     </dependency>
     <!-- ~~~~~~~~~~~~~~~~~~~ End Testing ~~~~~~~~~~~~~~~~~~~~~~ -->
   </dependencies>
@@ -183,6 +183,7 @@
           <systemPropertyVariables>
             <sdkJarFilePath>${project.build.directory}/${project.artifactId}-shaded.jar</sdkJarFilePath>
           </systemPropertyVariables>
+          <argLine>--add-opens java.base/java.util=ALL-UNNAMED</argLine>
         </configuration>
       </plugin>
       <plugin>

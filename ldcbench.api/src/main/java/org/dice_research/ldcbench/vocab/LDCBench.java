@@ -54,7 +54,7 @@ public class LDCBench {
     public static final Property maxAverageCrawlDelayFulfillment = property("maxAverageCrawlDelayFulfillment");
     
     public static final Property lemmingDataset = property("lemmingDataset");
-    public static final Property lemmingDatasetDirectory = property("datasetDirectory");
+    public static final Property lemmingDatasetDirectory = property("lemmingDatasetDirectory");
 
     /**
      * returns the URI for this schema

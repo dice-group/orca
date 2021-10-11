@@ -24,10 +24,13 @@ import org.dice_research.ldcbench.benchmark.eval.sparql.SparqlBasedValidator;
 import org.dice_research.ldcbench.benchmark.eval.supplier.pattern.FileBasedTripleBlockStreamSupplier;
 import org.dice_research.ldcbench.benchmark.eval.supplier.pattern.TTLTarGZBasedTripleBlockStreamCreator;
 import org.dice_research.ldcbench.benchmark.eval.supplier.pattern.GraphBasedTripleBlockStreamCreator;
+import org.dice_research.ldcbench.benchmark.eval.supplier.pattern.SamplingTripleBlockStreamDecorator;
 import org.dice_research.ldcbench.benchmark.eval.supplier.pattern.TripleBlockStreamSupplier;
 import org.dice_research.ldcbench.benchmark.eval.timer.ResourceUsageTimerTask;
 import org.dice_research.ldcbench.benchmark.eval.timer.TripleCountingTimerTask;
 import org.dice_research.ldcbench.data.NodeMetadata;
+import org.dice_research.ldcbench.generate.SeedGenerator;
+import org.dice_research.ldcbench.generate.SequentialSeedGenerator;
 import org.dice_research.ldcbench.rabbit.ObjectStreamFanoutExchangeConsumer;
 import org.dice_research.ldcbench.rabbit.SimpleFileQueueConsumer;
 import org.dice_research.ldcbench.vocab.LDCBench;
@@ -57,6 +60,11 @@ public class EvalModule extends AbstractPlatformConnectorComponent {
      */
     protected String experimentUri;
     protected String sparqlEndpoint;
+    protected double part2Evaluate;
+    /**
+     * A generator of seed values to initialize random number generators.
+     */
+    private SeedGenerator seedGenerator;
 
     protected ObjectStreamFanoutExchangeConsumer<NodeMetadata[]> bcBroadcastConsumer;
 
@@ -84,6 +92,15 @@ public class EvalModule extends AbstractPlatformConnectorComponent {
 
         // Get the sparql endpoint
         sparqlEndpoint = EnvVariables.getString(ApiConstants.ENV_SPARQL_ENDPOINT_KEY, LOGGER);
+
+        // Get the sparql endpoint
+        String evaluatePercent = EnvVariables.getString(ApiConstants.ENV_EVALUATION_RATIO_KEY, () -> "1.0", LOGGER);
+        part2Evaluate = Double.parseDouble(evaluatePercent);
+
+        long seed = EnvVariables.getLong(ApiConstants.ENV_SEED_KEY);
+        int numberOfComponents = EnvVariables.getInt(ApiConstants.ENV_COMPONENT_COUNT_KEY);
+        int componentId = EnvVariables.getInt(ApiConstants.ENV_COMPONENT_ID_KEY);
+        seedGenerator = new SequentialSeedGenerator(seed, componentId, numberOfComponents);
 
         // initialize exchange with BC
         String exchangeName = EnvVariables.getString(ApiConstants.ENV_BENCHMARK_EXCHANGE_KEY);
@@ -236,6 +253,10 @@ public class EvalModule extends AbstractPlatformConnectorComponent {
                 Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                 Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
                 new GraphBasedTripleBlockStreamCreator(), new TTLTarGZBasedTripleBlockStreamCreator());
+        // If only a subset should be used for the evaluation
+        if(part2Evaluate < 1.0) {
+            supplier = new SamplingTripleBlockStreamDecorator(supplier, part2Evaluate, seedGenerator.getNextSeed());
+        }
         GraphValidator validator = SparqlBasedValidator.create(sparqlEndpoint);
         CrawledDataEvaluator evaluator = new SimpleCompleteEvaluator(supplier, validator);
         return evaluator.evaluate();

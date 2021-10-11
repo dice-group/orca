@@ -1,14 +1,5 @@
 package org.dice_research.ldcbench;
 
-import static org.dice_research.ldcbench.Constants.BENCHMARK_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.CKANNODE_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.DATAGEN_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.EVALMODULE_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.HTTPNODE_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.SPARQLNODE_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.RDFANODE_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.RDFADATAGEN_IMAGE_NAME;
-import static org.dice_research.ldcbench.Constants.SYSTEM_IMAGE_NAME;
 import static org.hobbit.core.Constants.BENCHMARK_PARAMETERS_MODEL_KEY;
 import static org.hobbit.core.Constants.HOBBIT_EXPERIMENT_URI_KEY;
 import static org.hobbit.core.Constants.HOBBIT_SESSION_ID_KEY;
@@ -46,6 +37,7 @@ import org.hobbit.core.components.Component;
 import org.hobbit.core.rabbit.RabbitMQUtils;
 import org.hobbit.sdk.docker.AbstractDockerizer;
 import org.hobbit.sdk.docker.RabbitMqDockerizer;
+import org.hobbit.sdk.docker.builders.BothTypesDockersBuilder;
 import org.hobbit.sdk.docker.builders.hobbit.BenchmarkDockerBuilder;
 import org.hobbit.sdk.docker.builders.hobbit.DataGenDockerBuilder;
 import org.hobbit.sdk.docker.builders.hobbit.EvalModuleDockerBuilder;
@@ -56,6 +48,7 @@ import org.hobbit.sdk.utils.ModelsHandler;
 import org.hobbit.sdk.utils.commandreactions.CommandReactionsBuilder;
 import org.hobbit.utils.rdf.RdfHelper;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,10 +60,21 @@ import org.slf4j.LoggerFactory;
 public class BenchmarkTestBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkTestBase.class);
 
+    @Rule
     public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
     // private AbstractDockerizer rabbitMqDockerizer;
     private ComponentsExecutor componentsExecutor;
     // private CommandQueueListener commandQueueListener;
+
+    protected String benchmarkImage = org.dice_research.ldcbench.Constants.BENCHMARK_IMAGE_NAME;
+    protected String dataGeneratorImage = org.dice_research.ldcbench.Constants.DATAGEN_IMAGE_NAME;
+    protected String systemAdapterImage = org.dice_research.ldcbench.Constants.SYSTEM_IMAGE_NAME;
+    protected String evalModuleImage = org.dice_research.ldcbench.Constants.EVALMODULE_IMAGE_NAME;
+    protected String httpNodeImage = org.dice_research.ldcbench.Constants.HTTPNODE_IMAGE_NAME;
+    protected String ckanNodeImage = org.dice_research.ldcbench.Constants.CKANNODE_IMAGE_NAME;
+    protected String sparqlNodeImage = org.dice_research.ldcbench.Constants.SPARQLNODE_IMAGE_NAME;
+    protected String rdfaNodeImage = org.dice_research.ldcbench.Constants.RDFANODE_IMAGE_NAME;
+    protected String rdfaGenImage = org.dice_research.ldcbench.Constants.RDFADATAGEN_IMAGE_NAME;
 
     protected BenchmarkDockerBuilder benchmarkBuilder;
     protected DataGenDockerBuilder dataGeneratorBuilder;
@@ -82,45 +86,74 @@ public class BenchmarkTestBase {
     protected LDCBenchNodeBuilder rdfaNodeBuilder;
     protected LDCBenchNodeBuilder rdfaGenBuilder;
 
+    protected Class<? extends Component> benchmarkClass = BenchmarkController.class;
+    protected Class<? extends Component> dataGeneratorClass = DataGenerator.class;
+    protected Class<? extends Component> systemAdapterClass = SystemAdapter.class;
+    protected Class<? extends Component> evalModuleClass = EvalModule.class;
+    protected Class<? extends Component> httpNodeClass = SimpleHttpServerComponent.class;
+    protected Class<? extends Component> ckanNodeClass = SimpleCkanComponent.class;
+    protected Class<? extends Component> sparqlNodeClass = SimpleSparqlComponent.class;
+    protected Class<? extends Component> rdfaNodeClass = SimpleRDFaComponent.class;
+    protected Class<? extends Component> rdfaGenClass = RDFaDataGenerator.class;
+
     public void init(Boolean useCachedImage) throws Exception {
 
-        benchmarkBuilder = new BenchmarkDockerBuilder(
-                new ExampleDockersBuilder(BenchmarkController.class, BENCHMARK_IMAGE_NAME)
-                        .useCachedImage(useCachedImage));
-        dataGeneratorBuilder = new DataGenDockerBuilder(
-                new ExampleDockersBuilder(DataGenerator.class, DATAGEN_IMAGE_NAME).useCachedImage(useCachedImage)
-                        .addFileOrFolder("data"));
+        if (benchmarkBuilder == null) {
+            benchmarkBuilder = new BenchmarkDockerBuilder(
+                    new ExampleDockersBuilder(benchmarkClass, benchmarkImage)
+                            .useCachedImage(useCachedImage));
+        }
+        if (dataGeneratorBuilder == null) {
+            dataGeneratorBuilder = new DataGenDockerBuilder(
+                    new ExampleDockersBuilder(dataGeneratorClass, dataGeneratorImage).useCachedImage(useCachedImage)
+                            .addFileOrFolder("data"));
+        }
 
-        systemAdapterBuilder = new SystemAdapterDockerBuilder(
-                new ExampleDockersBuilder(SystemAdapter.class, SYSTEM_IMAGE_NAME).useCachedImage(useCachedImage));
-        evalModuleBuilder = new EvalModuleDockerBuilder(
-                new ExampleDockersBuilder(EvalModule.class, EVALMODULE_IMAGE_NAME).useCachedImage(useCachedImage));
+        if (systemAdapterBuilder == null) {
+            systemAdapterBuilder = new SystemAdapterDockerBuilder(
+                    new ExampleDockersBuilder(systemAdapterClass, systemAdapterImage).useCachedImage(useCachedImage));
+        }
+        if (evalModuleBuilder == null) {
+            evalModuleBuilder = new EvalModuleDockerBuilder(
+                    new ExampleDockersBuilder(evalModuleClass, evalModuleImage).useCachedImage(useCachedImage));
+        }
 
         // FIXME do not build node images as part of this project
-        httpNodeBuilder = new SimpleHttpNodeBuilder(
-                new ExampleDockersBuilder(SimpleHttpServerComponent.class, HTTPNODE_IMAGE_NAME)
-                        .useCachedImage(useCachedImage));
-        ckanNodeBuilder = new CkanNodeBuilder(new ExampleDockersBuilder(SimpleCkanComponent.class, CKANNODE_IMAGE_NAME)
-                .useCachedImage(useCachedImage));
-        sparqlNodeBuilder = new SparqlNodeBuilder(
-                new ExampleDockersBuilder(SimpleSparqlComponent.class, SPARQLNODE_IMAGE_NAME)
-                        .useCachedImage(useCachedImage));
-        rdfaNodeBuilder = new LDCBenchNodeBuilder(
-                new ExampleDockersBuilder(SimpleRDFaComponent.class, RDFANODE_IMAGE_NAME)
-                        .useCachedImage(useCachedImage)) {
-            @Override
-            public String getName() {
-                return RDFANODE_IMAGE_NAME;
-            }
-        };
-        rdfaGenBuilder = new LDCBenchNodeBuilder(
-                new ExampleDockersBuilder(RDFaDataGenerator.class, RDFADATAGEN_IMAGE_NAME)
-                        .useCachedImage(useCachedImage)) {
-            @Override
-            public String getName() {
-                return RDFADATAGEN_IMAGE_NAME;
-            }
-        };
+        if (httpNodeBuilder == null) {
+            httpNodeBuilder = new SimpleHttpNodeBuilder(
+                    new ExampleDockersBuilder(httpNodeClass, httpNodeImage)
+                            .useCachedImage(useCachedImage));
+        }
+        if (ckanNodeBuilder == null) {
+            ckanNodeBuilder = new CkanNodeBuilder(
+                    new ExampleDockersBuilder(ckanNodeClass, ckanNodeImage)
+                            .useCachedImage(useCachedImage));
+        }
+        if (sparqlNodeBuilder == null) {
+            sparqlNodeBuilder = new SparqlNodeBuilder(
+                    new ExampleDockersBuilder(sparqlNodeClass, sparqlNodeImage)
+                            .useCachedImage(useCachedImage));
+        }
+        if (rdfaNodeBuilder == null) {
+            rdfaNodeBuilder = new LDCBenchNodeBuilder(
+                    new ExampleDockersBuilder(rdfaNodeClass, rdfaNodeImage)
+                            .useCachedImage(useCachedImage)) {
+                @Override
+                public String getName() {
+                    return rdfaNodeImage;
+                }
+            };
+        }
+        if (rdfaGenBuilder == null) {
+            rdfaGenBuilder = new LDCBenchNodeBuilder(
+                    new ExampleDockersBuilder(rdfaGenClass, rdfaGenImage)
+                            .useCachedImage(useCachedImage)) {
+                @Override
+                public String getName() {
+                    return rdfaGenImage;
+                }
+            };
+        }
 
 //        benchmarkBuilder = new BenchmarkDockerBuilder(new PullBasedDockersBuilder(BENCHMARK_IMAGE_NAME));
 //        dataGeneratorBuilder = new DataGenDockerBuilder(new PullBasedDockersBuilder(DATAGEN_IMAGE_NAME));
@@ -128,7 +161,6 @@ public class BenchmarkTestBase {
 
     }
 
-    @SuppressWarnings("resource")
     protected void executeBenchmark(Boolean dockerized) throws Exception {
         Model benchmarkParameters = createBenchmarkParameters();
         LOGGER.info("Benchmark parameters:\n{}", prettyModelString(benchmarkParameters));
@@ -152,53 +184,53 @@ public class BenchmarkTestBase {
         init(useCachedImages);
 
         AbstractDockerizer rabbitMqDockerizer = RabbitMqDockerizer.builder().useCachedContainer().build();
+        rabbitMqDockerizer.run();
 
         environmentVariables.set(ApiConstants.ENV_SDK_KEY, "true");
         environmentVariables.set(ApiConstants.ENV_DOCKERIZED_KEY, dockerized.toString());
-        environmentVariables.set(RABBIT_MQ_HOST_NAME_KEY, "localhost"); // rabbit hostname for things running on the
+        environmentVariables.set(RABBIT_MQ_HOST_NAME_KEY, (dockerized ? "rabbit" : "localhost")); // rabbit hostname for things running on the
                                                                         // host directly
         environmentVariables.set(HOBBIT_SESSION_ID_KEY, "session_" + String.valueOf(new Date().getTime()));
 
-        Component benchmarkController = new BenchmarkController();
-        Component dataGen = new DataGenerator();
-        Component systemAdapter = new SystemAdapter();
-        Component evalModule = new EvalModule();
-        Component httpNode = new SimpleHttpServerComponent();
-        Component ckanNode = new SimpleCkanComponent();
-        Component sparqlNode = new SimpleSparqlComponent();
-        Component rdfaNode = new SimpleRDFaComponent();
-        Component rdfaGen = new RDFaDataGenerator();
+        Component benchmarkController = getController(dockerized);
+        Component dataGen = getDataGen(dockerized);
+        Component systemAdapter = getSystemAdapter(dockerized);
+        Component evalModule = getEvalModule(dockerized);
+        Component httpNode = getHttpNode(dockerized);
+        Component ckanNode = getCkanNode(dockerized);
+        Component sparqlNode = getSparqlNode(dockerized);
+        Component rdfaNode = getRdfaNode(dockerized);
+        Component rdfaGen = getRdfaGen(dockerized);
 
-        if (dockerized) {
-
-            benchmarkController = benchmarkBuilder.build();
-            dataGen = dataGeneratorBuilder.build();
-            evalModule = evalModuleBuilder.build();
-            systemAdapter = systemAdapterBuilder.build();
-            httpNode = httpNodeBuilder.build();
-            ckanNode = ckanNodeBuilder.build();
-            sparqlNode = sparqlNodeBuilder.build();
-            rdfaNode = rdfaNodeBuilder.build();
-            rdfaGen = rdfaGenBuilder.build();
-        }
+//        if (dockerized) {
+//
+//            benchmarkController = benchmarkBuilder.build();
+//            dataGen = dataGeneratorBuilder.build();
+//            evalModule = evalModuleBuilder.build();
+//            systemAdapter = systemAdapterBuilder.build();
+//            httpNode = httpNodeBuilder.build();
+//            ckanNode = ckanNodeBuilder.build();
+//            sparqlNode = sparqlNodeBuilder.build();
+//            rdfaNode = rdfaNodeBuilder.build();
+//            rdfaGen = rdfaGenBuilder.build();
+//        }
 
         CommandQueueListener commandQueueListener = new CommandQueueListener();
         componentsExecutor = new ComponentsExecutor();
-
-        rabbitMqDockerizer.run();
 
         // comment the .systemAdapter(systemAdapter) line below to use the code for
         // running from python
         CommandReactionsBuilder commandReactionsBuilder = new CommandReactionsBuilder(componentsExecutor,
                 commandQueueListener).benchmarkController(benchmarkController)
-                        .benchmarkControllerImageName(BENCHMARK_IMAGE_NAME).dataGenerator(dataGen)
+                        .benchmarkControllerImageName(benchmarkBuilder.getImageName()).dataGenerator(dataGen)
                         .dataGeneratorImageName(dataGeneratorBuilder.getImageName()).evalModule(evalModule)
                         .evalModuleImageName(evalModuleBuilder.getImageName()).systemAdapter(systemAdapter)
-                        .systemAdapterImageName(SYSTEM_IMAGE_NAME).customContainerImage(httpNode, HTTPNODE_IMAGE_NAME)
-                        .customContainerImage(ckanNode, CKANNODE_IMAGE_NAME)
-                        .customContainerImage(sparqlNode, SPARQLNODE_IMAGE_NAME)
-                        .customContainerImage(rdfaNode, RDFANODE_IMAGE_NAME)
-                        .customContainerImage(rdfaGen, RDFADATAGEN_IMAGE_NAME)
+                        .systemAdapterImageName(systemAdapterBuilder.getImageName())
+                        .customContainerImage(httpNode, httpNodeBuilder.getImageName())
+                        .customContainerImage(ckanNode, ckanNodeBuilder.getImageName())
+                        .customContainerImage(sparqlNode, sparqlNodeBuilder.getImageName())
+                        .customContainerImage(rdfaNode, rdfaNodeBuilder.getImageName())
+                        .customContainerImage(rdfaGen, rdfaGenBuilder.getImageName())
         // .customContainerImage(systemAdapter, DUMMY_SYSTEM_IMAGE_NAME)
         ;
 
@@ -298,5 +330,62 @@ public class BenchmarkTestBase {
         StringWriter writer = new StringWriter();
         RDFDataMgr.write(writer, model, Lang.TURTLE);
         return writer.toString();
+    }
+
+    protected static Component getComponent(boolean dockerized, Class<? extends Component> clazz,
+            BothTypesDockersBuilder builder) {
+        if (dockerized) {
+            try {
+                return builder.build();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                return clazz.newInstance();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+    
+
+    protected Component getController(boolean dockerized) {
+        return getComponent(dockerized, benchmarkClass, benchmarkBuilder);
+    }
+
+    protected Component getDataGen(boolean dockerized) {
+        return getComponent(dockerized, dataGeneratorClass, dataGeneratorBuilder);
+    }
+
+    protected Component getSystemAdapter(boolean dockerized) {
+        return getComponent(dockerized, systemAdapterClass, systemAdapterBuilder);
+    }
+
+    protected Component getEvalModule(boolean dockerized) {
+        return getComponent(dockerized, evalModuleClass, evalModuleBuilder);
+    }
+
+    protected Component getHttpNode(boolean dockerized) {
+        return getComponent(dockerized, httpNodeClass, httpNodeBuilder);
+    }
+
+    protected Component getCkanNode(boolean dockerized) {
+        return getComponent(dockerized, ckanNodeClass, ckanNodeBuilder);
+    }
+
+    protected Component getSparqlNode(boolean dockerized) {
+        return getComponent(dockerized, sparqlNodeClass, sparqlNodeBuilder);
+    }
+
+    protected Component getRdfaNode(boolean dockerized) {
+        return getComponent(dockerized, rdfaNodeClass, rdfaNodeBuilder);
+    }
+
+    protected Component getRdfaGen(boolean dockerized) {
+        return getComponent(dockerized, rdfaGenClass, rdfaGenBuilder);
     }
 }
