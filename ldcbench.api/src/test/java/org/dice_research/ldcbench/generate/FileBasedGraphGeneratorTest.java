@@ -59,5 +59,13 @@ public class FileBasedGraphGeneratorTest {
         }
         int[] outTypes = graph.outgoingEdgeTypes(A);
         Assert.assertTrue("The edges should have different types", outTypes[0] != outTypes[1]);
+        
+        // Make sure that the A node is in the list of entrance nodes
+        int[] entranceNodes = graph.getEntranceNodes();
+        int pos = 0;
+        while ((pos < entranceNodes.length) && (entranceNodes[pos] != A)) {
+            ++pos;
+        }
+        Assert.assertTrue("Couldn't find A in the list of entrance nodes", (pos < entranceNodes.length));
     }
 }
