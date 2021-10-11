@@ -13,11 +13,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.dice_research.ldcbench.ApiConstants;
-import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.htmlembd.singlefile.SingleFileResource;
 import org.dice_research.ldcbench.nodes.http.simple.CrawleableResource;
 import org.dice_research.ldcbench.nodes.http.simple.CrawleableResourceContainer;
@@ -177,6 +175,7 @@ public class SimpleHEComponent extends SimpleHttpServerComponent {
        return new CrawleableResourceContainer(resources.toArray(new CrawleableResource[resources.size()]));
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void close() throws IOException {
         IOUtils.closeQuietly(connection);

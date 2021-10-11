@@ -1,25 +1,21 @@
 package org.dice_research.ldcbench.nodes.htmlembd.singlefile;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.function.Predicate;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.jena.riot.Lang;
-import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.http.simple.AbstractCrawleableResource;
 import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpException;
-import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
+
+import com.google.common.net.MediaType;
 
 public class SingleFileResource extends AbstractCrawleableResource {
 

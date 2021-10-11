@@ -7,6 +7,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.dice_research.ldcbench.graph.GraphBuilder;
 import org.dice_research.ldcbench.graph.GrphBasedGraph;
 
 public class SimpleRDF2GrphConverter {
@@ -23,10 +24,20 @@ public class SimpleRDF2GrphConverter {
      * @return the Grph-based graph comprising the data of the given model
      */
     public GrphBasedGraph convert(Model model) {
+        GrphBasedGraph graph = new GrphBasedGraph();
+        convert(model, graph);
+        return graph;
+    }
+
+    /**
+     * Adds the triples of the given model to the given graph.
+     * 
+     * @param model the RDF model that should be converted
+     * @param graph the graph to which the triples of the model weill be added
+     */
+    public void convert(Model model, GraphBuilder graph) {
         Map<String, Integer> nodeMapping = new HashMap<>();
         Map<String, Integer> propertiesMapping = new HashMap<>();
-
-        GrphBasedGraph graph = new GrphBasedGraph();
 
         StmtIterator iterator = model.listStatements();
         Statement s;
@@ -39,11 +50,9 @@ public class SimpleRDF2GrphConverter {
                 addTripleToGraph(s, graph, nodeMapping, propertiesMapping);
             }
         }
-
-        return graph;
     }
 
-    protected void addTripleToGraph(Statement s, GrphBasedGraph graph, Map<String, Integer> nodeMapping,
+    protected void addTripleToGraph(Statement s, GraphBuilder graph, Map<String, Integer> nodeMapping,
             Map<String, Integer> propertiesMapping) {
         // Get IDs for the single elements of the triple
         int sourceId = getOrAddId(s.getSubject(), nodeMapping);
