@@ -27,7 +27,8 @@ import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
+
+import com.google.common.net.MediaType;
 
 public class DumpFileResource extends AbstractCrawleableResource {
 
