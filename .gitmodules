@@ -1,3 +1,6 @@
 [submodule "ldcbench.rdfa-gen/rdfa.github.io"]
 	path = ldcbench.rdfa-gen/rdfa.github.io
 	url = https://github.com/rdfa/rdfa.github.io.git
+[submodule "ldcbench.microdata-gen/w3c.github.io_microdata-rdf"]
+	path = ldcbench.microdata-gen/w3c.github.io_microdata-rdf
+	url = https://github.com/w3c/microdata-rdf.git
