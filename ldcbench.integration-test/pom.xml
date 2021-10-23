@@ -48,7 +48,11 @@
     </dependency>
     <dependency>
       <groupId>org.dice_research</groupId>
-      <artifactId>ldcbench.rdfa-node</artifactId>
+      <artifactId>ldcbench.jsonld-gen</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.html-embd-node</artifactId>
     </dependency>
     <dependency>
       <groupId>org.dice_research</groupId>

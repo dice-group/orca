@@ -15,7 +15,7 @@
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.eval-module",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.http-node",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.rdfa-gen",
-    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.rdfa-node",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.html-embd-node",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.sparql-node",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.system";
   hobbit:version "v1.0"@en;
@@ -31,9 +31,11 @@
     :ckanNodeWeight,
     :sparqlNodeWeight,
     :rdfaNodeWeight,
+    :jsonldNodeWeight,
     :httpDumpNodeWeight,
     :httpDumpNodeCompressedRatio,
     :useTurtleDumps,
+    :useJsonLdDumps,
     :useN3Dumps,
     :useRdfXmlDumps,
     :useNtDumps,
@@ -94,7 +96,7 @@
     :triplesEvaluated,
     :numberOfDisallowedResources,
     :nodeSizeDeterminer,
-    :dataset;
+    :lemmingDataset;
   hobbit:measuresKPI
     :tripleCountOverTime,
     :resourceUsageOverTime,
@@ -263,7 +265,7 @@
   rdfs:comment "The method how the size of a single node is defined."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range :NodeSizeDeterminer;
-  hobbit:defaultValue :ExponentialDistNodeSize .
+  hobbit:defaultValue :StaticNodeSize .
 
 :NodeSizeDeterminer a rdfs:Class .
 
@@ -282,7 +284,7 @@
 	rdfs:label "Semantic Web Dog Food"@en;
 	rdfs:comment "Datasets generated based on the Semantic Web Dog Food."@en .
 
-:dataset a hobbit:Parameter, hobbit:ConfigurableParameter;
+:lemmingDataset a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Dataset"@en;
   rdfs:comment "The name of the Lemming dataset that is used."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;

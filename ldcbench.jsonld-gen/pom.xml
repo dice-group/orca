@@ -10,7 +10,7 @@
     <version>1.1.0</version>
     <relativePath>../ldcbench.parent</relativePath>
   </parent>
-  <artifactId>ldcbench.rdfa-node</artifactId>
+  <artifactId>ldcbench.jsonld-gen</artifactId>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -28,7 +28,7 @@
     </dependency>
     <dependency>
       <groupId>org.dice_research</groupId>
-      <artifactId>ldcbench.rdfa-gen</artifactId>
+      <artifactId>ldcbench.html-embd-node</artifactId>
     </dependency>
     <!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
     <!-- slf4j: Logging API -->

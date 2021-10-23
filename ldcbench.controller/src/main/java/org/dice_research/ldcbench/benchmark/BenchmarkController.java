@@ -51,6 +51,7 @@ import org.dice_research.ldcbench.benchmark.cloud.AbstractNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.CkanNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.DereferencingHttpNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.HttpDumpNodeManager;
+import org.dice_research.ldcbench.benchmark.cloud.JsonLdNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.NodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.RDFaNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.SparqlNodeManager;
@@ -87,8 +88,14 @@ public class BenchmarkController extends AbstractBenchmarkController {
     protected Set<Future<String>> dataGenContainers = new HashSet<>();
     private List<Future<String>> nodeContainers = new ArrayList<>();
 
-    private Class<?>[] possibleNodeManagerClasses = { DereferencingHttpNodeManager.class, CkanNodeManager.class,
-            SparqlNodeManager.class, HttpDumpNodeManager.class, RDFaNodeManager.class, };
+    private Class<?>[] possibleNodeManagerClasses = {
+        DereferencingHttpNodeManager.class,
+        CkanNodeManager.class,
+        SparqlNodeManager.class,
+        HttpDumpNodeManager.class,
+        RDFaNodeManager.class,
+        JsonLdNodeManager.class,
+    };
 
     private boolean dockerized;
     private int nodesAmount;

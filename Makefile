@@ -19,6 +19,8 @@ push-images:
 	docker push $(IMAGE_BASE)ldcbench.ckan-node
 	docker push $(IMAGE_BASE)ldcbench.sparql-node
 	docker push $(IMAGE_BASE)ldcbench.rdfa-gen
+	docker push $(IMAGE_BASE)ldcbench.html-embd-node
+	docker push $(IMAGE_BASE)ldcbench.jsonld-gen
 	docker push $(IMAGE_BASE)ldcbench.rdfa-node
 	docker push $(IMAGE_BASE)ldcbench.lemming
 

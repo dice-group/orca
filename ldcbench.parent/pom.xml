@@ -110,7 +110,12 @@
       </dependency>
       <dependency>
         <groupId>org.dice_research</groupId>
-        <artifactId>ldcbench.rdfa-node</artifactId>
+        <artifactId>ldcbench.jsonld-gen</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dice_research</groupId>
+        <artifactId>ldcbench.html-embd-node</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -218,6 +223,17 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
         <version>1.20</version>
+      </dependency>
+      <!-- Spring Framework -->
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>5.3.6</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-webmvc</artifactId>
+        <version>5.3.6</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -345,7 +361,7 @@
             </execution>
           </executions>
         </plugin>
-        <!-- lock down plugins versions to avoid using Maven defaults (may 
+        <!-- lock down plugins versions to avoid using Maven defaults (may
           be moved to parent pom) -->
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
