@@ -337,6 +337,12 @@ public class DataGenerator extends AbstractDataGenerator {
             generator.generateGraph(avgDegree, numberOfEdges, seed, graph);
         }
 
+        if (type == Types.RDF_GRAPH_GENERATOR) {
+            //CHOOSE THE NUMBER OF BLANK NODE?? Currently using a fixed number of bNode
+            //DECIDE IF WE WANT BLANK NODES OR NOT ??
+            graph.addBlankNodes(3);
+        }
+
         if (type == Types.NODE_GRAPH_GENERATOR) {
             LOGGER.info("Node types generated: {}", Arrays.toString(((RandomCloudGraph) generator).getNodeTypes()));
             LOGGER.debug("Broadcasting the node graph...");

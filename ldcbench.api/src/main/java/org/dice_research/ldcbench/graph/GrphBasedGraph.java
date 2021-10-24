@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.IntStream;
 
 import grph.Grph;
@@ -34,6 +35,10 @@ public class GrphBasedGraph implements GraphBuilder {
      * external nodes.
      */
     protected Map<Integer, int[]> externalNodes = new HashMap<>();
+    /**
+     * Index of first blank node of this graph.
+     */
+    protected int blankNodesIndex;
 
     /**
      * Constructor for an empty GraphBuilder.
@@ -133,6 +138,10 @@ public class GrphBasedGraph implements GraphBuilder {
 
     public int getNumberOfEdges() {
         return graph.getNumberOfEdges();
+    }
+
+    public int getBlankNodesIndex() {
+        return blankNodesIndex;
     }
 
     public boolean addEdge(int sourceId, int targetId, int typeId) {
@@ -252,5 +261,17 @@ public class GrphBasedGraph implements GraphBuilder {
     @Override
     public String toString() {
         return graph.toString();
+    }
+
+    @Override
+    public void addBlankNodes(int nodeCount) {
+        blankNodesIndex = this.getNumberOfNodes();
+        addNodes(nodeCount);
+        for (int i = blankNodesIndex; i < this.getNumberOfNodes(); i++) {
+            //Get a random Source Node
+            int sourceNode = (new Random()).nextInt(blankNodesIndex);
+            int[] types = this.outgoingEdgeTypes(sourceNode);
+            addEdge(sourceNode, i, types[0]);
+        }
     }
 }
