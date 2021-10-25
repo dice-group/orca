@@ -137,9 +137,6 @@ public class DumpFileBuilder {
             datasetId++;
         }
         writerStream.finish();
-        
-        
-        LOGGER.info("writerStream: " + writerStream);
         }
     }
 
