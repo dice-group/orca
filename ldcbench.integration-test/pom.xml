@@ -184,6 +184,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <skip>${skipTestPhase}</skip>
+          <!-- We need to open the java.util package to be accessed via reflection by the SDK -->
+          <argLine>--add-opens java.base/java.util=ALL-UNNAMED</argLine>
           <systemPropertyVariables>
             <sdkJarFilePath>${project.build.directory}/${project.artifactId}-shaded.jar</sdkJarFilePath>
           </systemPropertyVariables>
