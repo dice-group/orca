@@ -650,8 +650,13 @@ public class BenchmarkController extends AbstractBenchmarkController {
         long disallowedRequested = 0;
         for (int i = 0; i < nodesAmount; i++) {
             Resource nodeResource = resultModel.createResource(getNodeURI(i));
-            double recall = Double
+            double recall = Double.NaN;
+            try {
+                recall = Double
                     .parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.microRecall));
+            } catch (Exception e) {
+                LOGGER.error("Error while trying to load the micro recall for node " + nodeResource.toString() + " : ", e);
+            }
 
             Double crawlDelayFulfillment = null;
             Double minCrawlDelay = null;

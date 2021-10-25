@@ -170,8 +170,10 @@ public class SimpleHEComponent extends SimpleHttpServerComponent {
        if (dumpFileNode) {
            resource = new SingleFileResource(r -> r.getPath().toString().equals(singleFilePath), singleFilePath);
        }
-       Objects.requireNonNull(resource, "Couldn't create crawleable resource. Exiting.");
-       resources.add(resource);
+       //Objects.requireNonNull(resource, "Couldn't create crawleable resource. Exiting.");
+       if(resource != null) {
+           resources.add(resource);
+       }
        return new CrawleableResourceContainer(resources.toArray(new CrawleableResource[resources.size()]));
     }
 
