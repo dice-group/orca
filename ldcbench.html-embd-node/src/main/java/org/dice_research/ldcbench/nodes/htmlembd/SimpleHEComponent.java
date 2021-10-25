@@ -72,9 +72,9 @@ public class SimpleHEComponent extends SimpleHttpServerComponent {
         String pathTemplate;
         if(singleFileNode) {
             // Create path including the single file name
-            StringBuilder builder = new StringBuilder(CONTENT_EXTRACTION_DIR);
+            StringBuilder builder = new StringBuilder("/" + CONTENT_EXTRACTION_DIR);
             builder.append(SINGLE_FILE_NAME);
-            singleFilePath = builder.toString();
+            singleFilePath = "." + builder.toString();
             LOGGER.debug("Path: {}", singleFilePath);
             builder.append("#%s-%s-%s-%s");
             pathTemplate = builder.toString();
@@ -167,7 +167,7 @@ public class SimpleHEComponent extends SimpleHttpServerComponent {
        ArrayList<CrawleableResource> resources = new ArrayList<>();
        CrawleableResource resource = null;
 
-       if (dumpFileNode) {
+       if (singleFileNode || dumpFileNode) {
            resource = new SingleFileResource(r -> r.getPath().toString().equals(singleFilePath), singleFilePath);
        }
        Objects.requireNonNull(resource, "Couldn't create crawleable resource. Exiting.");
