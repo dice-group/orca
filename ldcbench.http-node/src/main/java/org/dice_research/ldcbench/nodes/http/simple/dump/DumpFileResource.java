@@ -3,7 +3,6 @@ package org.dice_research.ldcbench.nodes.http.simple.dump;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -20,8 +19,6 @@ import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamF
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ReflectionBasedStreamFactory;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.TarArchiver;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.ZipArchiver;
-import org.rdfhdt.hdt.exceptions.NotFoundException;
-import org.rdfhdt.hdt.exceptions.ParserException;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
@@ -52,19 +49,9 @@ public class DumpFileResource extends AbstractCrawleableResource {
                 return new DumpFileResource(predicate, contentType, archive);
             }
             return new DumpFileResource(predicate, contentType, dumpFile);
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error("Couldn't create dump file.", e);
-        } catch (NoSuchMethodException e) {
-            LOGGER.error("Couldn't create dump file.", e);
-        } catch (SecurityException e) {
-            LOGGER.error("Couldn't create dump file.", e);
-        } catch (ReflectiveOperationException e) {
-            LOGGER.error("Couldn't create dump file.", e);
-        }catch (ParserException e) {
-			LOGGER.error("Couldn't create dump file.", e);
-		} catch (NotFoundException e) {
-			LOGGER.error("Couldn't create dump file.", e);
-		}
+        }
         return null;
     }
 

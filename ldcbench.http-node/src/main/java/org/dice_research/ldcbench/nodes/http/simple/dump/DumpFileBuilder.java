@@ -109,10 +109,8 @@ public class DumpFileBuilder {
     private void streamData(OutputStream out, Lang lang) throws IOException {
         int datasetId = 0;
         StreamRDF writerStream = null;
-        
         try {
             writerStream = StreamRDFWriter.getWriterStream(out, lang);
-            
         } catch(RiotException e ) {
             if(e.getMessage().startsWith("No serialization for language")) {
                 LOGGER.warn("No serialization for language Lang: {}. Trying to write it from an in-memory model.", lang);
@@ -121,7 +119,6 @@ public class DumpFileBuilder {
                 throw e;
             }
         }
-        
         // The stream has been created
         if(writerStream != null) {
         writerStream.start();
@@ -145,27 +142,26 @@ public class DumpFileBuilder {
      * @param The method requires an RDF file
      * @return The method returns the HDT file
      */
-	private File convertToHDT(File rdfFile, Lang rdfFileLang) throws IOException, ParserException, NotFoundException {
-		String rdfInput = rdfFile.getAbsolutePath();
-		String baseURI = resourceUriTemplates[0].split("%s")[0];
-		RDFNotation inputLang = LangUtils.getRDFNotation(rdfFileLang);
-
-		File hdtTempFile = File.createTempFile("ldcbench", ".hdt");
-		try {
-		    HDT hdt = HDTManager.generateHDT(
+    private File convertToHDT(File rdfFile, Lang rdfFileLang) throws IOException, ParserException, NotFoundException {
+        String rdfInput = rdfFile.getAbsolutePath();
+        String baseURI = resourceUriTemplates[0].split("%s")[0];
+        RDFNotation inputLang = LangUtils.getRDFNotation(rdfFileLang);
+        File hdtTempFile = File.createTempFile("ldcbench", ".hdt");
+        try {
+            HDT hdt = HDTManager.generateHDT(
                     rdfInput,
                     baseURI,
                     inputLang,
                     new HDTSpecification(),
                     null
-		            );
-		    hdt.saveToHDT(hdtTempFile.getAbsolutePath(), null);
-		} catch (Exception e) {
-		    LOGGER.error("Failed converting "+ lang + " File to HDT. Returning " + lang + " RDF File.");
-		    return rdfFile;
-		}
-	    return hdtTempFile;
-	}
+                    );
+            hdt.saveToHDT(hdtTempFile.getAbsolutePath(), null);
+        } catch (Exception e) {
+            LOGGER.error("Failed converting "+ lang + " File to HDT. Returning " + lang + " RDF File.");
+            return rdfFile;
+        }
+        return hdtTempFile;
+    }
 
 	private void writeData(OutputStream out, Lang lang) {
         TripleIterator iterator;
