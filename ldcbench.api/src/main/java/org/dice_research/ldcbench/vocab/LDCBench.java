@@ -43,6 +43,7 @@ public class LDCBench {
     public static final Property tripleCountOverTime = property("tripleCountOverTime");
     public static final Property triplesEvaluated = property("triplesEvaluated");
     public static final Property truePositives = property("truePositives");
+    public static final Property useHDTDumps = property("useHDTDumps");
     public static final Property useN3Dumps = property("useN3Dumps");
     public static final Property useNtDumps = property("useNtDumps");
     public static final Property useRdfXmlDumps = property("useRdfXmlDumps");

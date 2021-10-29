@@ -3,7 +3,6 @@ package org.dice_research.ldcbench.nodes.http.simple.dump;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -43,21 +42,14 @@ public class DumpFileResource extends AbstractCrawleableResource {
             File dumpFile = builder.build();
             String contentType = builder.buildContentType();
             if (archiver != null)  {
-            	//TODO support more than one file
-            	//Add dump Files to a List and put them into Archive
+                //TODO support more than one file
+                //Add dump Files to a List and put them into Archive
                 File archive = File.createTempFile("ldcbench", ".archive");
-            	archiver.buildArchive(archive,dumpFile);
-            	contentType = archiver.getMediaType();
+                archiver.buildArchive(archive,dumpFile);
                 return new DumpFileResource(predicate, contentType, archive);
             }
             return new DumpFileResource(predicate, contentType, dumpFile);
-        } catch (IOException e) {
-            LOGGER.error("Couldn't create dump file.", e);
-        } catch (NoSuchMethodException e) {
-            LOGGER.error("Couldn't create dump file.", e);
-        } catch (SecurityException e) {
-            LOGGER.error("Couldn't create dump file.", e);
-        } catch (ReflectiveOperationException e) {
+        } catch (Exception e) {
             LOGGER.error("Couldn't create dump file.", e);
         }
         return null;
