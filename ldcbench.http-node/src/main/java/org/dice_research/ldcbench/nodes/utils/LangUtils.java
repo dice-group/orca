@@ -22,7 +22,8 @@ import java.util.Random;
  */
 
 public class LangUtils {
-
+    
+    /** <a href="https://www.w3.org/Submission/HDT/">RDF HDT</a> */
     public static final Lang HDT_LANG = LangBuilder.create("HDT", "application/vnd.hdt").build();
 
     /**
