@@ -95,7 +95,7 @@ public class DumpFileBuilderTest {
             System.out.println("Wrong statments: ");
             System.out.println(wrongStmts.toString());
         }
-        Assert.assertTrue("There were missing or wrong statements.", missingStmts.isEmpty() && wrongStmts.isEmpty()); 
+        Assert.assertTrue("There were missing or wrong statements.", missingStmts.isEmpty() && wrongStmts.isEmpty());
     }
 
     @Parameters
