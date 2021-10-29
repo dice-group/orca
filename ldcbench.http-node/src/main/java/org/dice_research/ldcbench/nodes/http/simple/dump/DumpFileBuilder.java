@@ -163,7 +163,7 @@ public class DumpFileBuilder {
         return hdtTempFile;
     }
 
-	private void writeData(OutputStream out, Lang lang) {
+    private void writeData(OutputStream out, Lang lang) {
         TripleIterator iterator;
         LOGGER.info("Domain ID: " + domainId);
         LOGGER.info("graph size: " + graphs.length);
