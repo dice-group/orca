@@ -83,7 +83,7 @@ public class DumpFileBuilderTest {
                 writtenModel.add(subject, predicate, object);
             }
         }
-        
+
         // compare the data
         Set<Statement> missingStmts = ModelComparisonHelper.getMissingStatements(writtenModel, expectedModel);
         if (!missingStmts.isEmpty()) {
