@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
@@ -34,6 +35,7 @@ public class DumpFileResource extends AbstractCrawleableResource {
     public static final List<Archiver> ARCHIVERS = Arrays.asList(new TarArchiver(),
             new TarArchiver(ReflectionBasedStreamFactory.create("java.util.zip.GZIPOutputStream", "application/gzip", ".gz")),
             new ZipArchiver());
+    public static final ArrayList<File> multipleFile = new ArrayList<File>();
 
     public static DumpFileResource create(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates,
             Graph[] graphs, Predicate<Request> predicate, Lang lang, CompressionStreamFactory compression, Archiver archiver) {
@@ -42,6 +44,7 @@ public class DumpFileResource extends AbstractCrawleableResource {
         try {
             File dumpFile = builder.build();
             String contentType = builder.buildContentType();
+            multipleFile.add(dumpFile);
             if (archiver != null)  {
             	//TODO support more than one file
             	//Add dump Files to a List and put them into Archive
