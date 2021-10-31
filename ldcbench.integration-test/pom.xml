@@ -52,6 +52,10 @@
     </dependency>
     <dependency>
       <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.microdata-gen</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.dice_research</groupId>
       <artifactId>ldcbench.html-embd-node</artifactId>
     </dependency>
     <dependency>

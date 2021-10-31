@@ -52,6 +52,7 @@ import org.dice_research.ldcbench.benchmark.cloud.CkanNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.DereferencingHttpNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.HttpDumpNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.JsonLdNodeManager;
+import org.dice_research.ldcbench.benchmark.cloud.MicrodataNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.NodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.RDFaNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.SparqlNodeManager;
@@ -95,6 +96,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         HttpDumpNodeManager.class,
         RDFaNodeManager.class,
         JsonLdNodeManager.class,
+        MicrodataNodeManager.class,
     };
 
     private boolean dockerized;
