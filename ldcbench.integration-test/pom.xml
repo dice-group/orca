@@ -121,7 +121,7 @@
     <dependency>
       <groupId>org.hobbit</groupId>
       <artifactId>hobbit-java-sdk</artifactId>
-      <version>1.1.18-ldcbench-SNAPSHOT</version>
+      <version>1.1.19-SNAPSHOT</version>
     </dependency>
     <!-- HOBBIT controller -->
     <dependency>
@@ -149,8 +149,8 @@
           </execution>
         </executions>
         <configuration>
-          <!-- Mark the shaded artifact instead of overwriting the original 
-            artifact. It should also neither be installed nor deployed together with 
+          <!-- Mark the shaded artifact instead of overwriting the original
+            artifact. It should also neither be installed nor deployed together with
             other artifacts. -->
           <finalName>${project.artifactId}-shaded</finalName>
           <!-- filter all the META-INF files of other artifacts -->
@@ -177,7 +177,7 @@
           </transformers>
         </configuration>
       </plugin>
-      <!-- Surefire plugin mentioned here to make sure that the shade plugin 
+      <!-- Surefire plugin mentioned here to make sure that the shade plugin
         is executed before the tests are started -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
