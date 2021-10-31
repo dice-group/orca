@@ -125,7 +125,7 @@
     <dependency>
       <groupId>org.hobbit</groupId>
       <artifactId>hobbit-java-sdk</artifactId>
-      <version>1.1.19-SNAPSHOT</version>
+      <version>1.1.18-ldcbench-SNAPSHOT</version>
     </dependency>
     <!-- HOBBIT controller -->
     <dependency>
