@@ -140,6 +140,7 @@ public class GrphBasedGraph implements GraphBuilder {
         return graph.getNumberOfEdges();
     }
 
+    @Override
     public int getBlankNodesIndex() {
         return blankNodesIndex;
     }
@@ -271,7 +272,8 @@ public class GrphBasedGraph implements GraphBuilder {
             //Get a random Source Node
             int sourceNode = (new Random()).nextInt(blankNodesIndex);
             int[] types = this.outgoingEdgeTypes(sourceNode);
-            addEdge(sourceNode, i, types[0]);
+            //Set the proper type?
+            addEdge(sourceNode, i, 0);
         }
     }
 }

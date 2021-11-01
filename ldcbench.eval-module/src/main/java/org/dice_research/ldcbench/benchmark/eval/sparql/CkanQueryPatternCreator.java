@@ -31,7 +31,7 @@ public class CkanQueryPatternCreator implements QueryPatternCreator {
         ElementTriplesBlock pattern = new ElementTriplesBlock();
         Node dataset = NodeFactory.createVariable("dataset");
         Node distribution = NodeFactory.createVariable("resource");
-        Node target = tripleCreator.createNode(targetId, targetExtId, targetExtGraphId, false);
+        Node target = tripleCreator.createNode(targetId, targetExtId, targetExtGraphId, false, false);
         pattern.addTriple(new Triple(dataset, RDF.type.asNode(), DCAT.Dataset.asNode()));
         pattern.addTriple(new Triple(dataset, DCAT.distribution.asNode(), distribution));
         pattern.addTriple(new Triple(dataset, DCTerms.title.asNode(), NodeFactory.createLiteral("Dataset " + target.getURI())));

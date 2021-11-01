@@ -126,4 +126,11 @@ public interface Graph {
      * @return the external ID of the node in the other graph.
      */
     public int getExternalNodeId(int nodeId);
+
+    /**
+     * Returns the ID of the first Blank Node of the graph
+     *
+     * @return the ID of the first Blank Node
+     */
+    public int getBlankNodesIndex();
 }

@@ -99,7 +99,7 @@ public class RDFaDataGenerator extends DataGenerator {
     protected String generateEntranceNodeUri(Graph graph, SimpleTripleCreator creator) {
         int entranceNode = graph.getEntranceNodes()[0];
         return creator
-                .createNode(entranceNode, graph.getExternalNodeId(entranceNode), graph.getGraphId(entranceNode), false)
+                .createNode(entranceNode, graph.getExternalNodeId(entranceNode), graph.getGraphId(entranceNode), false, false)
                 .getURI();
     }
 
@@ -108,7 +108,7 @@ public class RDFaDataGenerator extends DataGenerator {
         int entranceNodes[] = graph.getEntranceNodes();
         for (int i = 0; i < entranceNodes.length; ++i) {
             outgoingLinks.addAll(Arrays.stream(graph.outgoingEdgeTargets(entranceNodes[i]))
-                    .mapToObj(id -> creator.createNode(id, graph.getExternalNodeId(id), graph.getGraphId(id), false))
+                    .mapToObj(id -> creator.createNode(id, graph.getExternalNodeId(id), graph.getGraphId(id), false, false))
                     .map(n -> n.getURI()).collect(Collectors.toSet()));
         }
         return outgoingLinks;

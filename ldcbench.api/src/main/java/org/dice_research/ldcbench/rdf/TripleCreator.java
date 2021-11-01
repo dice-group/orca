@@ -12,4 +12,6 @@ import org.apache.jena.graph.Triple;
 public interface TripleCreator {
 
     public Triple createTriple(int sourceId, int propertyId, int targetId, int targetExtId, int targetExtGraphId);
+
+    public Triple createTripleWithBlankNode(int sourceId, int propertyId, int targetId, int targetExtId, int targetExtGraphId);
 }

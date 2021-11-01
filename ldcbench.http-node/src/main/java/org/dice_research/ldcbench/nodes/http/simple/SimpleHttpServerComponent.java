@@ -200,7 +200,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
                     }
                     int disallowedNode = gb.addNode();
                     gb.addEdge(linkingNode, disallowedNode, 0);
-                    String path = new URL(tripleCreator.createNode(disallowedNode, -1, -1, false).toString()).getPath();
+                    String path = new URL(tripleCreator.createNode(disallowedNode, -1, -1, false, false).toString()).getPath();
                     disallowedPaths.add(path);
                     LOGGER.debug("Added a disallowed resource {}.", path);
                 }
