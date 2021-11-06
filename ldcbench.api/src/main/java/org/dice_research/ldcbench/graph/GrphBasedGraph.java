@@ -38,7 +38,7 @@ public class GrphBasedGraph implements GraphBuilder {
     /**
      * Index of first blank node of this graph.
      */
-    protected int blankNodesIndex;
+    protected int blankNodesIndex = Integer.MAX_VALUE;
 
     /**
      * Constructor for an empty GraphBuilder.
@@ -271,7 +271,6 @@ public class GrphBasedGraph implements GraphBuilder {
         for (int i = blankNodesIndex; i < this.getNumberOfNodes(); i++) {
             //Get a random Source Node
             int sourceNode = (new Random()).nextInt(blankNodesIndex);
-            int[] types = this.outgoingEdgeTypes(sourceNode);
             //Set the proper type?
             addEdge(sourceNode, i, 0);
         }

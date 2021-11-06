@@ -97,7 +97,6 @@ public class DumpFileBuilderTest {
         graph.addEdge(n2, n3, 0);
         graph.setGraphIdOfNode(n3, 1, 0);
         graph.setEntranceNodes(new int[] { n1 });
-        graph.addBlankNodes(4);
 
         expectedModel = ModelFactory.createDefaultModel();
         Resource r1 = expectedModel.createResource("http://domain0.org/dataset-0/resource-0");

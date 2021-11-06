@@ -143,4 +143,16 @@ public class GrphBasedGraphTest {
         assertEquals("External node id", 3, g2.getExternalNodeId(n2));
         assertArrayEquals("Entrance nodes", new int[]{n1, n3}, g2.getEntranceNodes());
     }
+
+    @Test
+    public void testBlankNodes() {
+        int n1 = g.addNode();
+        int n2 = g.addNode();
+        int n3 = g.addNode();
+        g.addEdge(n1, n2, 0);
+        g.addEdge(n2, n3, 1);
+        g.addBlankNodes(3);
+        assertEquals("Number of nodes", 6, g.getNumberOfNodes());
+        assertEquals("Number of edges", 5, g.getNumberOfEdges());
+    }
 }
