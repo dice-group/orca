@@ -4,3 +4,6 @@
 [submodule "ldcbench.microdata-gen/w3c.github.io_microdata-rdf"]
 	path = ldcbench.microdata-gen/w3c.github.io_microdata-rdf
 	url = https://github.com/w3c/microdata-rdf.git
+[submodule "ldcbench.microformat-gen/microformats.tests"]
+	path = ldcbench.microformat-gen/microformats.tests
+	url = https://github.com/microformats/tests.git

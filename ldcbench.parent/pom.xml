@@ -115,6 +115,11 @@
       </dependency>
       <dependency>
         <groupId>org.dice_research</groupId>
+        <artifactId>ldcbench.microformat-gen</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dice_research</groupId>
         <artifactId>ldcbench.jsonld-gen</artifactId>
         <version>${project.version}</version>
       </dependency>
