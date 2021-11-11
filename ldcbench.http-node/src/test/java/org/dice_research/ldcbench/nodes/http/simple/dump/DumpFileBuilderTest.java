@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -61,13 +60,6 @@ public class DumpFileBuilderTest {
                 "Testing " + lang + (compression == null ? "" : (" with compression " + compression.getMediaType())));
 
         File file = builder.build();
-        multipleFile.add(file);
-        
-        Iterator it = multipleFile.iterator();
-        
-        while(it.hasNext()) {
-        	System.out.print(it.next() + " ");
-        }
         
         Model writtenModel = ModelFactory.createDefaultModel();
         try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(file))) {
