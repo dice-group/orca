@@ -39,17 +39,19 @@ public class SimpleTripleCreator implements TripleCreator {
 
     @Override
     public Triple createTriple(int sourceId, int propertyId, int targetId, int targetExtId, int targetExtGraphId) {
-        return new Triple(createNode(sourceId, -1, Graph.INTERNAL_NODE_GRAPH_ID, false, false),
-                createNode(propertyId, -1, Graph.INTERNAL_NODE_GRAPH_ID, true, false),
-                createNode(targetId, targetExtId, targetExtGraphId, false, false));
+        return createTriple(sourceId, propertyId, targetId, targetExtId, targetExtGraphId, false);
     }
 
     @Override
-    public Triple createTripleWithBlankNode(int sourceId, int propertyId, int targetId, int targetExtId,
-            int targetExtGraphId) {
-        return new Triple(createNode(sourceId, -1, Graph.INTERNAL_NODE_GRAPH_ID, false, false),
-                createNode(propertyId, -1, Graph.INTERNAL_NODE_GRAPH_ID, true, false),
-                createNode(targetId, targetExtId, targetExtGraphId, false, true));
+    public Triple createTriple(int sourceId, int propertyId, int targetId, int targetExtId,
+            int targetExtGraphId, boolean withBlankNode) {
+        return new Triple(createNode(sourceId, -1, Graph.INTERNAL_NODE_GRAPH_ID, false),
+                createNode(propertyId, -1, Graph.INTERNAL_NODE_GRAPH_ID, true),
+                createNode(targetId, targetExtId, targetExtGraphId, false, withBlankNode));
+    }
+
+    public Node createNode(int nodeId, int externalId, int extGraphId, boolean isProperty) {
+        return createNode(nodeId, externalId, extGraphId, isProperty, false);
     }
 
     /**

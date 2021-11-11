@@ -154,7 +154,7 @@ public class SimpleCkanComponent extends NodeComponent implements Component {
         boolean success = false;
         while (!success) {
             try {
-                addDataSource(tripleCreator.createNode(0, -1, -2, false, false).toString());
+                addDataSource(tripleCreator.createNode(0, -1, -2, false).toString());
                 success = true;
             } catch (CkanException ce) {
                 if (ce.getMessage().contains("Solr returned an error"))

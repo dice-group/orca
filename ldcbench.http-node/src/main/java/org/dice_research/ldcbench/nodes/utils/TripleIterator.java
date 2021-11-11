@@ -42,8 +42,8 @@ public class TripleIterator implements Iterator<Triple> {
 
     private Triple createTriple(int targetId, int propertyId) {
         if (targetId >= graphs[datasetId].getBlankNodesIndex()) {
-            return tripleCreator.createTripleWithBlankNode(nodeId, propertyId, targetId,
-                    graphs[datasetId].getExternalNodeId(targetId), graphs[datasetId].getGraphId(targetId));
+            return tripleCreator.createTriple(nodeId, propertyId, targetId,
+                    graphs[datasetId].getExternalNodeId(targetId), graphs[datasetId].getGraphId(targetId), true);
         }
         return tripleCreator.createTriple(nodeId, propertyId, targetId,
                 graphs[datasetId].getExternalNodeId(targetId), graphs[datasetId].getGraphId(targetId));

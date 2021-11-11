@@ -47,6 +47,7 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_TYPE_KEY = "LDCBENCH_DATAGENERATOR_TYPE";
     public static final String ENV_NUMBER_OF_NODES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_NODES";
     public static final String ENV_AVERAGE_DEGREE_KEY = "LDCBENCH_DATAGENERATOR_AVERAGE_DEGREE";
+    public static final String ENV_BLANK_NODES_RATIO ="LDCBENCH_DATAGENERATOR_BLANK_NODES_RATIO";
     public static final String ENV_NUMBER_OF_EDGES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_EDGES";
     public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
     public static final String ENV_DATAGENERATOR_EXCHANGE_KEY = "LDCBENCH_DATAGENERATOR_EXCHANGE";
@@ -121,6 +122,10 @@ public class DataGenerator extends AbstractDataGenerator {
      * The number of edges that should be generated.
      */
     private int numberOfEdges;
+    /**
+     * The ratio of blank Nodes in the graph
+     */
+    private double blankNodesRatio;
 
     /**
      * The channel that is used for communication.
@@ -338,9 +343,10 @@ public class DataGenerator extends AbstractDataGenerator {
         }
 
         if (type == Types.RDF_GRAPH_GENERATOR) {
-            //CHOOSE THE NUMBER OF BLANK NODE?? Currently using a fixed number of bNode
-            //DECIDE IF WE WANT BLANK NODES OR NOT ??
-            graph.addBlankNodes(3);
+            seed = seedGenerator.getNextSeed();
+            blankNodesRatio = Double.parseDouble(EnvVariables.getString(ENV_BLANK_NODES_RATIO));
+            graph.addBlankNodes((int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),
+                    seed);
         }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {

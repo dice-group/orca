@@ -2,6 +2,8 @@ package org.dice_research.ldcbench.graph;
 
 import static org.junit.Assert.*;
 
+import java.util.Random;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -149,9 +151,10 @@ public class GrphBasedGraphTest {
         int n1 = g.addNode();
         int n2 = g.addNode();
         int n3 = g.addNode();
+        long randomSeed = (new Random()).nextLong();
         g.addEdge(n1, n2, 0);
         g.addEdge(n2, n3, 1);
-        g.addBlankNodes(3);
+        g.addBlankNodes(3, randomSeed);
         assertEquals("Number of nodes", 6, g.getNumberOfNodes());
         assertEquals("Number of edges", 5, g.getNumberOfEdges());
     }

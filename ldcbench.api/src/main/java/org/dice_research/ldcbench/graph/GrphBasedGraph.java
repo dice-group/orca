@@ -265,12 +265,13 @@ public class GrphBasedGraph implements GraphBuilder {
     }
 
     @Override
-    public void addBlankNodes(int nodeCount) {
+    public void addBlankNodes(int nodeCount, long seed) {
         blankNodesIndex = this.getNumberOfNodes();
+        Random generator = new Random(seed);
         addNodes(nodeCount);
         for (int i = blankNodesIndex; i < this.getNumberOfNodes(); i++) {
             //Get a random Source Node
-            int sourceNode = (new Random()).nextInt(blankNodesIndex);
+            int sourceNode = generator.nextInt(blankNodesIndex);
             //Set the proper type?
             addEdge(sourceNode, i, 0);
         }

@@ -87,6 +87,7 @@ public interface GraphBuilder extends Graph {
      *
      * @param nodeCount
      *            the number of blank nodes
+     * @param seed 
      */
-    public void addBlankNodes(int nodeCount);
+    public void addBlankNodes(int nodeCount, long seed);
 }

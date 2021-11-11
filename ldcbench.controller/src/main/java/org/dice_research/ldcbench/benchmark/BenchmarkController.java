@@ -529,7 +529,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // FIXME use one of entrance nodes in graph instead of 0
         // FIXME better signal that we just want an externally accessible URI instead of
         // -2
-        return tripleCreator.createNode(0, -1, -2, false, false).toString();
+        return tripleCreator.createNode(0, -1, -2, false).toString();
     }
 
     protected void addNodeToSeed(ArrayList<String> seedURIs, int node) {
