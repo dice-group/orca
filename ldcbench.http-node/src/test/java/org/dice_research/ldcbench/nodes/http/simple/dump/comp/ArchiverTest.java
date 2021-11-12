@@ -10,12 +10,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.compress.archivers.ArchiveInputStream;
-import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -57,26 +58,27 @@ public class ArchiverTest {
         byte[] data = generateData();
         
         //archive
-        File fileToArchive = File.createTempFile("dummy", ".dump");
+        /*File fileToArchive = File.createTempFile("dummy", ".dump");
         FileUtils.writeByteArrayToFile(fileToArchive, data);
         File archive = File.createTempFile("dummy", ".archive");
-        archiver.buildArchive(archive, fileToArchive);
+        archiver.buildArchive(archive, fileToArchive);*/
         
         //archive multi
-        File file1 = File.createTempFile("dummy1", ".dump");
+        
+        Path path = Files.createTempDirectory("multiDump-");
+        File file1 = File.createTempFile("tempFile1", ".dump",path.toFile());
         FileUtils.writeByteArrayToFile(file1, data);
-        File file2 = File.createTempFile("dummy2", ".dump");
+        File file2 = File.createTempFile("tempFile2", ".dump",path.toFile());
         FileUtils.writeByteArrayToFile(file2, data);
-        File file3 = File.createTempFile("dummy3", ".dump");
+        File file3 = File.createTempFile("tempFile3", ".dump",path.toFile());
         FileUtils.writeByteArrayToFile(file3, data);
         File multiArchive = File.createTempFile("multiDump", ".archive");
-        ArchiveOutputStream aos =  archiver.createStream(multiArchive);
-        archiver.addFileToArchive(aos, file1);
-        archiver.addFileToArchive(aos, file2);
-        archiver.addFileToArchive(aos, file3);
+        archiver.buildArchive(multiArchive, path.toFile());
+        
+        
         
         //unarchive
-        FileInputStream fis = new FileInputStream(archive);
+        /*FileInputStream fis = new FileInputStream(archive);
         ArchiveInputStream ais;
         File unarchivedFile = null;
 		try {
@@ -87,7 +89,7 @@ public class ArchiverTest {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		
 		//unarchive multi
 		FileInputStream fisMulti = new FileInputStream(multiArchive);
@@ -109,7 +111,7 @@ public class ArchiverTest {
 			e.printStackTrace();
 		}
         
-        assertTrue(FileUtils.contentEquals(fileToArchive, unarchivedFile));
+        //assertTrue(FileUtils.contentEquals(fileToArchive, unarchivedFile));
         assertTrue(FileUtils.contentEquals(file1, unarchivedFile1));
         assertTrue(FileUtils.contentEquals(file2, unarchivedFile2));
         assertTrue(FileUtils.contentEquals(file3, unarchivedFile3));
