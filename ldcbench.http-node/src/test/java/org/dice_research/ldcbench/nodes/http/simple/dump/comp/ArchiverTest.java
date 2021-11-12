@@ -58,13 +58,12 @@ public class ArchiverTest {
         byte[] data = generateData();
         
         //archive
-        /*File fileToArchive = File.createTempFile("dummy", ".dump");
+        File fileToArchive = File.createTempFile("dummy", ".dump");
         FileUtils.writeByteArrayToFile(fileToArchive, data);
         File archive = File.createTempFile("dummy", ".archive");
-        archiver.buildArchive(archive, fileToArchive);*/
+        archiver.buildArchive(archive, fileToArchive);
         
-        //archive multi
-        
+        //archive multiple files
         Path path = Files.createTempDirectory("multiDump-");
         File file1 = File.createTempFile("tempFile1", ".dump",path.toFile());
         FileUtils.writeByteArrayToFile(file1, data);
@@ -78,7 +77,7 @@ public class ArchiverTest {
         
         
         //unarchive
-        /*FileInputStream fis = new FileInputStream(archive);
+        FileInputStream fis = new FileInputStream(archive);
         ArchiveInputStream ais;
         File unarchivedFile = null;
 		try {
@@ -89,9 +88,9 @@ public class ArchiverTest {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}*/
+		}
 		
-		//unarchive multi
+		//unarchive multiple files
 		FileInputStream fisMulti = new FileInputStream(multiArchive);
         ArchiveInputStream aisMulti;
         File unarchivedFile1 = null;
@@ -102,8 +101,10 @@ public class ArchiverTest {
 			aisMulti.getNextEntry();
 			unarchivedFile1 = File.createTempFile("file1", ".unarchived");
 			IOUtils.copy(aisMulti, new FileOutputStream(unarchivedFile1));
+			aisMulti.getNextEntry();
 			unarchivedFile2 = File.createTempFile("file2", ".unarchived");
 			IOUtils.copy(aisMulti, new FileOutputStream(unarchivedFile2));
+			aisMulti.getNextEntry();
 			unarchivedFile3 = File.createTempFile("file3", ".unarchived");
 			IOUtils.copy(aisMulti, new FileOutputStream(unarchivedFile3));
 		} catch (Exception e) {
@@ -111,7 +112,7 @@ public class ArchiverTest {
 			e.printStackTrace();
 		}
         
-        //assertTrue(FileUtils.contentEquals(fileToArchive, unarchivedFile));
+        assertTrue(FileUtils.contentEquals(fileToArchive, unarchivedFile));
         assertTrue(FileUtils.contentEquals(file1, unarchivedFile1));
         assertTrue(FileUtils.contentEquals(file2, unarchivedFile2));
         assertTrue(FileUtils.contentEquals(file3, unarchivedFile3));
