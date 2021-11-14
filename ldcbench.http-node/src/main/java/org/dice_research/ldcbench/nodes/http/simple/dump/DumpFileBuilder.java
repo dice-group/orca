@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
@@ -56,15 +58,20 @@ public class DumpFileBuilder {
     protected final Lang lang;
     protected final CompressionStreamFactory compression;
     protected File dumpFile;
+    protected final boolean multipleDump;
+    protected Path path; 
 
     public DumpFileBuilder(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs,
-            Lang lang, CompressionStreamFactory compression) {
+            Lang lang, CompressionStreamFactory compression,boolean multipleDump) {
         this.domainId = domainId;
         this.resourceUriTemplates = resourceUriTemplates;
         this.accessUriTemplates = accessUriTemplates;
         this.graphs = graphs;
         this.lang = lang;
         this.compression = compression;
+        this.multipleDump = multipleDump;
+        this.generateFolder();
+        
     }
 
     public File build()
@@ -86,7 +93,10 @@ public class DumpFileBuilder {
         // fileNameBuilder.append('.');
         // fileNameBuilder.append(fileExt.get(0));
         // }
-        dumpFile = File.createTempFile("ldcbench", ".dump");
+    	if(multipleDump==true) {
+        	dumpFile = File.createTempFile("ldcbench", ".dump",path.toFile());
+        }else
+        	dumpFile = File.createTempFile("ldcbench", ".dump");
         OutputStream out = new FileOutputStream(dumpFile);
         out = new BufferedOutputStream(out);
         if (compression != null) {
@@ -156,6 +166,15 @@ public class DumpFileBuilder {
             return compression.getMediaType();
         }
         return lang.getHeaderString();
+    } 
+    
+    private void generateFolder() {
+    	try {
+			path = Files.createTempDirectory("multiDump-");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
 }

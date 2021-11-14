@@ -40,9 +40,9 @@ public class DumpFileResource extends AbstractCrawleableResource {
     public static final ArrayList<File> multipleFile = new ArrayList<File>();
 
     public static DumpFileResource create(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates,
-            Graph[] graphs, Predicate<Request> predicate, Lang lang, CompressionStreamFactory compression, Archiver archiver) {
+            Graph[] graphs, Predicate<Request> predicate, Lang lang, CompressionStreamFactory compression, boolean multipleDump, Archiver archiver) {
         DumpFileBuilder builder = new DumpFileBuilder(domainId, resourceUriTemplates, accessUriTemplates, graphs,
-                lang, compression);
+                lang, compression,multipleDump);
         try {
             File dumpFile = builder.build();
             String contentType = builder.buildContentType();

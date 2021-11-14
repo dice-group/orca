@@ -179,7 +179,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
                     Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
                     graphs.toArray(new Graph[graphs.size()]),
                     r -> r.getPath().toString().equals(dumpFilePath),
-                    dumpFileLang, dumpFileCompression, dumpfileArchiver);
+                    dumpFileLang, dumpFileCompression, false,dumpfileArchiver);
         } else {
             SimpleTripleCreator tripleCreator = new SimpleTripleCreator(cloudNodeId.get(), resourceUriTemplates,
                     accessUriTemplates);
