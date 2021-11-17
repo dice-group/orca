@@ -143,4 +143,25 @@ public class GrphBasedGraphTest {
         assertEquals("External node id", 3, g2.getExternalNodeId(n2));
         assertArrayEquals("Entrance nodes", new int[]{n1, n3}, g2.getEntranceNodes());
     }
+    @Test
+    public void splitGraph() {
+        int n1 = g.addNode();
+        int n2 = g.addNode();
+        int n3 = g.addNode();
+        int n4 = g.addNode();
+        int n5 = g.addNode();
+        int n6 = g.addNode();
+        int n7 = g.addNode();
+        g.addEdge(n1, n2, 0);
+        g.addEdge(n2, n3, 1);
+        g.addEdge(n3, n4, 2);
+        g.addEdge(n4, n5, 3);
+        g.addEdge(n5, n6, 4);
+        g.addEdge(n6, n7, 5);
+        
+        g.setEntranceNodes(new int[]{n1, n5});
+        GrphBasedGraph[] splitGraph = SplitGraph();
+        
+        
+    }
 }
