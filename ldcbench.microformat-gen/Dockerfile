@@ -3,7 +3,7 @@ FROM openjdk:8-alpine
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
-COPY microformat.tests/tests /usr/src/ldcbench.microformat-gen/microformat.tests/tests
+COPY microformats.tests/tests /usr/src/ldcbench.microformat-gen/microformats.tests/tests
 COPY target/lib /usr/src/app/lib
 COPY target/ldcbench.microformat-gen.jar /usr/src/app
 

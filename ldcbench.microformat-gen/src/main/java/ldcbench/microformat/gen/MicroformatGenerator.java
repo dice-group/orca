@@ -3,6 +3,7 @@ package org.dice_research.ldcbench.microformat.gen;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -22,9 +23,13 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.benchmark.DataGenerator;
 import org.dice_research.ldcbench.graph.Graph;
+import org.dice_research.ldcbench.microformat.gen.MicroformatEntranceFileGenerator;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.utils.tar.TarFileGenerator;
 import org.hobbit.core.rabbit.RabbitQueueFactory;
@@ -73,8 +78,8 @@ public class MicroformatGenerator extends DataGenerator {
         ttlFiles = replaceUrisInMapping(ttlFiles, MICROFORMAT_TEST_DOMAIN, nodeDomain);
 
         // Generate HTML and TTL file based on the graph and the list of test files
-//TODO!
-        // generateEntranceFile(graph, htmlFiles, ENTRANCE_HTML_FILE, ENTRANCE_TTL_FILE);
+        generateEntranceFile(graph, htmlFiles, ENTRANCE_HTML_FILE, ENTRANCE_TTL_FILE);
+
         // Add entrance file to the list of HTML and ttl files
         htmlFiles.put(ENTRANCE_HTML_FILE_NAME, ENTRANCE_HTML_FILE);
         ttlFiles.put(ENTRANCE_TTL_FILE_NAME, ENTRANCE_TTL_FILE);
@@ -92,23 +97,22 @@ public class MicroformatGenerator extends DataGenerator {
 
     protected void generateEntranceFile(Graph graph, Map<String, File> htmlFiles, File entranceFile, File entranceTTLFile)
             throws IOException {
-        // SimpleTripleCreator creator = new SimpleTripleCreator(getNodeId(), resourceUriTemplates, accessUriTemplates);
+        SimpleTripleCreator creator = new SimpleTripleCreator(getNodeId(), resourceUriTemplates, accessUriTemplates);
 
-        // Set<String> outgoingLinks = generateOutgoingLinks(graph, creator);
-        // outgoingLinks.addAll(htmlFiles.keySet());
+        Set<String> outgoingLinks = generateOutgoingLinks(graph, creator);
+        outgoingLinks.addAll(htmlFiles.keySet());
 
-        // String entranceUri = generateEntranceNodeUri(graph, creator);
+        String entranceUri = generateEntranceNodeUri(graph, creator);
 
-        // MicrodataEntranceFileGenerator generator = new MicrodataEntranceFileGenerator();
-        // generator.generate(entranceFile, entranceTTLFile, entranceUri, outgoingLinks);
+        MicroformatEntranceFileGenerator generator = new MicroformatEntranceFileGenerator();
+        generator.generate(entranceFile, entranceTTLFile, entranceUri, outgoingLinks);
     }
 
     protected String generateEntranceNodeUri(Graph graph, SimpleTripleCreator creator) {
-        // int entranceNode = graph.getEntranceNodes()[0];
-        // return creator
-        //         .createNode(entranceNode, graph.getExternalNodeId(entranceNode), graph.getGraphId(entranceNode), false)
-        //         .getURI();
-        return null;
+        int entranceNode = graph.getEntranceNodes()[0];
+        return creator
+                .createNode(entranceNode, graph.getExternalNodeId(entranceNode), graph.getGraphId(entranceNode), false)
+                .getURI();
     }
 
     protected Set<String> generateOutgoingLinks(final Graph graph, final SimpleTripleCreator creator) {
@@ -176,9 +180,19 @@ public class MicroformatGenerator extends DataGenerator {
             try {
                 List<Path> allTests = Files.walk(Paths.get(pathBuilder.toString()))
                         .filter(s -> s.toString().endsWith(".json"))
-                        .map(foo -> foo = Paths.get(foo.toString().substring(0, foo.toString().lastIndexOf('.')))) // removing the extension. TODO: clean up this line
+                        .map(foo -> foo = Paths.get(foo.toString().substring(0, foo.toString().lastIndexOf('.')))) // remove the extension
                         .collect(Collectors.toList());
-                //TODO generate ttl from json using jena
+
+                //generate ttl for all *.json-files
+                for (Path p: allTests) {
+                    String jsonldIn = Files.readString(Paths.get(p.toString() + ".json"));
+
+                    File fileTtlOut = new File(p.toString() + ".ttl");
+
+                    Model model = RDFDataMgr.loadModel(p.toString() + ".json", Lang.JSONLD) ;
+
+                    RDFDataMgr.write(new FileOutputStream(fileTtlOut), model, Lang.TURTLE) ;
+                }
 
                 for (Path p : allTests) {
                     testFiles.put(
@@ -188,6 +202,7 @@ public class MicroformatGenerator extends DataGenerator {
                 }
             } catch (IOException e) {
                 LOGGER.error("Microformat-gen: Failed to load test files", e);
+                e.printStackTrace();
             }
         }
 

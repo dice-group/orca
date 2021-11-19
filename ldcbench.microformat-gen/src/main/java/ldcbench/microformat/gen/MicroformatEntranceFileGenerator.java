@@ -45,17 +45,17 @@ public class MicroformatEntranceFileGenerator {
                 StandardCharsets.UTF_8);
                 OutputStream ttlOut = new BufferedOutputStream(new FileOutputStream(ttlFile))) {
             // Start with the HTML header
-            // htmlWriter.append(
-            //         "<!DOCTYPE html>\n<html>\n<head>\n<title>Some nice title</title>\n</head>\n<body>\n<div itemscope itemtype=\"");
+            htmlWriter.append(
+                    "<!DOCTYPE html>\n<html>\n<head>\n<title>Some nice title</title>\n</head>\n<body>\n<a class=\"h-entry\" href=\"");
             htmlWriter.append(resourceURI);
             htmlWriter.append("\">\n");
             // Write the outgoing links.
             for (String link : outgoingLinks) {
-                htmlWriter.append("<link itemprop=\"http://www.w3.org/2000/01/rdf-schema#seeAlso\"  href=\"");
+                htmlWriter.append("<a class=\"u-url\"="); // use the u-url property
                 htmlWriter.append(link);
                 htmlWriter.append("\">");
                 htmlWriter.append(link);
-                htmlWriter.append("</link>\n");
+                htmlWriter.append("</a>\n");
                 model.add(entrancePageResource, RDFS.seeAlso, model.createResource(link));
             }
             // Write end of HTML page
