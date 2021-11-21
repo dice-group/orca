@@ -42,7 +42,7 @@ public class MicrodataGenerator extends DataGenerator {
     // "../ldcbench.microdata-gen/" makes it work in ldcbench.controller tests
     protected static final String TEST_ROOT_DIRECTORY = "../ldcbench.microdata-gen/w3c.github.io_microdata-rdf/tests/";
 
-    protected static final String MICRODATA_TEST_DOMAIN = "http://mcdata.info/test-suite/tests/"; //TODO?
+    protected static final String MICRODATA_TEST_DOMAIN = "http://mcdata.info/test-suite/tests/";
 
     // unlike to rdfa, we only have one test case
     // protected static final String TEST_CASES[] = new String[] { "rdfa1.0/html4", "rdfa1.0/xhtml1", "rdfa1.1/html4",

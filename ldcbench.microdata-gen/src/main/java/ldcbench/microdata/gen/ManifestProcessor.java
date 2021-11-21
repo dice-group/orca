@@ -35,7 +35,7 @@ public class ManifestProcessor {
 
     private static final String SELECT_QUERY_FOR_FILES = "SELECT ?f1 ?f2 WHERE { ?t a <http://www.w3.org/ns/rdftest##TestMicrodataEval> . "
             + "?t <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#action> ?f1 ."
-            + "?t <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#result> ?f2 . }"; //TODO: filter the schema tests?
+            + "?t <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#result> ?f2 . }";
     private static final String SELECTED_HTML_FILE = "f1";
     private static final String SELECTED_TTL_FILE = "f2";
 
