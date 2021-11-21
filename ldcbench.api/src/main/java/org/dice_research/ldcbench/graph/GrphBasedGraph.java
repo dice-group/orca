@@ -59,34 +59,6 @@ public class GrphBasedGraph implements GraphBuilder {
         }
         setEntranceNodes(other.getEntranceNodes());
     }
-    
-    public GrphBasedGraph[] SplitGraph(Graph graph) {
-    	int nodes = graph.getNumberOfNodes();
-//    	int count;
-//    	count = graph.getEntranceNodes().length;
-    	GrphBasedGraph[] splitGraph = new GrphBasedGraph[2];
-    	for (int i = 0; i< nodes/2; i++) {
-    		int[] targets = graph.outgoingEdgeTargets(i);
-            int[] types = graph.outgoingEdgeTypes(i);
-            for (int j = 0; j < targets.length; j++) {
-                splitGraph[0].addEdge(i, targets[j], types[j]);
-            }
-            if (graph.getGraphId(i) != Graph.INTERNAL_NODE_GRAPH_ID) {
-                setGraphIdOfNode(i, graph.getGraphId(i), graph.getExternalNodeId(i));
-            }
-    	}
-    	for (int i = nodes/2; i< nodes/2; i++) {
-    		int[] targets = graph.outgoingEdgeTargets(i);
-            int[] types = graph.outgoingEdgeTypes(i);
-            for (int j = 0; j < targets.length; j++) {
-                splitGraph[1].addEdge(i, targets[j], types[j]);
-            }
-            if (graph.getGraphId(i) != Graph.INTERNAL_NODE_GRAPH_ID) {
-                setGraphIdOfNode(i, graph.getGraphId(i), graph.getExternalNodeId(i));
-            }
-    	}
-		return splitGraph;
-    }
 
     /**
      * Given an edge ID, returns type of that edge.

@@ -225,6 +225,26 @@ public class DataGenerator extends AbstractDataGenerator {
         }
     }
 
+    protected void sendFinalGraphs(Graph[] g) throws Exception {
+    	for(Graph myg : g) { //should i overide serializer as well?
+    		byte[] data = SerializationHelper.serialize(SERIALIZER_CLASS, myg);
+            String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d"
+                    + ApiConstants.FILE_ENDING_GRAPH, getNodeId());
+
+            // TODO: Use RabbitMQ exchange to send the data (SimpleFileSender doesn't
+            // support that)
+            try (InputStream is = new ByteArrayInputStream(data);
+                    SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, dataQueueName);) {
+                dataSender.streamData(is, name);
+            }
+
+            try (InputStream is = new ByteArrayInputStream(data);
+                    SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, evalDataQueueName);) {
+                dataSender.streamData(is, name);
+            }
+    	}
+    }
+    
     protected void sendFinalGraph(Graph g) throws Exception {
         byte[] data = SerializationHelper.serialize(SERIALIZER_CLASS, g);
         String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d"
@@ -322,6 +342,12 @@ public class DataGenerator extends AbstractDataGenerator {
         }
 
         GraphBuilder graph = new GrphBasedGraph();
+        
+        //initialize two graphs
+        GraphBuilder multiGraph[] = new GraphBuilder[2];
+        for (GraphBuilder mygraph : multiGraph) {
+        	mygraph = new GrphBasedGraph();
+        }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
             nodeGraph = graph;
@@ -330,7 +356,10 @@ public class DataGenerator extends AbstractDataGenerator {
         if (numberOfNodes != 0) {
             LOGGER.debug("Generator {} : Generating a graph with {} nodes {} average degree and {} seed", generatorId,
                     numberOfNodes, avgDegree, seed);
-            generator.generateGraph(numberOfNodes, avgDegree, seed, graph);
+            //generator.generateGraph(numberOfNodes, avgDegree, seed, graph);
+            for (GraphBuilder mygraph : multiGraph) {
+            	generator.generateGraph(numberOfNodes/2, avgDegree, seed, mygraph); //by 2 because split
+            }
         } else {
             LOGGER.debug("Generator {} : Generating a graph with {} average degree and {} edges and {} seed",
                     generatorId, avgDegree, numberOfEdges, seed);
@@ -387,6 +416,7 @@ public class DataGenerator extends AbstractDataGenerator {
             // Send the final graph data.
             LOGGER.info("Sending the final rdf graph data...");
             sendFinalGraph(graph);
+            sendFinalGraphs(multiGraph);
         }
 
         LOGGER.debug("Generation done.", generatorId);
