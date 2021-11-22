@@ -133,4 +133,10 @@ public interface Graph {
      * @return the ID of the first Blank Node
      */
     public int getBlankNodesIndex();
+    /**
+     * Returns the ID of the first Literal of the graph
+     *
+     * @return the ID of the first Literal
+     */
+    public int getLiteralsIndex();
 }

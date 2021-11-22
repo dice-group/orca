@@ -343,10 +343,11 @@ public class DataGenerator extends AbstractDataGenerator {
         }
 
         if (type == Types.RDF_GRAPH_GENERATOR) {
-            seed = seedGenerator.getNextSeed();
             blankNodesRatio = Double.parseDouble(EnvVariables.getString(ENV_BLANK_NODES_RATIO));
             graph.addBlankNodes((int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),
-                    seed);
+                    seedGenerator.getNextSeed());
+            graph.addLiterals((int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),
+                    seedGenerator.getNextSeed());
         }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {

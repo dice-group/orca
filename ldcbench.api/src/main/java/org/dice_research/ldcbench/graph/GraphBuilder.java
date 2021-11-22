@@ -89,5 +89,15 @@ public interface GraphBuilder extends Graph {
      *            the number of blank nodes
      * @param seed 
      */
-    public void addBlankNodes(int nodeCount, long seed);
+    public void addBlankNodes(int bnodesCount, long seed);
+
+    /**
+     * Append a given number of Literals to an existing graph.
+     * Edges are created to link to the Literals.
+     *
+     * @param literalsCount
+     *            the number of literals
+     * @param seed
+     */
+    public void addLiterals(int literalsCount, long seed);
 }

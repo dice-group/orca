@@ -39,19 +39,23 @@ public class SimpleTripleCreator implements TripleCreator {
 
     @Override
     public Triple createTriple(int sourceId, int propertyId, int targetId, int targetExtId, int targetExtGraphId) {
-        return createTriple(sourceId, propertyId, targetId, targetExtId, targetExtGraphId, false);
+        return createTriple(sourceId, propertyId, targetId, targetExtId, targetExtGraphId, false, false);
     }
 
     @Override
     public Triple createTriple(int sourceId, int propertyId, int targetId, int targetExtId,
-            int targetExtGraphId, boolean withBlankNode) {
+            int targetExtGraphId, boolean withBlankNode, boolean withLiteral) {
+        if (withLiteral)
+            return new Triple(createNode(sourceId, -1, Graph.INTERNAL_NODE_GRAPH_ID, false),
+                createNode(propertyId, -1, Graph.INTERNAL_NODE_GRAPH_ID, true),
+                createNode(targetId, targetExtId, targetExtGraphId, false, false, withLiteral));
         return new Triple(createNode(sourceId, -1, Graph.INTERNAL_NODE_GRAPH_ID, false),
                 createNode(propertyId, -1, Graph.INTERNAL_NODE_GRAPH_ID, true),
-                createNode(targetId, targetExtId, targetExtGraphId, false, withBlankNode));
+                createNode(targetId, targetExtId, targetExtGraphId, false, withBlankNode, false));
     }
 
     public Node createNode(int nodeId, int externalId, int extGraphId, boolean isProperty) {
-        return createNode(nodeId, externalId, extGraphId, isProperty, false);
+        return createNode(nodeId, externalId, extGraphId, isProperty, false, false);
     }
 
     /**
@@ -68,13 +72,20 @@ public class SimpleTripleCreator implements TripleCreator {
      * @param isProperty
      *            a flag indicating whether the node is a property
      * @param isBlankNode
-     *            a flag indicating wheter the node is a blankNode
+     *            a flag indicating whether the node is a blankNode
+     * @param isLiteral
+     *            a flag indicating whether the node is a literal
      * @return the created {@link Node} instance
      */
-    public Node createNode(int nodeId, int externalId, int extGraphId, boolean isProperty, boolean isBlankNode) {
+    public Node createNode(int nodeId, int externalId, int extGraphId, boolean isProperty,
+            boolean isBlankNode, boolean isLiteral) {
         Node n;
         if (isBlankNode) {
             n = NodeFactory.createBlankNode(String.valueOf(nodeId));
+            return n;
+        }
+        if (isLiteral) {
+            n = NodeFactory.createBlankNode(String.format(UriHelper.LITERAL, nodeId));
             return n;
         }
         String domain;

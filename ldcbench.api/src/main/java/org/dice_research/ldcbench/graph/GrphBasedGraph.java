@@ -39,7 +39,10 @@ public class GrphBasedGraph implements GraphBuilder {
      * Index of first blank node of this graph.
      */
     protected int blankNodesIndex = Integer.MAX_VALUE;
-
+    /**
+     * Index of first literal of this graph.
+     */
+    protected int literalsIndex = Integer.MAX_VALUE;
     /**
      * Constructor for an empty GraphBuilder.
      */
@@ -143,6 +146,11 @@ public class GrphBasedGraph implements GraphBuilder {
     @Override
     public int getBlankNodesIndex() {
         return blankNodesIndex;
+    }
+
+    @Override
+    public int getLiteralsIndex() {
+        return literalsIndex;
     }
 
     public boolean addEdge(int sourceId, int targetId, int typeId) {
@@ -265,13 +273,23 @@ public class GrphBasedGraph implements GraphBuilder {
     }
 
     @Override
-    public void addBlankNodes(int nodeCount, long seed) {
+    public void addBlankNodes(int bnodesCount, long seed) {
         blankNodesIndex = this.getNumberOfNodes();
+        addBNodesOrLiterals(blankNodesIndex, bnodesCount, seed);
+    }
+
+    @Override
+    public void addLiterals(int literalsCount, long seed) {
+        literalsIndex = this.getNumberOfNodes();
+        addBNodesOrLiterals(literalsIndex, literalsCount, seed);
+    }
+    
+    private void addBNodesOrLiterals(int index, int NumberOfNodes, long seed) {
         Random generator = new Random(seed);
-        addNodes(nodeCount);
-        for (int i = blankNodesIndex; i < this.getNumberOfNodes(); i++) {
+        addNodes(NumberOfNodes);
+        for (int i = index; i < this.getNumberOfNodes(); i++) {
             //Get a random Source Node
-            int sourceNode = generator.nextInt(blankNodesIndex);
+            int sourceNode = generator.nextInt(index);
             //Set the proper type?
             addEdge(sourceNode, i, 0);
         }
