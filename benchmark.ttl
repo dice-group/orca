@@ -24,6 +24,7 @@
     :numberOfNodes,
     :averageTriplesPerNode,
     :blankNodesRatio,
+    :literalsRatio,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
     :averageCrawlDelay,
@@ -79,6 +80,7 @@
     :numberOfNodes,
     :averageTriplesPerNode,
     :blankNodesRatio,
+    :literalsRatio,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
     :averageCrawlDelay,
@@ -141,6 +143,13 @@
 :blankNodesRatio a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Ratio of blank nodes"@en;
   rdfs:comment "The ratio of blank nodes in the generated RDF graph."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:double;
+  hobbit:defaultValue "0.5"^^xsd:double .
+
+:literalsRatio a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Ratio of literals"@en;
+  rdfs:comment "The ratio of literals in the generated RDF graph."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:double;
   hobbit:defaultValue "0.5"^^xsd:double .

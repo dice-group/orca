@@ -48,6 +48,7 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_NUMBER_OF_NODES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_NODES";
     public static final String ENV_AVERAGE_DEGREE_KEY = "LDCBENCH_DATAGENERATOR_AVERAGE_DEGREE";
     public static final String ENV_BLANK_NODES_RATIO ="LDCBENCH_DATAGENERATOR_BLANK_NODES_RATIO";
+    public static final String ENV_LITERALS_RATIO ="LDCBENCH_DATAGENERATOR_LITERALS_RATIO";
     public static final String ENV_NUMBER_OF_EDGES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_EDGES";
     public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
     public static final String ENV_DATAGENERATOR_EXCHANGE_KEY = "LDCBENCH_DATAGENERATOR_EXCHANGE";
@@ -126,7 +127,10 @@ public class DataGenerator extends AbstractDataGenerator {
      * The ratio of blank Nodes in the graph
      */
     private double blankNodesRatio;
-
+    /**
+     * The ratio of literals in the graph
+     */
+    private double literalsRatio;
     /**
      * The channel that is used for communication.
      */
@@ -342,14 +346,6 @@ public class DataGenerator extends AbstractDataGenerator {
             generator.generateGraph(avgDegree, numberOfEdges, seed, graph);
         }
 
-        if (type == Types.RDF_GRAPH_GENERATOR) {
-            blankNodesRatio = Double.parseDouble(EnvVariables.getString(ENV_BLANK_NODES_RATIO));
-            graph.addBlankNodes((int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),
-                    seedGenerator.getNextSeed());
-            graph.addLiterals((int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),
-                    seedGenerator.getNextSeed());
-        }
-
         if (type == Types.NODE_GRAPH_GENERATOR) {
             LOGGER.info("Node types generated: {}", Arrays.toString(((RandomCloudGraph) generator).getNodeTypes()));
             LOGGER.debug("Broadcasting the node graph...");
@@ -396,6 +392,13 @@ public class DataGenerator extends AbstractDataGenerator {
 
             LOGGER.info("Got all relevant rdf graphs.", generatorId);
             addInterlinks(graph);
+
+            blankNodesRatio = Double.parseDouble(EnvVariables.getString(ENV_BLANK_NODES_RATIO));
+            graph.addBlankNodes((int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),
+                    seedGenerator.getNextSeed());
+            literalsRatio = Double.parseDouble(EnvVariables.getString(ENV_LITERALS_RATIO));
+            graph.addLiterals((int) Math.ceil(graph.getNumberOfNodes() * literalsRatio),
+                    seedGenerator.getNextSeed());
 
             // Send the final graph data.
             LOGGER.info("Sending the final rdf graph data...");

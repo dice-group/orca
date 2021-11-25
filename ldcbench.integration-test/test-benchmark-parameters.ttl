@@ -36,4 +36,5 @@ experiments:New a hobbit:Experiment;
   :sparqlNodeWeight 0;
   :numberOfNodes 3;
   :averageNodeGraphDegree 2;
-  :blankNodesRatio 0.5.
+  :blankNodesRatio 0.5;
+  :literalsRatio 0.5.

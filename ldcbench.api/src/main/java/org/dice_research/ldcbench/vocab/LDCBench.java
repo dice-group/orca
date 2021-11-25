@@ -29,6 +29,7 @@ public class LDCBench {
     public static final Property httpDumpNodeWeight = property("httpDumpNodeWeight");
     public static final Property numberOfNodes = property("numberOfNodes");
     public static final Property blankNodesRatio = property("blankNodesRatio");
+    public static final Property literalsRatio = property("literalsRatio");
     public static final Property macroRecall = property("macroRecall");
     public static final Property microRecall = property("microRecall");
     public static final Property nodeSizeDeterminer = property("nodeSizeDeterminer");
