@@ -388,16 +388,30 @@ public class DataGenerator extends AbstractDataGenerator {
             dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.array());
         } else {
             // Broadcast our graph's metadata.
-            GraphMetadata gm = new GraphMetadata();
-            gm.numberOfNodes = graph.getNumberOfNodes();
-            gm.entranceNodes = graph.getEntranceNodes();
-
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            buf.write(header.array(), 0, header.capacity());
-            ObjectOutputStream output = new ObjectOutputStream(buf);
-            output.writeObject(gm);
-
-            dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.toByteArray());
+//            GraphMetadata gm = new GraphMetadata();
+//            gm.numberOfNodes = graph.getNumberOfNodes();
+//            gm.entranceNodes = graph.getEntranceNodes();
+//
+//            ByteArrayOutputStream buf = new ByteArrayOutputStream();
+//            buf.write(header.array(), 0, header.capacity());
+//            ObjectOutputStream output = new ObjectOutputStream(buf);
+//            output.writeObject(gm);
+//
+//            dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.toByteArray());
+        	
+        	for (GraphBuilder mygraph : multiGraph) {
+        		GraphMetadata gm = new GraphMetadata();
+                gm.numberOfNodes = mygraph.getNumberOfNodes();
+                gm.entranceNodes = mygraph.getEntranceNodes();
+                gm.graphId = mygraph.getGraphId();
+  
+                ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                buf.write(header.array(), 0, header.capacity());
+                ObjectOutputStream output = new ObjectOutputStream(buf);
+                output.writeObject(gm);
+  
+                dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.toByteArray());
+            }
         }
 
         if (type == Types.RDF_GRAPH_GENERATOR) {

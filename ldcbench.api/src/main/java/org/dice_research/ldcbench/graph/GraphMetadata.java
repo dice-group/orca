@@ -8,4 +8,5 @@ public class GraphMetadata implements Serializable {
     
     public int numberOfNodes;
     public int[] entranceNodes;
+    public int graphId;
 }

@@ -117,6 +117,8 @@ public interface Graph {
      *         the ID of the external graph the node belongs to.
      */
     public int getGraphId(int nodeId);
+    
+    public int getGraphId();
 
     /**
      * Returns the ID of the node in the external graph if this node is an external

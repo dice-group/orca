@@ -34,6 +34,8 @@ public class GrphBasedGraph implements GraphBuilder {
      * external nodes.
      */
     protected Map<Integer, int[]> externalNodes = new HashMap<>();
+    
+    protected int actualGraphId;  //from where can we set this?
 
     /**
      * Constructor for an empty GraphBuilder.
@@ -252,5 +254,9 @@ public class GrphBasedGraph implements GraphBuilder {
     @Override
     public String toString() {
         return graph.toString();
+    }
+    
+    public int getGraphId() {
+    	return actualGraphId;
     }
 }
