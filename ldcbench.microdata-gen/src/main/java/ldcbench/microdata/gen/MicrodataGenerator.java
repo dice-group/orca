@@ -44,10 +44,6 @@ public class MicrodataGenerator extends DataGenerator {
 
     protected static final String MICRODATA_TEST_DOMAIN = "http://mcdata.info/test-suite/tests/";
 
-    // unlike to rdfa, we only have one test case
-    // protected static final String TEST_CASES[] = new String[] { "rdfa1.0/html4", "rdfa1.0/xhtml1", "rdfa1.1/html4",
-    //         "rdfa1.1/html5", "rdfa1.1/xhtml1", "rdfa1.1/xhtml5" };
-
     @Override
     protected void sendFinalGraph(Graph graph) throws Exception {
         // // iterate over the available test sets
