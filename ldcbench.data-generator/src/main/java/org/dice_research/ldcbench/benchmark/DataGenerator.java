@@ -230,6 +230,28 @@ public class DataGenerator extends AbstractDataGenerator {
         }
     }
 
+    /**
+     * Append a given number of Blank Nodes to an existing graph.
+     * Edges are created to link to the Blank Nodes.
+     *
+     * @param g the graph
+     * @param nodeCount
+     *            the number of blank nodes
+     * @param seed
+     */
+    private void addBlankNodes(GraphBuilder g, int nodeCount, long seed) {
+        int blankNodesIndex = g.getNumberOfNodes();
+        g.setBlankNodesIndex(blankNodesIndex);
+        Random generator = new Random(seed);
+        g.addNodes(nodeCount);
+        for (int i = blankNodesIndex; i < g.getNumberOfNodes(); i++) {
+            //Get a random Source Node
+            int sourceNode = generator.nextInt(blankNodesIndex);
+            int propertyId = 0;
+            g.addEdge(sourceNode, i, propertyId);
+        }
+    }
+
     protected void sendFinalGraph(Graph g) throws Exception {
         byte[] data = SerializationHelper.serialize(SERIALIZER_CLASS, g);
         String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d"
@@ -345,7 +367,7 @@ public class DataGenerator extends AbstractDataGenerator {
         if (type == Types.RDF_GRAPH_GENERATOR) {
             seed = seedGenerator.getNextSeed();
             blankNodesRatio = Double.parseDouble(EnvVariables.getString(ENV_BLANK_NODES_RATIO));
-            graph.addBlankNodes((int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),
+            addBlankNodes(graph, (int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),
                     seed);
         }
 

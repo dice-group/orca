@@ -41,11 +41,8 @@ public class TripleIterator implements Iterator<Triple> {
     }
 
     private Triple createTriple(int targetId, int propertyId) {
-        if (targetId >= graphs[datasetId].getBlankNodesIndex()) {
-            return tripleCreator.createTriple(nodeId, propertyId, targetId,
-                    graphs[datasetId].getExternalNodeId(targetId), graphs[datasetId].getGraphId(targetId), true);
-        }
         return tripleCreator.createTriple(nodeId, propertyId, targetId,
-                graphs[datasetId].getExternalNodeId(targetId), graphs[datasetId].getGraphId(targetId));
+                graphs[datasetId].getExternalNodeId(targetId), graphs[datasetId].getGraphId(targetId),
+                graphs[datasetId].isBlankNode(targetId));
     }
 }

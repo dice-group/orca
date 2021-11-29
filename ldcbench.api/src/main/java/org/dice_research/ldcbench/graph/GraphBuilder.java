@@ -82,12 +82,9 @@ public interface GraphBuilder extends Graph {
     public void setGraphIdOfNode(int nodeId, int graphId, int externalId);
 
     /**
-     * Append a given number of Blank Nodes to an existing graph.
-     * Edges are created to link to the Blank Nodes.
+     * Sets the index of the first blank node of the graph.
      *
-     * @param nodeCount
-     *            the number of blank nodes
-     * @param seed 
+     * @param index
      */
-    public void addBlankNodes(int nodeCount, long seed);
+    public void setBlankNodesIndex(int index);
 }
