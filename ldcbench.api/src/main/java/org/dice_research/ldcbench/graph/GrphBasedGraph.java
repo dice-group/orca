@@ -37,11 +37,11 @@ public class GrphBasedGraph implements GraphBuilder {
     /**
      * Index of first blank node of this graph.
      */
-    protected int blankNodesIndex = Integer.MAX_VALUE;
+    protected int[] blankNodesRange = {Integer.MAX_VALUE,Integer.MAX_VALUE};
     /**
      * Index of first literal of this graph.
      */
-    protected int literalsIndex = Integer.MAX_VALUE;
+    protected int[] literalsRange = {Integer.MAX_VALUE,Integer.MAX_VALUE};
     /**
      * Constructor for an empty GraphBuilder.
      */
@@ -143,13 +143,13 @@ public class GrphBasedGraph implements GraphBuilder {
     }
 
     @Override
-    public int getBlankNodesIndex() {
-        return blankNodesIndex;
+    public int[] getBlankNodesRange() {
+        return blankNodesRange;
     }
 
     @Override
-    public int getLiteralsIndex() {
-        return literalsIndex;
+    public int[] getLiteralsRange() {
+        return literalsRange;
     }
 
     public boolean addEdge(int sourceId, int targetId, int typeId) {
@@ -273,17 +273,23 @@ public class GrphBasedGraph implements GraphBuilder {
 
     @Override
     public boolean isBlankNode(int nodeId) {
-        return nodeId >= getBlankNodesIndex();
+        return nodeId >= getBlankNodesRange()[0] && nodeId <= getBlankNodesRange()[1];
     }
 
     @Override
-    public void setBlankNodesIndex(int index) {
-        blankNodesIndex = index;
+    public void setBlankNodesRange(int firstBnodeId, int bNodesCount) {
+        blankNodesRange[0] = firstBnodeId;
+        blankNodesRange[1] = firstBnodeId + bNodesCount;
     }
 
     @Override
-    public void addLiterals(int literalsCount, long seed) {
-        // TODO Auto-generated method stub
-        
+    public void setLiteralsRange(int firstLiteralId, int literalsCount) {
+        literalsRange[0] = firstLiteralId;
+        literalsRange[1] = firstLiteralId + literalsCount;
+    }
+
+    @Override
+    public boolean isLiteral(int nodeId) {
+        return nodeId >= getLiteralsRange()[0] && nodeId <= getLiteralsRange()[1];
     }
 }

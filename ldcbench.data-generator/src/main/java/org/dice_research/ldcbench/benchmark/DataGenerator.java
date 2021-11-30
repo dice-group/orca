@@ -245,12 +245,31 @@ public class DataGenerator extends AbstractDataGenerator {
      */
     private void addBlankNodes(GraphBuilder g, int nodeCount, long seed) {
         int blankNodesIndex = g.getNumberOfNodes();
-        g.setBlankNodesIndex(blankNodesIndex);
+        g.setBlankNodesRange(blankNodesIndex, nodeCount);
+        addBNodesOrLiterals(g, blankNodesIndex, nodeCount, seed);
+    }
+
+    /**
+     * Append a given number of literals to an existing graph.
+     * Edges are created to link to the literals.
+     *
+     * @param g the graph
+     * @param nodeCount
+     *            the number of literals
+     * @param seed
+     */
+    private void addLiterals(GraphBuilder g, int nodeCount, long seed) {
+        int literalIndex = g.getNumberOfNodes();
+        g.setLiteralsRange(literalIndex, nodeCount);
+        addBNodesOrLiterals(g, literalIndex, nodeCount, seed);
+    }
+
+    private void addBNodesOrLiterals(GraphBuilder g, int index, int NumberOfNodes, long seed) {
         Random generator = new Random(seed);
-        g.addNodes(nodeCount);
-        for (int i = blankNodesIndex; i < g.getNumberOfNodes(); i++) {
+        g.addNodes(NumberOfNodes);
+        for (int i = index; i < g.getNumberOfNodes(); i++) {
             //Get a random Source Node
-            int sourceNode = generator.nextInt(blankNodesIndex);
+            int sourceNode = generator.nextInt(index);
             int propertyId = 0;
             g.addEdge(sourceNode, i, propertyId);
         }
@@ -419,7 +438,7 @@ public class DataGenerator extends AbstractDataGenerator {
             addBlankNodes(graph, (int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),
                     seedGenerator.getNextSeed());
             literalsRatio = Double.parseDouble(EnvVariables.getString(ENV_LITERALS_RATIO));
-            graph.addLiterals((int) Math.ceil(graph.getNumberOfNodes() * literalsRatio),
+            addLiterals(graph, (int) Math.ceil(graph.getNumberOfNodes() * literalsRatio),
                     seedGenerator.getNextSeed());
 
             // Send the final graph data.

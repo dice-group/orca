@@ -128,24 +128,32 @@ public interface Graph {
     public int getExternalNodeId(int nodeId);
 
     /**
-     * Returns the ID of the first Blank Node of the graph
+     * Returns the range of Blank Nodes of the graph
      *
-     * @return the ID of the first Blank Node
+     * @return the range of Blank Nodes of the graph
      */
-    public int getBlankNodesIndex();
+    public int[] getBlankNodesRange();
 
     /**
-     * Returns the ID of the first Literal of the graph
+     * Returns the range of literals of the graph
      *
-     * @return the ID of the first Literal
+     * @return the range of literals of the graph
      */
-    public int getLiteralsIndex();
+    public int[] getLiteralsRange();
 
     /**
-     * Check if a node is a blank node or not
+     * Check if a node is a blank node
      *
      * @param nodeId the ID of the node to check
      * @return true if node with given nodeId is blank node and false otherwise
      */
     public boolean isBlankNode(int nodeId);
+
+    /**
+     * Check if a node is a literal
+     *
+     * @param nodeId the ID of the node to check
+     * @return true if node with given nodeId is literal and false otherwise
+     */
+    public boolean isLiteral(int nodeId);
 }

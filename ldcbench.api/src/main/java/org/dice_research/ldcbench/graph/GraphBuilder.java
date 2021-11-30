@@ -82,19 +82,20 @@ public interface GraphBuilder extends Graph {
     public void setGraphIdOfNode(int nodeId, int graphId, int externalId);
 
     /**
-     * Sets the index of the first blank node of the graph.
+     * Sets the range of the blank nodes of the graph.
      *
-     * @param index
+     * @param firstBnodeId
+     * @param bNodeCount
+     *            the number of literals
      */
-    public void setBlankNodesIndex(int index);
+    public void setBlankNodesRange(int firstBnodeId, int bNodesCount);
 
     /**
-     * Append a given number of Literals to an existing graph.
-     * Edges are created to link to the Literals.
+     * Sets the range of the literals of the graph.
      *
+     * @param firstLiteralId
      * @param literalsCount
      *            the number of literals
-     * @param seed
      */
-    public void addLiterals(int literalsCount, long seed);
+    public void setLiteralsRange(int firstLiteralId, int literalsCount);
 }
