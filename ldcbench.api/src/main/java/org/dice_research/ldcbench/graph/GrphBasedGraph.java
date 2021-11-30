@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.IntStream;
 
 import grph.Grph;
@@ -273,25 +272,18 @@ public class GrphBasedGraph implements GraphBuilder {
     }
 
     @Override
-    public void addBlankNodes(int bnodesCount, long seed) {
-        blankNodesIndex = this.getNumberOfNodes();
-        addBNodesOrLiterals(blankNodesIndex, bnodesCount, seed);
+    public boolean isBlankNode(int nodeId) {
+        return nodeId >= getBlankNodesIndex();
+    }
+
+    @Override
+    public void setBlankNodesIndex(int index) {
+        blankNodesIndex = index;
     }
 
     @Override
     public void addLiterals(int literalsCount, long seed) {
-        literalsIndex = this.getNumberOfNodes();
-        addBNodesOrLiterals(literalsIndex, literalsCount, seed);
-    }
-    
-    private void addBNodesOrLiterals(int index, int NumberOfNodes, long seed) {
-        Random generator = new Random(seed);
-        addNodes(NumberOfNodes);
-        for (int i = index; i < this.getNumberOfNodes(); i++) {
-            //Get a random Source Node
-            int sourceNode = generator.nextInt(index);
-            //Set the proper type?
-            addEdge(sourceNode, i, 0);
-        }
+        // TODO Auto-generated method stub
+        
     }
 }

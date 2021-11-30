@@ -14,7 +14,7 @@ public interface TripleCreator {
     public Triple createTriple(int sourceId, int propertyId, int targetId, int targetExtId, int targetExtGraphId);
 
     /**
-     * Create a triple where the Object is a BlankNode or a Literal
+     * Create a triple where the Object might be a BlankNode or a literal
      */
     public Triple createTriple(int sourceId, int propertyId, int targetId, int targetExtId, int targetExtGraphId,
             boolean withBlankNode, boolean withLiteral);

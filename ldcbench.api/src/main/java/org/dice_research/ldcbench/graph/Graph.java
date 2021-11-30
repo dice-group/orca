@@ -133,10 +133,19 @@ public interface Graph {
      * @return the ID of the first Blank Node
      */
     public int getBlankNodesIndex();
+
     /**
      * Returns the ID of the first Literal of the graph
      *
      * @return the ID of the first Literal
      */
     public int getLiteralsIndex();
+
+    /**
+     * Check if a node is a blank node or not
+     *
+     * @param nodeId the ID of the node to check
+     * @return true if node with given nodeId is blank node and false otherwise
+     */
+    public boolean isBlankNode(int nodeId);
 }
