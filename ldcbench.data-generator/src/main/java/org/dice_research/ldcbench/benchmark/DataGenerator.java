@@ -46,6 +46,7 @@ import com.rabbitmq.client.Consumer;
 public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_TYPE_KEY = "LDCBENCH_DATAGENERATOR_TYPE";
     public static final String ENV_NUMBER_OF_NODES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_NODES";
+    public static final String ENV_NUMBER_OF_GRAPHS_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_GRAPHS";
     public static final String ENV_AVERAGE_DEGREE_KEY = "LDCBENCH_DATAGENERATOR_AVERAGE_DEGREE";
     public static final String ENV_NUMBER_OF_EDGES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_EDGES";
     public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
@@ -113,6 +114,10 @@ public class DataGenerator extends AbstractDataGenerator {
      * The number of nodes that should be generated.
      */
     private int numberOfNodes;
+    /**
+     *  The number of graphs for a node
+     */
+    private int numberOfGraphs;
     /**
      * The average degree of the nodes.
      */
@@ -306,6 +311,7 @@ public class DataGenerator extends AbstractDataGenerator {
         seed = seedGenerator.getNextSeed();
 
         numberOfNodes = EnvVariables.getInt(ENV_NUMBER_OF_NODES_KEY, 0);
+        numberOfGraphs = EnvVariables.getInt(ENV_NUMBER_OF_GRAPHS_KEY, 1);
         avgDegree = Double.parseDouble(EnvVariables.getString(ENV_AVERAGE_DEGREE_KEY));
         numberOfEdges = EnvVariables.getInt(ENV_NUMBER_OF_EDGES_KEY, 0);
 

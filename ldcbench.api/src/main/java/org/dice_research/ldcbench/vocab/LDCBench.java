@@ -28,6 +28,7 @@ public class LDCBench {
     public static final Property httpDumpNodeCompressedRatio = property("httpDumpNodeCompressedRatio");
     public static final Property httpDumpNodeWeight = property("httpDumpNodeWeight");
     public static final Property numberOfNodes = property("numberOfNodes");
+    public static final Property numberOfGraphs = property("numberOfGraphs");
     public static final Property macroRecall = property("macroRecall");
     public static final Property microRecall = property("microRecall");
     public static final Property nodeSizeDeterminer = property("nodeSizeDeterminer");

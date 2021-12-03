@@ -41,6 +41,7 @@ For the full license text, see [LICENSE](../LICENSE).
 | Parameter | Description | Ontology resources
 | --- | --- | ---
 | Number of nodes | The number of nodes in the synthetic graph. | [orca:numberOfNodes](http://w3id.org/dice-research/orca/ontology#numberOfNodes)
+| Number of graphs | The number of graphs a node can have. | [orca:numberOfGraphs](http://w3id.org/dice-research/orca/ontology#numberOfGraphs)
 | Average node degree | The average degree of the nodes in the generated graph. | [orca:averageNodeGraphDegree](http://w3id.org/dice-research/orca/ontology#averageNodeGraphDegree)
 | RDF dataset size | Average number of triples of the generated RDF graphs. | [orca:averageTriplesPerNode](http://w3id.org/dice-research/orca/ontology#averageTriplesPerNode)
 | Average resource degree | The average degree of the resources in the RDF graphs. | [orca:averageRdfGraphDegree](http://w3id.org/dice-research/orca/ontology#averageRdfGraphDegree)

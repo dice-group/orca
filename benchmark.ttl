@@ -22,6 +22,7 @@
   hobbit:hasParameter
     :seed,
     :numberOfNodes,
+    :numberOfGraphs,
     :averageTriplesPerNode,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
@@ -76,6 +77,7 @@
   hobbit:hasParameter
     :seed,
     :numberOfNodes,
+    :numberOfGraphs,
     :averageTriplesPerNode,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
@@ -128,6 +130,13 @@
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:integer;
   hobbit:defaultValue "10"^^xsd:integer .
+  
+:numberOfGraphs a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Number of graphs"@en;
+  rdfs:comment "The number of graphs a node can have."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:integer;
+  hobbit:defaultValue "1"^^xsd:integer .
 
 :averageTriplesPerNode a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "RDF dataset size"@en;
