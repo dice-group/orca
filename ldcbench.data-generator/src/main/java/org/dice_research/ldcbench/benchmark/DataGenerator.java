@@ -49,6 +49,7 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_AVERAGE_DEGREE_KEY = "LDCBENCH_DATAGENERATOR_AVERAGE_DEGREE";
     public static final String ENV_BLANK_NODES_RATIO ="LDCBENCH_DATAGENERATOR_BLANK_NODES_RATIO";
     public static final String ENV_LITERALS_RATIO ="LDCBENCH_DATAGENERATOR_LITERALS_RATIO";
+    public static final String ENV_NUMBER_OF_NODES_LINKS ="LDCBENCH_DATAGENERATOR_NUMBER_OF_NODES_LINKS";
     public static final String ENV_NUMBER_OF_EDGES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_EDGES";
     public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
     public static final String ENV_DATAGENERATOR_EXCHANGE_KEY = "LDCBENCH_DATAGENERATOR_EXCHANGE";
@@ -207,30 +208,29 @@ public class DataGenerator extends AbstractDataGenerator {
         dataGeneratorsChannel.basicConsume(queueName, true, consumer);
     }
 
-    protected void addInterlinks(GraphBuilder g) {
+    protected void addInterlinks(GraphBuilder g, int numberOfnodesLinks) {
         int numberOfInternalNodes = g.getNumberOfNodes();
         Random random = new Random(seedGenerator.getNextSeed());
         for (Map.Entry<Integer, GraphMetadata> entry : rdfMetadata.entrySet()) {
             int targetNodeGraph = entry.getKey();
-//            GraphMetadata gm = entry.getValue();
-
-            // use random node
-            int nodeWithOutgoingLink = random.nextInt(numberOfInternalNodes);
-//            if (gm.entranceNodes.length == 0) {
-//                throw new IllegalStateException("Node " + nodeId + " needs to link to node " + targetNodeGraph
-//                        + " but there are no entrypoints.");
-//            }
-            // get node in target graph
-            int entranceInTargetGraph = 0;// FIXME use gm.entranceNodes[random.nextInt(gm.entranceNodes.length)];
-            // add a new node
-            int externalNode = g.addNode();
-            g.setGraphIdOfNode(externalNode, targetNodeGraph, entranceInTargetGraph);
-
-            // FIXME don't always use edge type 0
-            int propertyId = 0;
-            g.addEdge(nodeWithOutgoingLink, externalNode, propertyId);
-            LOGGER.debug("Added the edge ({}, {}, {}) where the target is node {} in graph {}.", nodeWithOutgoingLink,
-                    propertyId, externalNode, entranceInTargetGraph, targetNodeGraph);
+            GraphMetadata gm = entry.getValue();
+            if (gm.entranceNodes.length == 0) {
+                throw new IllegalStateException("Node " + getNodeId() + " needs to link to node " + targetNodeGraph
+                        + " but there are no entrypoints.");
+            }
+            for(int i = 0; i < numberOfnodesLinks; i++) {                
+                // get node in target graph
+                int entranceInTargetGraph = gm.entranceNodes[random.nextInt(gm.entranceNodes.length)];
+                // use random node
+                int nodeWithOutgoingLink = random.nextInt(numberOfInternalNodes);
+                // add a new node
+                int externalNode = g.addNode();
+                g.setGraphIdOfNode(externalNode, targetNodeGraph, entranceInTargetGraph);
+                int propertyId = i;
+                g.addEdge(nodeWithOutgoingLink, externalNode, propertyId);
+                LOGGER.debug("Added the edge ({}, {}, {}) where the target is node {} in graph {}.", nodeWithOutgoingLink,
+                        propertyId, externalNode, entranceInTargetGraph, targetNodeGraph);
+            }
         }
     }
 
@@ -432,7 +432,8 @@ public class DataGenerator extends AbstractDataGenerator {
             targetMetadataReceivedSemaphore.acquire(rdfMetadata.size());
 
             LOGGER.info("Got all relevant rdf graphs.", generatorId);
-            addInterlinks(graph);
+            int numberOfnodesLinks = Integer.parseInt(EnvVariables.getString(ENV_NUMBER_OF_NODES_LINKS));
+            addInterlinks(graph, numberOfnodesLinks);
 
             blankNodesRatio = Double.parseDouble(EnvVariables.getString(ENV_BLANK_NODES_RATIO));
             addBlankNodes(graph, (int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),

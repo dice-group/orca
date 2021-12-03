@@ -25,6 +25,7 @@
     :averageTriplesPerNode,
     :blankNodesRatio,
     :literalsRatio,
+    :numberOfNodesLinks,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
     :averageCrawlDelay,
@@ -81,6 +82,7 @@
     :averageTriplesPerNode,
     :blankNodesRatio,
     :literalsRatio,
+    :numberOfNodesLinks,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
     :averageCrawlDelay,
@@ -153,6 +155,13 @@
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:double;
   hobbit:defaultValue "0.5"^^xsd:double .
+
+:numberOfNodesLinks a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Number of links between nodes"@en;
+  rdfs:comment "The number of links between the nodes of the synthetic graph."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:integer;
+  hobbit:defaultValue "3"^^xsd:integer .
 
 :averageNodeGraphDegree a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Average node degree"@en;

@@ -27,6 +27,7 @@ experiments:New a hobbit:Experiment;
   :numberOfNodes 3;
   :blankNodesRatio 0.5;
   :literalsRatio 0.5;
+  :numberOfNodesLinks 3;
   :dataset :LemmingTestDataset;
   :averageNodeGraphDegree 2.
 
