@@ -51,7 +51,7 @@ public interface NodeManager {
      * @param triplesPerNode        the average number of triples per node
      * @return the environmental values for the generated node's data generator.
      */
-    public String[] getDataGeneratorEnvironment(long averageRdfGraphDegree, long triplesPerNode, long numberOfGraphs = 1);
+    public String[] getDataGeneratorEnvironment(long averageRdfGraphDegree, long triplesPerNode, long numberOfGraphs);
 
     /**
      * Returns the label of the node type.

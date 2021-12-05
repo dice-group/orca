@@ -227,7 +227,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 .getInt();
         int averageRdfGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageRdfGraphDegree)
                 .getInt();
-        int numberOfGraphs = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfGraphs
+        int numberOfGraphs = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfGraphs)
                 .getInt();
         double httpDumpNodeCompressedRatio = RdfHelper
                 .getLiteral(benchmarkParamModel, null, LDCBench.httpDumpNodeCompressedRatio).getDouble();
