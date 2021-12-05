@@ -39,7 +39,7 @@ import com.rabbitmq.client.Consumer;
  * Data generator of ORCA. It fulfills two main roles: either, it generates the
  * node graph, i.e., the graph comprising the single nodes (= servers) of the
  * synthetic cloud, or it generates the RDF graph for a single node.
- * 
+ *
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
@@ -59,7 +59,7 @@ public class DataGenerator extends AbstractDataGenerator {
 
     /**
      * Types of data generator instances.
-     * 
+     *
      * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
      */
     public static enum Types {
@@ -230,26 +230,27 @@ public class DataGenerator extends AbstractDataGenerator {
         }
     }
 
-    protected void sendFinalGraphs(Graph[] g) throws Exception {
-    	for(Graph myg : g) { //should i overide serializer as well?
-    		byte[] data = SerializationHelper.serialize(SERIALIZER_CLASS, myg);
-            String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d"
-                    + ApiConstants.FILE_ENDING_GRAPH, getNodeId());
+    //TODO remove
+    // protected void sendFinalGraphs(Graph[] g) throws Exception {
+    // 	for(Graph myg : g) { //should i overide serializer as well?
+    // 		byte[] data = SerializationHelper.serialize(SERIALIZER_CLASS, myg);
+    //         String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d"
+    //                 + ApiConstants.FILE_ENDING_GRAPH, getNodeId());
 
-            // TODO: Use RabbitMQ exchange to send the data (SimpleFileSender doesn't
-            // support that)
-            try (InputStream is = new ByteArrayInputStream(data);
-                    SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, dataQueueName);) {
-                dataSender.streamData(is, name);
-            }
+    //         // TODO: Use RabbitMQ exchange to send the data (SimpleFileSender doesn't
+    //         // support that)
+    //         try (InputStream is = new ByteArrayInputStream(data);
+    //                 SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, dataQueueName);) {
+    //             dataSender.streamData(is, name);
+    //         }
 
-            try (InputStream is = new ByteArrayInputStream(data);
-                    SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, evalDataQueueName);) {
-                dataSender.streamData(is, name);
-            }
-    	}
-    }
-    
+    //         try (InputStream is = new ByteArrayInputStream(data);
+    //                 SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, evalDataQueueName);) {
+    //             dataSender.streamData(is, name);
+    //         }
+    // 	}
+    // }
+
     protected void sendFinalGraph(Graph g) throws Exception {
         byte[] data = SerializationHelper.serialize(SERIALIZER_CLASS, g);
         String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d"
@@ -271,7 +272,7 @@ public class DataGenerator extends AbstractDataGenerator {
     /**
      * Factory method to create the {@link GraphGenerator} instance used to
      * generated the node graph.
-     * 
+     *
      * @return the {@link GraphGenerator} instance used to generated the node graph
      */
     protected GraphGenerator createNodeGraphGenerator() {
@@ -287,7 +288,7 @@ public class DataGenerator extends AbstractDataGenerator {
     /**
      * Factory method to create the {@link GraphGenerator} instance used to
      * generated the RDF graph.
-     * 
+     *
      * @return the {@link GraphGenerator} instance used to generated the RDF graph
      */
     protected GraphGenerator createRDFGraphGenerator() {
@@ -347,29 +348,31 @@ public class DataGenerator extends AbstractDataGenerator {
             generator = createRDFGraphGenerator();
         }
 
-        GraphBuilder graph = new GrphBasedGraph();
-        
+        // GraphBuilder graph = new GrphBasedGraph(); TODO remove
+
         //initialize two graphs
-        GraphBuilder multiGraph[] = new GraphBuilder[2];
-        for (GraphBuilder mygraph : multiGraph) {
+        GraphBuilder graphs[] = new GraphBuilder[numberOfGraphs];
+        for (GraphBuilder mygraph : graphs) {
         	mygraph = new GrphBasedGraph();
         }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
-            nodeGraph = graph;
+            nodeGraph = graphs[0];
         }
 
         if (numberOfNodes != 0) {
             LOGGER.debug("Generator {} : Generating a graph with {} nodes {} average degree and {} seed", generatorId,
                     numberOfNodes, avgDegree, seed);
             //generator.generateGraph(numberOfNodes, avgDegree, seed, graph);
-            for (GraphBuilder mygraph : multiGraph) {
-            	generator.generateGraph(numberOfNodes/2, avgDegree, seed, mygraph); //by 2 because split
+            for (GraphBuilder mygraph : graphs) {
+            	generator.generateGraph(numberOfNodes/numberOfGraphs, avgDegree, seed, mygraph); //TODO how many nodes should the graph have in case of multiple graphs?
             }
         } else {
             LOGGER.debug("Generator {} : Generating a graph with {} average degree and {} edges and {} seed",
                     generatorId, avgDegree, numberOfEdges, seed);
-            generator.generateGraph(avgDegree, numberOfEdges, seed, graph);
+            for (GraphBuilder mygraph : graphs) {
+            	generator.generateGraph(avgDegree, numberOfEdges, seed, mygraph); //TODO how many nodes should the graph have in case of multiple graphs? (see above)
+            }
         }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
@@ -404,18 +407,18 @@ public class DataGenerator extends AbstractDataGenerator {
 //            output.writeObject(gm);
 //
 //            dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.toByteArray());
-        	
-        	for (GraphBuilder mygraph : multiGraph) {
+
+        	for (GraphBuilder mygraph : graphs) {
         		GraphMetadata gm = new GraphMetadata();
                 gm.numberOfNodes = mygraph.getNumberOfNodes();
                 gm.entranceNodes = mygraph.getEntranceNodes();
                 gm.graphId = mygraph.getGraphId();
-  
+
                 ByteArrayOutputStream buf = new ByteArrayOutputStream();
                 buf.write(header.array(), 0, header.capacity());
                 ObjectOutputStream output = new ObjectOutputStream(buf);
                 output.writeObject(gm);
-  
+
                 dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.toByteArray());
             }
         }
@@ -431,12 +434,33 @@ public class DataGenerator extends AbstractDataGenerator {
             targetMetadataReceivedSemaphore.acquire(rdfMetadata.size());
 
             LOGGER.info("Got all relevant rdf graphs.", generatorId);
-            addInterlinks(graph);
 
-            // Send the final graph data.
+            for (GraphBuilder mygraph : graphs) {
+                addInterlinks(mygraph);
+            }
+
+            // Send the final graph(s) data.
             LOGGER.info("Sending the final rdf graph data...");
-            sendFinalGraph(graph);
-            sendFinalGraphs(multiGraph);
+            for(GraphBuilder g: graphs)
+                sendFinalGraph(g);
+            /**
+             * (i have now implemented approach 3)
+             *
+             * ThorenG
+             * TODO PROBLEM:
+             * the sendFinalGraph()-function is overridden by the other dataGenerators (like RDFa)
+             * With this implementation, the other generators will not work, because sendFinalGraph() is never called
+             *
+             * 1st approach: We actually only want DumpFileNodes to have multiple graphs?!
+             * --> only use sendFinalGraphs() in this case
+             *      but the data generator does not now wether we are generating data for the dumpfilenode or any other node..
+             * 2nd approach: Change the sendFinalGraphs-Parameter to an Array
+             * --> the function must be changed everywhere
+             * 3rd approach: call sendFinalGraphs in a loop
+             *  (best one, isn't it)
+             * 4th approach: call sendFinalGraph for the first element of graphs and sendFinalGraphs for the remaining
+             *   mehhh.. that's crap
+             */
         }
 
         LOGGER.debug("Generation done.", generatorId);
@@ -445,7 +469,7 @@ public class DataGenerator extends AbstractDataGenerator {
     /**
      * Parses the given string assuming that it has been generated with
      * {@link Arrays#toString()}.
-     * 
+     *
      * @param envValue the string containing the array
      * @return the parsed String array
      */
