@@ -1,6 +1,7 @@
 package org.dice_research.ldcbench.rdf;
 
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.dice_research.ldcbench.graph.Graph;
@@ -38,9 +39,19 @@ public class SimpleTripleCreator implements TripleCreator {
 
     @Override
     public Triple createTriple(int sourceId, int propertyId, int targetId, int targetExtId, int targetExtGraphId) {
+        return createTriple(sourceId, propertyId, targetId, targetExtId, targetExtGraphId, false);
+    }
+
+    @Override
+    public Triple createTriple(int sourceId, int propertyId, int targetId, int targetExtId,
+            int targetExtGraphId, boolean withBlankNode) {
         return new Triple(createNode(sourceId, -1, Graph.INTERNAL_NODE_GRAPH_ID, false),
                 createNode(propertyId, -1, Graph.INTERNAL_NODE_GRAPH_ID, true),
-                createNode(targetId, targetExtId, targetExtGraphId, false));
+                createNode(targetId, targetExtId, targetExtGraphId, false, withBlankNode));
+    }
+
+    public Node createNode(int nodeId, int externalId, int extGraphId, boolean isProperty) {
+        return createNode(nodeId, externalId, extGraphId, isProperty, false);
     }
 
     /**
@@ -56,9 +67,16 @@ public class SimpleTripleCreator implements TripleCreator {
      *            it is an internal node
      * @param isProperty
      *            a flag indicating whether the node is a property
+     * @param isBlankNode
+     *            a flag indicating wheter the node is a blankNode
      * @return the created {@link Node} instance
      */
-    public Node createNode(int nodeId, int externalId, int extGraphId, boolean isProperty) {
+    public Node createNode(int nodeId, int externalId, int extGraphId, boolean isProperty, boolean isBlankNode) {
+        Node n;
+        if (isBlankNode) {
+            n = NodeFactory.createBlankNode(String.valueOf(nodeId));
+            return n;
+        }
         String domain;
         if (extGraphId == Graph.INTERNAL_NODE_GRAPH_ID) {
             externalId = nodeId;
@@ -70,7 +88,6 @@ public class SimpleTripleCreator implements TripleCreator {
             domain = accessUriTemplates[extGraphId];
             // TODO get the datasetId on the other server
         }
-        Node n;
         if (isProperty) {
             n = ResourceFactory.createProperty(UriHelper.createUri(domain, 0, UriHelper.PROPERTY_NODE_TYPE, externalId))
                     .asNode();
