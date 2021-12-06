@@ -36,6 +36,7 @@ public class LDCBench {
     public static final Property ratioOfRequestedDisallowedResources = property("ratioOfRequestedDisallowedResources");
     public static final Property rdfaNodeWeight = property("rdfaNodeWeight");
     public static final Property jsonldNodeWeight = property("jsonldNodeWeight");
+    public static final Property microdataNodeWeight = property("microdataNodeWeight");
     public static final Property resourceUsageOverTime = property("resourceUsageOverTime");
     public static final Property runtime = property("runtime");
     public static final Property seed = property("seed");
@@ -56,7 +57,7 @@ public class LDCBench {
     public static final Property maxCrawlDelay = property("maxCrawlDelay");
     public static final Property minAverageCrawlDelayFulfillment = property("minAverageCrawlDelayFulfillment");
     public static final Property maxAverageCrawlDelayFulfillment = property("maxAverageCrawlDelayFulfillment");
-    
+
     public static final Property lemmingDataset = property("lemmingDataset");
     public static final Property lemmingDatasetDirectory = property("datasetDirectory");
 

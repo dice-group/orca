@@ -22,6 +22,7 @@ import org.dice_research.ldcbench.nodes.http.simple.CrawleableResourceContainer;
 import org.dice_research.ldcbench.nodes.http.simple.FileBasedResource;
 import org.dice_research.ldcbench.nodes.http.simple.SimpleHttpServerComponent;
 import org.dice_research.ldcbench.nodes.rabbit.DataHandler;
+import org.dice_research.ldcbench.utils.CloseableHelper;
 import org.dice_research.ldcbench.utils.tar.FileHandler;
 import org.dice_research.ldcbench.utils.tar.SimpleWritingFileHandler;
 import org.dice_research.ldcbench.utils.tar.TarFileReader;
@@ -72,9 +73,9 @@ public class SimpleHEComponent extends SimpleHttpServerComponent {
         String pathTemplate;
         if(singleFileNode) {
             // Create path including the single file name
-            StringBuilder builder = new StringBuilder(CONTENT_EXTRACTION_DIR);
+            StringBuilder builder = new StringBuilder("/" + CONTENT_EXTRACTION_DIR);
             builder.append(SINGLE_FILE_NAME);
-            singleFilePath = builder.toString();
+            singleFilePath = "." + builder.toString();
             LOGGER.debug("Path: {}", singleFilePath);
             builder.append("#%s-%s-%s-%s");
             pathTemplate = builder.toString();
@@ -167,7 +168,7 @@ public class SimpleHEComponent extends SimpleHttpServerComponent {
        ArrayList<CrawleableResource> resources = new ArrayList<>();
        CrawleableResource resource = null;
 
-       if (dumpFileNode) {
+       if (singleFileNode || dumpFileNode) {
            resource = new SingleFileResource(r -> r.getPath().toString().equals(singleFilePath), singleFilePath);
        }
        //Objects.requireNonNull(resource, "Couldn't create crawleable resource. Exiting.");
@@ -180,7 +181,7 @@ public class SimpleHEComponent extends SimpleHttpServerComponent {
     @SuppressWarnings("deprecation")
     @Override
     public void close() throws IOException {
-        IOUtils.closeQuietly(connection);
+        CloseableHelper.closeQuietly(connection);
         try {
             if (server != null) {
                 server.stop();

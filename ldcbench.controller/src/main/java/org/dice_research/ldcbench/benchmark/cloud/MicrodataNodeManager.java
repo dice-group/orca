@@ -6,14 +6,14 @@ import org.dice_research.ldcbench.vocab.LDCBench;
 import org.dice_research.ldcbench.Constants;
 
 /**
- * Manager class for an RDFa node.
+ * Manager class for a microdata node.
  *
- * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
+ * @author Thoren Grüttemeier (thoreng@uni-paderborn.de)
  *
  */
-public class RDFaNodeManager extends AbstractNodeManager {
+public class MicrodataNodeManager extends AbstractNodeManager {
     public static Property getBenchmarkParameter() {
-        return LDCBench.rdfaNodeWeight;
+        return LDCBench.microdataNodeWeight;
     }
 
     @Override
@@ -44,11 +44,11 @@ public class RDFaNodeManager extends AbstractNodeManager {
 
     @Override
     public String getLabel() {
-        return "RDFa";
+        return "Microdata";
     }
 
     @Override
     public String getDataGeneratorImageName() {
-        return Constants.RDFADATAGEN_IMAGE_NAME;
+        return Constants.MICRODATAGEN_IMAGE_NAME;
     }
 }

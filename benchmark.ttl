@@ -33,6 +33,7 @@
     :sparqlNodeWeight,
     :rdfaNodeWeight,
     :jsonldNodeWeight,
+    :microdataNodeWeight,
     :httpDumpNodeWeight,
     :httpDumpNodeCompressedRatio,
     :useTurtleDumps,
@@ -71,7 +72,8 @@
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.eval-module",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.http-node",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.rdfa-gen",
-    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.rdfa-node",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.html-embd-node",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.microdata-gen",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.sparql-node",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.system";
   hobbit:version "v1.1"@en;
@@ -88,12 +90,15 @@
     :ckanNodeWeight,
     :sparqlNodeWeight,
     :rdfaNodeWeight,
+    :jsonldNodeWeight,
+    :microdataNodeWeight,
     :httpDumpNodeWeight,
     :httpDumpNodeCompressedRatio,
     :useTurtleDumps,
     :useN3Dumps,
     :useRdfXmlDumps,
     :useNtDumps,
+    :useJsonLdDumps,
     :graphVisualization,
     :triplesEvaluated,
     :numberOfDisallowedResources,
@@ -202,6 +207,13 @@
   rdfs:range xsd:float;
   hobbit:defaultValue "1"^^xsd:float .
 
+:jsonldNodeWeight a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Weight of JsonLD node occurrence"@en;
+  rdfs:comment "The proportion of nodes that should have this type. If above 0, at least one node of this type would exist."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:float;
+  hobbit:defaultValue "1"^^xsd:float .
+
 :httpDumpNodeWeight a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Weight of HTTP dump file node occurrence"@en;
   rdfs:comment "The proportion of nodes that should have this type. If above 0, at least one node of this type would exist."@en;
@@ -219,6 +231,13 @@
 :useTurtleDumps a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Use TTL dumps"@en;
   rdfs:comment "Whether HTTP dump nodes would include Turtle serialization."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:boolean;
+  hobbit:defaultValue "true"^^xsd:boolean .
+
+:useJsonLdDumps a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Use JsonLD dumps"@en;
+  rdfs:comment "Whether HTTP dump nodes would include JsonLD serialization."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:boolean;
   hobbit:defaultValue "true"^^xsd:boolean .
