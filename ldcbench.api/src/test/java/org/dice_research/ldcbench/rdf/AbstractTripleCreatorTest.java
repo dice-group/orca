@@ -10,26 +10,24 @@ public abstract class AbstractTripleCreatorTest {
     protected TripleCreator creator;
     protected int edgeData[];
     protected String expectedUris[];
-    protected boolean hasBlankNode;
-    protected boolean hasLiteral;
+    protected RDFNodeType targetNodeType;
 
     public AbstractTripleCreatorTest(TripleCreator creator, int edgeData[], String expectedUris[],
-            boolean hasBlankNode, boolean hasLiteral) {
+            RDFNodeType targetNodeType) {
         this.creator = creator;
         this.edgeData = edgeData;
         this.expectedUris = expectedUris;
-        this.hasBlankNode = hasBlankNode;
-        this.hasLiteral = hasLiteral;
+        this.targetNodeType = targetNodeType;
     }
     
     @Test
     public void test() {
-        Triple t = creator.createTriple(edgeData[0], edgeData[1], edgeData[2], edgeData[3], edgeData[4], hasBlankNode, hasLiteral);
+        Triple t = creator.createTriple(edgeData[0], edgeData[1], edgeData[2], edgeData[3], edgeData[4], targetNodeType);
         checkNode(t.getSubject(), expectedUris[0]);
         checkNode(t.getPredicate(), expectedUris[1]);
-        if(hasBlankNode)
+        if(targetNodeType == RDFNodeType.BlankNode)
             Assert.assertTrue(t.getObject().isBlank());
-        else if(hasLiteral)
+        else if(targetNodeType == RDFNodeType.Literal)
             Assert.assertTrue(t.getObject().isLiteral());
         else
             checkNode(t.getObject(), expectedUris[2]);

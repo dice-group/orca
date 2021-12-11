@@ -30,6 +30,7 @@ import org.dice_research.ldcbench.nodes.http.simple.dump.DumpFileResource;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.Archiver;
 import org.dice_research.ldcbench.nodes.http.simple.dump.comp.CompressionStreamFactory;
 import org.dice_research.ldcbench.nodes.utils.LangUtils;
+import org.dice_research.ldcbench.rdf.RDFNodeType;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.rdf.UriHelper;
 import org.dice_research.ldcbench.utils.CloseableHelper;
@@ -200,7 +201,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
                     }
                     int disallowedNode = gb.addNode();
                     gb.addEdge(linkingNode, disallowedNode, 0);
-                    String path = new URL(tripleCreator.createNode(disallowedNode, -1, -1, false).toString()).getPath();
+                    String path = new URL(tripleCreator.createNode(disallowedNode, -1, -1).toString()).getPath();
                     disallowedPaths.add(path);
                     LOGGER.debug("Added a disallowed resource {}.", path);
                 }

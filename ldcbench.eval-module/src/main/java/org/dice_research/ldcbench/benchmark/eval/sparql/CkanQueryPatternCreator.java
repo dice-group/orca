@@ -7,6 +7,7 @@ import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+import org.dice_research.ldcbench.rdf.RDFNodeType;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 
 public class CkanQueryPatternCreator implements QueryPatternCreator {
@@ -31,7 +32,7 @@ public class CkanQueryPatternCreator implements QueryPatternCreator {
         ElementTriplesBlock pattern = new ElementTriplesBlock();
         Node dataset = NodeFactory.createVariable("dataset");
         Node distribution = NodeFactory.createVariable("resource");
-        Node target = tripleCreator.createNode(targetId, targetExtId, targetExtGraphId, false);
+        Node target = tripleCreator.createNode(targetId, targetExtId, targetExtGraphId);
         pattern.addTriple(new Triple(dataset, RDF.type.asNode(), DCAT.Dataset.asNode()));
         pattern.addTriple(new Triple(dataset, DCAT.distribution.asNode(), distribution));
         pattern.addTriple(new Triple(dataset, DCTerms.title.asNode(), NodeFactory.createLiteral("Dataset " + target.getURI())));

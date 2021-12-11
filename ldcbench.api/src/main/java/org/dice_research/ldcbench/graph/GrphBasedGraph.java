@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.IntStream;
 
+import org.dice_research.ldcbench.rdf.RDFNodeType;
+
 import grph.Grph;
 import grph.in_memory.InMemoryGrph;
 import it.unimi.dsi.fastutil.ints.IntIterator;
@@ -142,6 +144,12 @@ public class GrphBasedGraph implements GraphBuilder {
         return graph.getNumberOfEdges();
     }
 
+    public int getNumberOfIriNodes() {
+        int numberOfBlankNode = blankNodesRange[1] - blankNodesRange[0];
+        int numberOfLiterals = literalsRange[1] - literalsRange[0];
+        return this.getNumberOfNodes() - numberOfBlankNode - numberOfLiterals;
+    }
+
     @Override
     public int[] getBlankNodesRange() {
         return blankNodesRange;
@@ -273,7 +281,7 @@ public class GrphBasedGraph implements GraphBuilder {
 
     @Override
     public boolean isBlankNode(int nodeId) {
-        return nodeId >= getBlankNodesRange()[0] && nodeId <= getBlankNodesRange()[1];
+        return nodeId >= getBlankNodesRange()[0] && nodeId < getBlankNodesRange()[1];
     }
 
     @Override
@@ -290,6 +298,15 @@ public class GrphBasedGraph implements GraphBuilder {
 
     @Override
     public boolean isLiteral(int nodeId) {
-        return nodeId >= getLiteralsRange()[0] && nodeId <= getLiteralsRange()[1];
+        return nodeId >= getLiteralsRange()[0] && nodeId < getLiteralsRange()[1];
+    }
+
+    @Override
+    public RDFNodeType getNodeType(int nodeId) {
+        if (this.isBlankNode(nodeId))
+            return RDFNodeType.BlankNode;
+        if (this.isLiteral(nodeId))
+            return RDFNodeType.Literal;
+        return RDFNodeType.IRI;
     }
 }

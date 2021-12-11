@@ -18,18 +18,18 @@ public class SimpleCachingTripleCreatorTest extends AbstractTripleCreatorTest {
     }
 
     public SimpleCachingTripleCreatorTest(int baseGraphId, String[] resourceUriTemplates, String[] accessUriTemplates, int edge[],
-            String expectedUris[], boolean hasBlankNode, boolean hasLiteral) {
-        super(new SimpleCachingTripleCreator(baseGraphId, resourceUriTemplates, accessUriTemplates), edge, expectedUris, hasBlankNode, hasLiteral);
+            String expectedUris[], RDFNodeType targetNodeType) {
+        super(new SimpleCachingTripleCreator(baseGraphId, resourceUriTemplates, accessUriTemplates), edge, expectedUris, targetNodeType);
     }
 
     @Test
     public void test() {
-        Triple t = creator.createTriple(edgeData[0], edgeData[1], edgeData[2], edgeData[3], edgeData[4], hasBlankNode, hasLiteral);
+        Triple t = creator.createTriple(edgeData[0], edgeData[1], edgeData[2], edgeData[3], edgeData[4], targetNodeType);
         checkNode(t.getSubject(), expectedUris[0]);
         checkNode(t.getPredicate(), expectedUris[1]);
-        if(hasBlankNode)
+        if(targetNodeType == RDFNodeType.BlankNode)
             Assert.assertTrue(t.getObject().isBlank());
-        else if(hasLiteral)
+        else if(targetNodeType == RDFNodeType.Literal)
             Assert.assertTrue(t.getObject().isLiteral());
         else
             checkNode(t.getObject(), expectedUris[2]);

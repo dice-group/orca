@@ -1,5 +1,7 @@
 package org.dice_research.ldcbench.graph;
 
+import org.dice_research.ldcbench.rdf.RDFNodeType;
+
 /**
  * A simple graph interface for the graphs LDC-bench is using. The nodes are
  * represented by IDs. Edges are directed and represented using the nodes IDs of
@@ -156,4 +158,18 @@ public interface Graph {
      * @return true if node with given nodeId is literal and false otherwise
      */
     public boolean isLiteral(int nodeId);
+
+    /**
+     * Returns the number of IRI nodes of the graph
+     *
+     * @return the number of IRI nodes of the graph
+     */
+    public int getNumberOfIriNodes();
+
+    /**
+     * Return the type of a given node
+     * @param nodeId the id of the node
+     * @return the type of the node with the given id
+     */
+    public RDFNodeType getNodeType(int nodeId);
 }
