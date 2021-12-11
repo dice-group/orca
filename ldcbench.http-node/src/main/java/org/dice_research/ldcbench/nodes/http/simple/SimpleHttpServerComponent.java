@@ -68,6 +68,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
     protected CompressionStreamFactory dumpFileCompression = null;
     protected Archiver dumpfileArchiver = null;
     protected int noOfGraphs;
+    protected boolean multipleFiles=false; 
 
     @Override
     public void initBeforeDataGeneration() throws Exception {
@@ -76,7 +77,8 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
         disallowedRatio = Double.parseDouble(EnvVariables.getString(ApiConstants.ENV_DISALLOWED_RATIO_KEY, LOGGER));
         crawlDelay = EnvVariables.getInt(ApiConstants.ENV_CRAWL_DELAY_KEY, LOGGER);
         noOfGraphs = EnvVariables.getInt(ApiConstants.ENV_NUMBER_OF_GRAPHS_KEY,1,LOGGER);
-        
+        if(noOfGraphs >1)
+        	multipleFiles = true;      
 
         String hostname = InetAddress.getLocalHost().getHostName();
         LOGGER.info("Hostname: {}", hostname);
@@ -183,7 +185,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
                        Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
                        graphs.toArray(new Graph[graphs.size()]),
                        r -> r.getPath().toString().equals(dumpFilePath),
-                       dumpFileLang, dumpFileCompression, false,dumpfileArchiver);
+                       dumpFileLang, dumpFileCompression,multipleFiles,dumpfileArchiver);
         	   
         	   resources.add(resource);
         	}
