@@ -36,4 +36,5 @@ experiments:New a hobbit:Experiment;
   #             at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:583)
   :sparqlNodeWeight 0;
   :numberOfNodes 3;
+  :numberOfGraphs 2;
   :averageNodeGraphDegree 2.
