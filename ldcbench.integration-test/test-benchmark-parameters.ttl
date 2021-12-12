@@ -26,6 +26,7 @@ experiments:New a hobbit:Experiment;
   :rdfaNodeWeight 1;
   :ckanNodeWeight 0.01;
   :jsonldNodeWeight 1;
+  :microdataNodeWeight 1;
   # FIXME if using SPARQL node:
   #
   #     ERROR [org.hobbit.sdk.utils.ComponentsExecutor] - <Error while running component SimpleSparqlComponent:>
