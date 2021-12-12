@@ -352,8 +352,8 @@ public class DataGenerator extends AbstractDataGenerator {
 
         //initialize two graphs
         GraphBuilder graphs[] = new GraphBuilder[numberOfGraphs];
-        for (GraphBuilder mygraph : graphs) {
-        	mygraph = new GrphBasedGraph();
+        for (int i = 0; i < numberOfGraphs; i++) {
+        	graphs[i] = new GrphBasedGraph();
         }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
@@ -361,17 +361,17 @@ public class DataGenerator extends AbstractDataGenerator {
         }
 
         if (numberOfNodes != 0) {
-            LOGGER.debug("Generator {} : Generating a graph with {} nodes {} average degree and {} seed", generatorId,
-                    numberOfNodes, avgDegree, seed);
-            //generator.generateGraph(numberOfNodes, avgDegree, seed, graph);
+            LOGGER.debug("Generator {} : Generating {} Graphs", generatorId, numberOfGraphs);
             for (GraphBuilder mygraph : graphs) {
-            	generator.generateGraph(numberOfNodes/numberOfGraphs, avgDegree, seed, mygraph); //TODO how many nodes should the graph have in case of multiple graphs?
+                LOGGER.debug("Generator {} : Generating a graph with {} nodes {} average degree and {} seed", generatorId,
+                        numberOfNodes, avgDegree, seed);
+            	generator.generateGraph(numberOfNodes/numberOfGraphs, avgDegree, seed, mygraph);
             }
         } else {
             LOGGER.debug("Generator {} : Generating a graph with {} average degree and {} edges and {} seed",
                     generatorId, avgDegree, numberOfEdges, seed);
             for (GraphBuilder mygraph : graphs) {
-            	generator.generateGraph(avgDegree, numberOfEdges, seed, mygraph); //TODO how many nodes should the graph have in case of multiple graphs? (see above)
+            	generator.generateGraph(avgDegree, numberOfEdges, seed, mygraph);
             }
         }
 
@@ -443,24 +443,6 @@ public class DataGenerator extends AbstractDataGenerator {
             LOGGER.info("Sending the final rdf graph data...");
             for(GraphBuilder g: graphs)
                 sendFinalGraph(g);
-            /**
-             * (i have now implemented approach 3)
-             *
-             * ThorenG
-             * TODO PROBLEM:
-             * the sendFinalGraph()-function is overridden by the other dataGenerators (like RDFa)
-             * With this implementation, the other generators will not work, because sendFinalGraph() is never called
-             *
-             * 1st approach: We actually only want DumpFileNodes to have multiple graphs?!
-             * --> only use sendFinalGraphs() in this case
-             *      but the data generator does not now wether we are generating data for the dumpfilenode or any other node..
-             * 2nd approach: Change the sendFinalGraphs-Parameter to an Array
-             * --> the function must be changed everywhere
-             * 3rd approach: call sendFinalGraphs in a loop
-             *  (best one, isn't it)
-             * 4th approach: call sendFinalGraph for the first element of graphs and sendFinalGraphs for the remaining
-             *   mehhh.. that's crap
-             */
         }
 
         LOGGER.debug("Generation done.", generatorId);
