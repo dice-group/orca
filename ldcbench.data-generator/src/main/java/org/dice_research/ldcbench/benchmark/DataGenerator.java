@@ -14,8 +14,11 @@ import java.util.concurrent.Semaphore;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.generate.GraphGenerator;
+import org.dice_research.ldcbench.generate.LUBMbasedRDFGenerator;
 import org.dice_research.ldcbench.generate.RandomCloudGraph;
 import org.dice_research.ldcbench.generate.RandomRDF;
 import org.dice_research.ldcbench.generate.SeedGenerator;
@@ -26,9 +29,12 @@ import org.dice_research.ldcbench.graph.GraphMetadata;
 import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.dice_research.ldcbench.graph.serialization.DumbSerializer;
 import org.dice_research.ldcbench.graph.serialization.SerializationHelper;
+import org.dice_research.ldcbench.vocab.LDCBench;
+import org.hobbit.core.Constants;
 import org.hobbit.core.components.AbstractDataGenerator;
 import org.hobbit.core.rabbit.SimpleFileSender;
 import org.hobbit.utils.EnvVariables;
+import org.hobbit.utils.rdf.RdfHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +64,7 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_TYPECONNECTIVITY_KEY = "LDCBENCH_DATAGENERATOR_TYPECONNECTIVITY";
     public static final String ENV_ACCESS_URI_TEMPLATES_KEY = "ACCESS_URI_TEMPLATES";
     public static final String ENV_RESOURCE_URI_TEMPLATES_KEY = "RESOURCE_URI_TEMPLATES";
+    public static final String ENV_GRAPH_GENERATOR = "LDCBENCH_DATAGENERATOR_GRAPH_GENERATOR";
 
     /**
      * Types of data generator instances.
@@ -316,6 +323,11 @@ public class DataGenerator extends AbstractDataGenerator {
      * @return the {@link GraphGenerator} instance used to generated the RDF graph
      */
     protected GraphGenerator createRDFGraphGenerator() {
+        Model benchmarkParamModel = EnvVariables.getModel(Constants.BENCHMARK_PARAMETERS_MODEL_KEY, LOGGER);
+        Resource method = RdfHelper.getObjectResource(benchmarkParamModel, null, LDCBench.graphGenerator);
+        if (LDCBench.lubmGraphGenerator.equals(method)) {
+            return new LUBMbasedRDFGenerator();
+        }
         return new RandomRDF("Graph " + generatorId);
     }
 

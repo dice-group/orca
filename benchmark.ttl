@@ -45,7 +45,8 @@
     :graphVisualization,
     :triplesEvaluated,
     :numberOfDisallowedResources,
-    :nodeSizeDeterminer;
+    :nodeSizeDeterminer,
+    :graphGenerator;
   hobbit:measuresKPI
     :tripleCountOverTime,
     :resourceUsageOverTime,
@@ -101,6 +102,7 @@
     :triplesEvaluated,
     :numberOfDisallowedResources,
     :nodeSizeDeterminer,
+    :graphGenerator,
     :lemmingDataset;
   hobbit:measuresKPI
     :tripleCountOverTime,
@@ -295,6 +297,27 @@
 :ExponentialDistNodeSize a :NodeSizeDeterminer;
 	rdfs:label "Exponential distribution-based"@en;
 	rdfs:comment "The distribution of node sizes will follow an exponential distribution."@en .
+
+:graphGenerator a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Generator of the rdf graph"@en;
+  rdfs:comment "The generator that will be used to create the RDF Graph"@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range :GraphGenerator;
+  hobbit:defaultValue :RandomRDFGraphGenerator .
+
+:GraphGenerator a rdfs:Class .
+
+:RandomRDFGraphGenerator a :GraphGenerator .
+  rdfs:label "random RDF generator"@en;
+  rdfs:comment "Generates a random RDF graph."@en .
+
+:LUBMGraphGenerator a :GraphGenerator.
+  rdfs:label "Generate RDF as specified in th LUBM documentation"@en;
+  rdfs:comment "Uses the LUBM library to generate an RDF graph based on universities data."@en .
+
+:FileBasedGraphGenerator a :GraphGenerator .
+  rdfs:label "Generate RDF from a file"@en;
+  rdfs:comment "Loads the graph from a given RDF file and converts it into a graph object."@en .
 
 :LemmingDataset a rdfs:Class .
 

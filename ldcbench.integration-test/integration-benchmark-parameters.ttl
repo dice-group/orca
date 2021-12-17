@@ -31,4 +31,5 @@ experiments:New a hobbit:Experiment;
   :averageNodeGraphDegree 2;
   :blankNodesRatio 0.5;
   :literalsRatio 0.5;
-  :numberOfNodesLinks 3.
+  :numberOfNodesLinks 3;
+  :graphGenerator :RandomRDFGraphGenerator.
