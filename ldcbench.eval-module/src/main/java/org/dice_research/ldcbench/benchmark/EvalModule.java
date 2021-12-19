@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -65,7 +66,7 @@ public class EvalModule extends AbstractPlatformConnectorComponent {
     protected Semaphore crawlingFinished = new Semaphore(0);
     protected Semaphore dataGenerationFinished = new Semaphore(0);
 
-    protected String graphFiles[];
+    protected List<String> graphFiles;
     private NodeMetadata[] nodeMetadata;
     protected long startTimeStamp;
     protected long endTimeStamp;
@@ -76,6 +77,8 @@ public class EvalModule extends AbstractPlatformConnectorComponent {
     @Override
     public void init() throws Exception {
         super.init();
+
+        graphFiles = new LinkedList<String>();
 
         sdk = EnvVariables.getBoolean(ApiConstants.ENV_SDK_KEY, false, LOGGER);
 
@@ -104,7 +107,8 @@ public class EvalModule extends AbstractPlatformConnectorComponent {
             public void handle(String[] files) {
                 Arrays.sort(files);
                 LOGGER.debug("Got files: {}", Arrays.toString(files));
-                graphFiles = files;
+                for (String f : files)
+                    graphFiles.add(f);
             }
         };
 
@@ -232,7 +236,7 @@ public class EvalModule extends AbstractPlatformConnectorComponent {
 
     private Map<Integer, EvaluationResult> runEvaluation() {
         // Evaluate the results based on the data from the SPARQL storage
-        TripleBlockStreamSupplier supplier = new FileBasedTripleBlockStreamSupplier(graphFiles,
+        TripleBlockStreamSupplier supplier = new FileBasedTripleBlockStreamSupplier(graphFiles.toArray(new String[0]),
                 Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
                 Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
                 new GraphBasedTripleBlockStreamCreator(), new TTLTarGZBasedTripleBlockStreamCreator());

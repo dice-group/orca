@@ -34,7 +34,7 @@ public class GrphBasedGraph implements GraphBuilder {
      * external nodes.
      */
     protected Map<Integer, int[]> externalNodes = new HashMap<>();
-    
+
     protected int actualGraphId;  //from where can we set this?
 
     /**
@@ -110,7 +110,7 @@ public class GrphBasedGraph implements GraphBuilder {
     public int[] outgoingEdgeTypes(int nodeId) {
         return orderedOutgoingEdges(nodeId).map(this::getEdgeType).toArray();
     }
-    
+
     @Override
     public int outgoingEdgeCount(int nodeId) {
         return graph.getOutEdgeDegree(nodeId);
@@ -123,7 +123,7 @@ public class GrphBasedGraph implements GraphBuilder {
     public int[] incomingEdgeTypes(int nodeId) {
         return orderedIncomingEdges(nodeId).map(this::getEdgeType).toArray();
     }
-    
+
     @Override
     public int incomingEdgeCount(int nodeId) {
         return graph.getInEdgeDegree(nodeId);
@@ -255,8 +255,12 @@ public class GrphBasedGraph implements GraphBuilder {
     public String toString() {
         return graph.toString();
     }
-    
+
     public int getGraphId() {
     	return actualGraphId;
+    }
+
+    public void setGraphId(int id) {
+        actualGraphId = id;
     }
 }

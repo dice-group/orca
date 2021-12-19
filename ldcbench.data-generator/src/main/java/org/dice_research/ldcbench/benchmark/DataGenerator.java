@@ -208,7 +208,7 @@ public class DataGenerator extends AbstractDataGenerator {
         Random random = new Random(seedGenerator.getNextSeed());
         for (Map.Entry<Integer, GraphMetadata> entry : rdfMetadata.entrySet()) {
             int targetNodeGraph = entry.getKey();
-//            GraphMetadata gm = entry.getValue();
+            GraphMetadata gm = entry.getValue();
 
             // use random node
             int nodeWithOutgoingLink = random.nextInt(numberOfInternalNodes);
@@ -221,6 +221,7 @@ public class DataGenerator extends AbstractDataGenerator {
             // add a new node
             int externalNode = g.addNode();
             g.setGraphIdOfNode(externalNode, targetNodeGraph, entranceInTargetGraph);
+            g.setGraphId(gm.graphId);
 
             // FIXME don't always use edge type 0
             int propertyId = 0;
@@ -354,6 +355,7 @@ public class DataGenerator extends AbstractDataGenerator {
         GraphBuilder graphs[] = new GraphBuilder[numberOfGraphs];
         for (int i = 0; i < numberOfGraphs; i++) {
         	graphs[i] = new GrphBasedGraph();
+            graphs[i].setGraphId(i);
         }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
