@@ -185,8 +185,6 @@ public class MicroformatGenerator extends DataGenerator {
 
                 //generate ttl for all *.json-files
                 for (Path p: allTests) {
-                    String jsonldIn = Files.readString(Paths.get(p.toString() + ".json"));
-
                     File fileTtlOut = new File(p.toString() + ".ttl");
 
                     Model model = RDFDataMgr.loadModel(p.toString() + ".json", Lang.JSONLD) ;
