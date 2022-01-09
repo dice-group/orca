@@ -15,6 +15,8 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryFactory;
+import org.apache.jena.sparql.expr.ExprVar;
+import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.apache.jena.vocabulary.XSD;
 import org.dice_research.ldcbench.benchmark.eval.GraphValidator;
@@ -192,7 +194,9 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
         q.setQueryAskType();
         ElementTriplesBlock pattern = new ElementTriplesBlock();
         pattern.addTriple(triple);
-        q.setQueryPattern(pattern);
+        ExprVar var = new ExprVar("g");
+        ElementNamedGraph namedGraphPattern = new ElementNamedGraph(var.getAsNode(), pattern);
+        q.setQueryPattern(namedGraphPattern);
         try (QueryExecution qe = qef.createQueryExecution(q)) {
             return execAskQuery(qe, 5, 5000);
         } catch (Exception e) {
