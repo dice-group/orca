@@ -56,7 +56,6 @@ public class DumpFileResource extends AbstractCrawleableResource {
                 while(it.hasNext()) {
                 	archiver.addFileToArchive(aos, it.next());
                 }
-                //archiver.buildArchive(archive,dumpFile);
             	contentType = archiver.getMediaType();
                 return new DumpFileResource(predicate, contentType, archive);
             }

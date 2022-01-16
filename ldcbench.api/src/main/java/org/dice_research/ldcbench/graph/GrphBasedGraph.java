@@ -35,7 +35,7 @@ public class GrphBasedGraph implements GraphBuilder {
      */
     protected Map<Integer, int[]> externalNodes = new HashMap<>();
 
-    protected int actualGraphId;  //from where can we set this?
+    protected int actualGraphId;
 
     /**
      * Constructor for an empty GraphBuilder.

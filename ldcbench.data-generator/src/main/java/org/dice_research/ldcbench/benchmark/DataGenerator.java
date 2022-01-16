@@ -231,27 +231,6 @@ public class DataGenerator extends AbstractDataGenerator {
         }
     }
 
-    //TODO remove
-    // protected void sendFinalGraphs(Graph[] g) throws Exception {
-    // 	for(Graph myg : g) { //should i overide serializer as well?
-    // 		byte[] data = SerializationHelper.serialize(SERIALIZER_CLASS, myg);
-    //         String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d"
-    //                 + ApiConstants.FILE_ENDING_GRAPH, getNodeId());
-
-    //         // TODO: Use RabbitMQ exchange to send the data (SimpleFileSender doesn't
-    //         // support that)
-    //         try (InputStream is = new ByteArrayInputStream(data);
-    //                 SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, dataQueueName);) {
-    //             dataSender.streamData(is, name);
-    //         }
-
-    //         try (InputStream is = new ByteArrayInputStream(data);
-    //                 SimpleFileSender dataSender = SimpleFileSender.create(outgoingDataQueuefactory, evalDataQueueName);) {
-    //             dataSender.streamData(is, name);
-    //         }
-    // 	}
-    // }
-
     protected void sendFinalGraph(Graph g) throws Exception {
         byte[] data = SerializationHelper.serialize(SERIALIZER_CLASS, g);
         String name = String.format("graph-%0" + (int) Math.ceil(Math.log10(getNumberOfGenerators() + 1)) + "d"
@@ -349,9 +328,7 @@ public class DataGenerator extends AbstractDataGenerator {
             generator = createRDFGraphGenerator();
         }
 
-        // GraphBuilder graph = new GrphBasedGraph(); TODO remove
-
-        //initialize two graphs
+        //initialize all graphs
         GraphBuilder graphs[] = new GraphBuilder[numberOfGraphs];
         for (int i = 0; i < numberOfGraphs; i++) {
         	graphs[i] = new GrphBasedGraph();
@@ -363,10 +340,11 @@ public class DataGenerator extends AbstractDataGenerator {
         }
 
         if (numberOfNodes != 0) {
-            LOGGER.debug("Generator {} : Generating {} Graphs", generatorId, numberOfGraphs);
+            LOGGER.debug("Generator {} : Generating {} graphs", generatorId, numberOfGraphs);
             for (GraphBuilder mygraph : graphs) {
                 LOGGER.debug("Generator {} : Generating a graph with {} nodes {} average degree and {} seed", generatorId,
                         numberOfNodes, avgDegree, seed);
+                seed = seedGenerator.getNextSeed();
             	generator.generateGraph(numberOfNodes/numberOfGraphs, avgDegree, seed, mygraph);
             }
         } else {
@@ -374,6 +352,7 @@ public class DataGenerator extends AbstractDataGenerator {
                     generatorId, avgDegree, numberOfEdges, seed);
             for (GraphBuilder mygraph : graphs) {
             	generator.generateGraph(avgDegree, numberOfEdges, seed, mygraph);
+                seed = seedGenerator.getNextSeed();
             }
         }
 
@@ -398,18 +377,7 @@ public class DataGenerator extends AbstractDataGenerator {
             buf.put(data);
             dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.array());
         } else {
-            // Broadcast our graph's metadata.
-//            GraphMetadata gm = new GraphMetadata();
-//            gm.numberOfNodes = graph.getNumberOfNodes();
-//            gm.entranceNodes = graph.getEntranceNodes();
-//
-//            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-//            buf.write(header.array(), 0, header.capacity());
-//            ObjectOutputStream output = new ObjectOutputStream(buf);
-//            output.writeObject(gm);
-//
-//            dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.toByteArray());
-
+            // Broadcast the graph's metadata for every graph.
         	for (GraphBuilder mygraph : graphs) {
         		GraphMetadata gm = new GraphMetadata();
                 gm.numberOfNodes = mygraph.getNumberOfNodes();
