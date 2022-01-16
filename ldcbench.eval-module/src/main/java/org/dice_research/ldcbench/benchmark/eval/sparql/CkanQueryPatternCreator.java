@@ -7,7 +7,6 @@ import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
-import org.dice_research.ldcbench.rdf.RDFNodeType;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 
 public class CkanQueryPatternCreator implements QueryPatternCreator {
