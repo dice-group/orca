@@ -34,6 +34,10 @@ public class GrphBasedGraph implements GraphBuilder {
      * external nodes.
      */
     protected Map<Integer, int[]> externalNodes = new HashMap<>();
+    /**
+     * Index of first blank node of this graph.
+     */
+    protected int blankNodesIndex = Integer.MAX_VALUE;
 
     protected int actualGraphId;
 
@@ -135,6 +139,11 @@ public class GrphBasedGraph implements GraphBuilder {
 
     public int getNumberOfEdges() {
         return graph.getNumberOfEdges();
+    }
+
+    @Override
+    public int getBlankNodesIndex() {
+        return blankNodesIndex;
     }
 
     public boolean addEdge(int sourceId, int targetId, int typeId) {
@@ -262,5 +271,15 @@ public class GrphBasedGraph implements GraphBuilder {
 
     public void setGraphId(int id) {
         actualGraphId = id;
+    }
+    
+    @Override
+    public boolean isBlankNode(int nodeId) {
+        return nodeId >= getBlankNodesIndex();
+    }
+
+    @Override
+    public void setBlankNodesIndex(int index) {
+        blankNodesIndex = index;
     }
 }

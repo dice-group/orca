@@ -80,6 +80,12 @@ public interface GraphBuilder extends Graph {
      *            graphID != {@link #INTERNAL_NODE_GRAPH_ID})
      */
     public void setGraphIdOfNode(int nodeId, int graphId, int externalId);
-
+    
     public void setGraphId(int i);
+    /**
+     * Sets the index of the first blank node of the graph.
+     *
+     * @param index
+     */
+    public void setBlankNodesIndex(int index);
 }

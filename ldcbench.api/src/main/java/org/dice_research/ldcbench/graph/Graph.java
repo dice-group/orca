@@ -128,4 +128,19 @@ public interface Graph {
      * @return the external ID of the node in the other graph.
      */
     public int getExternalNodeId(int nodeId);
+
+    /**
+     * Returns the ID of the first Blank Node of the graph
+     *
+     * @return the ID of the first Blank Node
+     */
+    public int getBlankNodesIndex();
+
+    /**
+     * Check if a node is a blank node or not
+     *
+     * @param nodeId the ID of the node to check
+     * @return true if node with given nodeId is blank node and false otherwise
+     */
+    public boolean isBlankNode(int nodeId);
 }

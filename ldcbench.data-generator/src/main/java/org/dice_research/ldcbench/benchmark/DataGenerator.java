@@ -48,6 +48,7 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_NUMBER_OF_NODES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_NODES";
     public static final String ENV_NUMBER_OF_GRAPHS_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_GRAPHS";
     public static final String ENV_AVERAGE_DEGREE_KEY = "LDCBENCH_DATAGENERATOR_AVERAGE_DEGREE";
+    public static final String ENV_BLANK_NODES_RATIO ="LDCBENCH_DATAGENERATOR_BLANK_NODES_RATIO";
     public static final String ENV_NUMBER_OF_EDGES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_EDGES";
     public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
     public static final String ENV_DATAGENERATOR_EXCHANGE_KEY = "LDCBENCH_DATAGENERATOR_EXCHANGE";
@@ -126,6 +127,10 @@ public class DataGenerator extends AbstractDataGenerator {
      * The number of edges that should be generated.
      */
     private int numberOfEdges;
+    /**
+     * The ratio of blank Nodes in the graph
+     */
+    private double blankNodesRatio;
 
     /**
      * The channel that is used for communication.
@@ -228,6 +233,28 @@ public class DataGenerator extends AbstractDataGenerator {
             g.addEdge(nodeWithOutgoingLink, externalNode, propertyId);
             LOGGER.debug("Added the edge ({}, {}, {}) where the target is node {} in graph {}.", nodeWithOutgoingLink,
                     propertyId, externalNode, entranceInTargetGraph, targetNodeGraph);
+        }
+    }
+
+    /**
+     * Append a given number of Blank Nodes to an existing graph.
+     * Edges are created to link to the Blank Nodes.
+     *
+     * @param g the graph
+     * @param nodeCount
+     *            the number of blank nodes
+     * @param seed
+     */
+    private void addBlankNodes(GraphBuilder g, int nodeCount, long seed) {
+        int blankNodesIndex = g.getNumberOfNodes();
+        g.setBlankNodesIndex(blankNodesIndex);
+        Random generator = new Random(seed);
+        g.addNodes(nodeCount);
+        for (int i = blankNodesIndex; i < g.getNumberOfNodes(); i++) {
+            //Get a random Source Node
+            int sourceNode = generator.nextInt(blankNodesIndex);
+            int propertyId = 0;
+            g.addEdge(sourceNode, i, propertyId);
         }
     }
 
@@ -354,6 +381,13 @@ public class DataGenerator extends AbstractDataGenerator {
             	generator.generateGraph(avgDegree, numberOfEdges, seed, mygraph);
                 seed = seedGenerator.getNextSeed();
             }
+        }
+
+        if (type == Types.RDF_GRAPH_GENERATOR) {
+            seed = seedGenerator.getNextSeed();
+            blankNodesRatio = Double.parseDouble(EnvVariables.getString(ENV_BLANK_NODES_RATIO));
+            addBlankNodes(graph, (int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),
+                    seed);
         }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {

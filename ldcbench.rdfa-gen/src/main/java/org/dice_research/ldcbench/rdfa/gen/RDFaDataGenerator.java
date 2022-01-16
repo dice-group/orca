@@ -108,7 +108,8 @@ public class RDFaDataGenerator extends DataGenerator {
         int entranceNodes[] = graph.getEntranceNodes();
         for (int i = 0; i < entranceNodes.length; ++i) {
             outgoingLinks.addAll(Arrays.stream(graph.outgoingEdgeTargets(entranceNodes[i]))
-                    .mapToObj(id -> creator.createNode(id, graph.getExternalNodeId(id), graph.getGraphId(id), false))
+                    .mapToObj(id -> creator.createNode(id, graph.getExternalNodeId(id), graph.getGraphId(id), false,
+                            id >= graph.getBlankNodesIndex()))
                     .map(n -> n.getURI()).collect(Collectors.toSet()));
         }
         return outgoingLinks;

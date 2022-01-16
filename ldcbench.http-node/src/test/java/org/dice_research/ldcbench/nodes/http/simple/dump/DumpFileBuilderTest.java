@@ -27,6 +27,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.rdfhdt.hdt.exceptions.NotFoundException;
+import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
+import org.rdfhdt.hdt.triples.TripleString;
 
 import junit.framework.Assert;
 
@@ -55,7 +61,7 @@ public class DumpFileBuilderTest {
     }
 
     @Test
-    public void test() throws NoSuchMethodException, SecurityException, IOException, ReflectiveOperationException {
+    public void test() throws NoSuchMethodException, SecurityException, IOException, ReflectiveOperationException, ParserException, NotFoundException {
         DumpFileBuilder builder = new DumpFileBuilder(domainId, RESOURCE_URI_TEMPLATES, ACCESS_URI_TEMPLATES, graphs,
                 lang, compression,true);
         System.out.println(
@@ -69,9 +75,22 @@ public class DumpFileBuilderTest {
         }
         
         Model writtenModel = ModelFactory.createDefaultModel();
-        try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(file))) {
-            RDFParser parser = RDFParser.create().forceLang(lang).source(in).build();
-            parser.parse(writtenModel.getGraph());
+        
+        if(!lang.equals(LangUtils.HDT_LANG)) {
+            try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(file))) {
+                RDFParser parser = RDFParser.create().forceLang(lang).source(in).build();
+                parser.parse(writtenModel.getGraph());
+            }
+        } else {
+            HDT hdt = HDTManager.loadHDT(file.getAbsolutePath(), null);
+            IteratorTripleString it = hdt.search("", "", "");
+            while(it.hasNext()) {
+                TripleString ts = it.next();
+                Resource subject  = writtenModel.createResource(ts.getSubject().toString());
+                Property predicate = writtenModel.createProperty(ts.getPredicate().toString());
+                Resource object  = writtenModel.createResource(ts.getObject().toString());
+                writtenModel.add(subject, predicate, object);
+            }
         }
 
         // compare the data

@@ -29,6 +29,7 @@ public class LDCBench {
     public static final Property httpDumpNodeWeight = property("httpDumpNodeWeight");
     public static final Property numberOfNodes = property("numberOfNodes");
     public static final Property numberOfGraphs = property("numberOfGraphs");
+    public static final Property blankNodesRatio = property("blankNodesRatio");
     public static final Property macroRecall = property("macroRecall");
     public static final Property microRecall = property("microRecall");
     public static final Property nodeSizeDeterminer = property("nodeSizeDeterminer");
@@ -45,6 +46,7 @@ public class LDCBench {
     public static final Property tripleCountOverTime = property("tripleCountOverTime");
     public static final Property triplesEvaluated = property("triplesEvaluated");
     public static final Property truePositives = property("truePositives");
+    public static final Property useHDTDumps = property("useHDTDumps");
     public static final Property useN3Dumps = property("useN3Dumps");
     public static final Property useNtDumps = property("useNtDumps");
     public static final Property useRdfXmlDumps = property("useRdfXmlDumps");

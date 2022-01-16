@@ -28,6 +28,7 @@ experiments:New a hobbit:Experiment;
   :sparqlNodeWeight 0;
   :numberOfNodes 4;
   :numberOfGraphs 2;
+  :blankNodesRatio 0.5;
   :dataset :LemmingTestDataset;
   :averageNodeGraphDegree 2.
 

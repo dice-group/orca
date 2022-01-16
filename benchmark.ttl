@@ -24,6 +24,7 @@
     :numberOfNodes,
     :numberOfGraphs,
     :averageTriplesPerNode,
+    :blankNodesRatio,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
     :averageCrawlDelay,
@@ -41,6 +42,7 @@
     :useN3Dumps,
     :useRdfXmlDumps,
     :useNtDumps,
+    :useHDTDumps,
     :graphVisualization,
     :triplesEvaluated,
     :numberOfDisallowedResources,
@@ -81,6 +83,7 @@
     :numberOfNodes,
     :numberOfGraphs,
     :averageTriplesPerNode,
+    :blankNodesRatio,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
     :averageCrawlDelay,
@@ -149,6 +152,13 @@
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:integer;
   hobbit:defaultValue "100"^^xsd:integer .
+
+:blankNodesRatio a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Ratio of blank nodes"@en;
+  rdfs:comment "The ratio of blank nodes in the generated RDF graph."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:double;
+  hobbit:defaultValue "0.5"^^xsd:double .
 
 :averageNodeGraphDegree a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Average node degree"@en;
@@ -258,6 +268,13 @@
 :useNtDumps a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Use NT dumps"@en;
   rdfs:comment "Whether HTTP dump nodes would include N-Triples serialization."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:boolean;
+  hobbit:defaultValue "true"^^xsd:boolean .
+  
+:useHDTDumps a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Use HDT dumps"@en;
+  rdfs:comment "Whether HTTP dump nodes would include HDT format for serialization."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:boolean;
   hobbit:defaultValue "true"^^xsd:boolean .
