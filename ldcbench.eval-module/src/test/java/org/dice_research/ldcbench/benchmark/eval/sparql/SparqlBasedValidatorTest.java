@@ -52,12 +52,12 @@ public class SparqlBasedValidatorTest implements TripleBlockStreamSupplier {
         builder2.setEntranceNodes(new int[] { 0 });
 
         Graph[] graphs = new Graph[] { builder1, builder2 };
-        String[] domains = new String[] { "domain0.org", "domain1.org" };
+        String[] domains = new String[] { "http://domain0.org/%s-%s/%s-%s", "http://domain1.org/%s-%s/%s-%s" };
 
         // First graph is completely correct, second graph is empty
         Dataset dataset;
         Model model;
-        dataset = DatasetFactory.create();
+        dataset = DatasetFactory.createTxnMem();
         model = ModelFactory.createDefaultModel();
         model.add(model.getResource("http://domain0.org/dataset-0/resource-0"),
                 model.getProperty("http://domain0.org/dataset-0/property-0"),
@@ -76,7 +76,7 @@ public class SparqlBasedValidatorTest implements TripleBlockStreamSupplier {
                 new ValidationResult[] { new ValidationResult(3, 3), new ValidationResult(3, 0) } });
 
         // First graph is empty, second graph is completely correct
-        dataset = DatasetFactory.create();
+        dataset = DatasetFactory.createTxnMem();
         model = ModelFactory.createDefaultModel();
         dataset.addNamedModel("http://domain0.org", model);
         model = ModelFactory.createDefaultModel();
@@ -95,7 +95,7 @@ public class SparqlBasedValidatorTest implements TripleBlockStreamSupplier {
                 new ValidationResult[] { new ValidationResult(3, 0), new ValidationResult(3, 3) } });
 
         // First both are correct
-        dataset = DatasetFactory.create();
+        dataset = DatasetFactory.createTxnMem();
         dataset.addNamedModel("http://domain0.org", correctModel1);
         dataset.addNamedModel("http://domain1.org", correctModel2);
         data.add(new Object[] { dataset, domains, graphs,
@@ -103,7 +103,7 @@ public class SparqlBasedValidatorTest implements TripleBlockStreamSupplier {
 
         // First graph has two correct triples, second graph has only one correct triple
         // and one additional triple which shouldn't matter
-        dataset = DatasetFactory.create();
+        dataset = DatasetFactory.createTxnMem();
         model = ModelFactory.createDefaultModel();
         model.add(model.getResource("http://domain0.org/dataset-0/resource-0"),
                 model.getProperty("http://domain0.org/dataset-0/property-0"),
@@ -140,10 +140,10 @@ public class SparqlBasedValidatorTest implements TripleBlockStreamSupplier {
             ValidationResult result;
             for (int i = 0; i < expectedResults.length; ++i) {
                 result = validator.validate(this, i);
-                Assert.assertEquals("Got an unexpected result for graph " + i, expectedResults[i].checkedTriples,
+                Assert.assertEquals("Checked triples: Got an unexpected result for graph " + i, expectedResults[i].checkedTriples,
                         result.checkedTriples);
-                Assert.assertEquals("Got an unexpected result for graph " + i, expectedResults[i].checkedTriples,
-                        result.checkedTriples);
+                Assert.assertEquals("True positives: Got an unexpected result for graph " + i, expectedResults[i].truePositives,
+                        result.truePositives);
             }
         }
     }

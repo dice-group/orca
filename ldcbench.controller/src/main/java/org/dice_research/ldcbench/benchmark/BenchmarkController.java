@@ -52,6 +52,7 @@ import org.dice_research.ldcbench.benchmark.cloud.CkanNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.DereferencingHttpNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.HttpDumpNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.JsonLdNodeManager;
+import org.dice_research.ldcbench.benchmark.cloud.MicrodataNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.NodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.RDFaNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.SparqlNodeManager;
@@ -96,6 +97,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         HttpDumpNodeManager.class,
         RDFaNodeManager.class,
         JsonLdNodeManager.class,
+        MicrodataNodeManager.class,
     };
 
     private boolean dockerized;
@@ -651,8 +653,13 @@ public class BenchmarkController extends AbstractBenchmarkController {
         long disallowedRequested = 0;
         for (int i = 0; i < nodesAmount; i++) {
             Resource nodeResource = resultModel.createResource(getNodeURI(i));
-            double recall = Double
+            double recall = Double.NaN;
+            try {
+                recall = Double
                     .parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.microRecall));
+            } catch (Exception e) {
+                LOGGER.error("Error while trying to load the micro recall for node " + nodeResource.toString() + " : ", e);
+            }
 
             Double crawlDelayFulfillment = null;
             Double minCrawlDelay = null;

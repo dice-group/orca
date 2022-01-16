@@ -10,7 +10,7 @@
     <version>1.1.0</version>
     <relativePath>../ldcbench.parent</relativePath>
   </parent>
-  <artifactId>ldcbench.http-node</artifactId>
+  <artifactId>ldcbench.microdata-gen</artifactId>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -20,47 +20,12 @@
     </dependency>
     <dependency>
       <groupId>org.dice_research</groupId>
-      <artifactId>ldcbench.nodes</artifactId>
+      <artifactId>ldcbench.data-generator</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.aayushatharva.brotli4j</groupId>
-      <artifactId>brotli4j</artifactId>
-      <version>1.4.2</version>
+      <groupId>org.dice_research</groupId>
+      <artifactId>ldcbench.http-node</artifactId>
     </dependency>
-    <!-- HOBBIT core library -->
-    <dependency>
-      <groupId>org.hobbit</groupId>
-      <artifactId>core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.simpleframework</groupId>
-      <artifactId>simple</artifactId>
-    </dependency>
-    <!-- ~~~~~~~~~~~~~~~~~~~ HDT ~~~~~~~~~~~~~~~~~~~~~~ -->
-    <!-- https://mvnrepository.com/artifact/org.rdfhdt/hdt-java-package -->
-    <dependency>
-      <groupId>org.rdfhdt</groupId>
-      <artifactId>hdt-java-package</artifactId>
-      <version>2.1.2</version>
-      <type>pom</type>
-      <exclusions>
-        <exclusion>
-          <groupId>junit</groupId>
-          <artifactId>junit-dep</artifactId>
-         </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.rdfhdt</groupId>
-      <artifactId>hdt-jena</artifactId>
-      <version>2.1.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.rdfhdt</groupId>
-      <artifactId>hdt-api</artifactId>
-      <version>2.1.2</version>
-    </dependency>
-    <!-- ~~~~~~~~~~~~~~~~~~~ HDT END ~~~~~~~~~~~~~~~~~~~~~~ -->
     <!-- ~~~~~~~~~~~~~~~~~~~ Logging ~~~~~~~~~~~~~~~~~~~~~~ -->
     <!-- slf4j: Logging API -->
     <dependency>
@@ -78,12 +43,6 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <!-- System rules for setting environment variables -->
-    <dependency>
-      <groupId>com.github.stefanbirkner</groupId>
-      <artifactId>system-rules</artifactId>
       <scope>test</scope>
     </dependency>
     <!-- ~~~~~~~~~~~~~~~~~~~ End Testing ~~~~~~~~~~~~~~~~~~~~~~ -->

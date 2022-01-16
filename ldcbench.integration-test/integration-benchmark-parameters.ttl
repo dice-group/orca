@@ -26,6 +26,7 @@ experiments:New a hobbit:Experiment;
   :rdfaNodeWeight 1;
   :ckanNodeWeight 0.01;
   :jsonldNodeWeight 1;
+  :microdataNodeWeight 1;
   :sparqlNodeWeight 0.01;
   :numberOfNodes 4;
   :averageNodeGraphDegree 2;
