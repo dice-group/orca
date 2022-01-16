@@ -4,8 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -49,7 +47,6 @@ public class DumpFileBuilderTest {
     private Lang lang;
     private CompressionStreamFactory compression;
     private Model expectedModel;
-    private boolean multipleDump;
 
     public DumpFileBuilderTest(int domainId, Graph[] graphs, Lang lang, CompressionStreamFactory compression,
             Model expectedModel) {
@@ -63,16 +60,11 @@ public class DumpFileBuilderTest {
     @Test
     public void test() throws NoSuchMethodException, SecurityException, IOException, ReflectiveOperationException, ParserException, NotFoundException {
         DumpFileBuilder builder = new DumpFileBuilder(domainId, RESOURCE_URI_TEMPLATES, ACCESS_URI_TEMPLATES, graphs,
-                lang, compression,true);
+                lang, compression,false);
         System.out.println(
                 "Testing " + lang + (compression == null ? "" : (" with compression " + compression.getMediaType())));
 
         File file = builder.build();
-        
-        if(builder.multipleDump) {
-        	File file2 = builder.build();
-        	File file3 = builder.build();
-        }
         
         Model writtenModel = ModelFactory.createDefaultModel();
         

@@ -104,10 +104,11 @@ public class DumpFileBuilder {
         // fileNameBuilder.append('.');
         // fileNameBuilder.append(fileExt.get(0));
         // }
-    	if(multipleDump==true) {
-        	dumpFile = File.createTempFile("ldcbench", ".dump",path.toFile());
-        }else
-        	dumpFile = File.createTempFile("ldcbench", ".dump");
+        if(multipleDump) {
+            dumpFile = File.createTempFile("ldcbench", ".dump",path.toFile());
+        } else {
+            dumpFile = File.createTempFile("ldcbench", ".dump");
+        }
         OutputStream out = new FileOutputStream(dumpFile);
         out = new BufferedOutputStream(out);
         if (compression != null) {
@@ -206,12 +207,11 @@ public class DumpFileBuilder {
     } 
     
     private void generateFolder() {
-    	try {
-			path = Files.createTempDirectory("multiDump-");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        try {
+            path = Files.createTempDirectory("multiDump-");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
