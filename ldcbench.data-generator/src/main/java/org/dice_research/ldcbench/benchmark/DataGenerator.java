@@ -368,17 +368,17 @@ public class DataGenerator extends AbstractDataGenerator {
 
         if (numberOfNodes != 0) {
             LOGGER.debug("Generator {} : Generating {} graphs", generatorId, numberOfGraphs);
-            for (GraphBuilder mygraph : graphs) {
+            for (int i = 0; i < graphs.length; i++) {
                 LOGGER.debug("Generator {} : Generating a graph with {} nodes {} average degree and {} seed", generatorId,
                         numberOfNodes, avgDegree, seed);
                 seed = seedGenerator.getNextSeed();
-            	generator.generateGraph(numberOfNodes/numberOfGraphs, avgDegree, seed, mygraph);
+            	generator.generateGraph(numberOfNodes/numberOfGraphs, avgDegree, seed, graphs[i]);
             }
         } else {
             LOGGER.debug("Generator {} : Generating a graph with {} average degree and {} edges and {} seed",
                     generatorId, avgDegree, numberOfEdges, seed);
-            for (GraphBuilder mygraph : graphs) {
-            	generator.generateGraph(avgDegree, numberOfEdges, seed, mygraph);
+            for (int i = 0; i < graphs.length; i++) {
+            	generator.generateGraph(avgDegree, numberOfEdges, seed, graphs[i]);
                 seed = seedGenerator.getNextSeed();
             }
         }
@@ -386,8 +386,10 @@ public class DataGenerator extends AbstractDataGenerator {
         if (type == Types.RDF_GRAPH_GENERATOR) {
             seed = seedGenerator.getNextSeed();
             blankNodesRatio = Double.parseDouble(EnvVariables.getString(ENV_BLANK_NODES_RATIO));
-            addBlankNodes(graph, (int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),
-                    seed);
+            for (int i = 0; i < graphs.length; i++) {
+                addBlankNodes(graphs[i], (int) Math.ceil(graphs[i].getNumberOfNodes() * blankNodesRatio),
+                        seed);
+            }
         }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
@@ -439,8 +441,8 @@ public class DataGenerator extends AbstractDataGenerator {
 
             LOGGER.info("Got all relevant rdf graphs.", generatorId);
 
-            for (GraphBuilder mygraph : graphs) {
-                addInterlinks(mygraph);
+            for (int i = 0; i < numberOfGraphs; i++) {
+                addInterlinks(graphs[i]);
             }
 
             // Send the final graph(s) data.
