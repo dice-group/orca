@@ -24,6 +24,7 @@ experiments:New a hobbit:Experiment;
   :rdfaNodeWeight 0;
   :jsonldNodeWeight 0;
   :microdataNodeWeight 0;
+  :microformatNodeWeight 0;
   :ckanNodeWeight 0;
   :sparqlNodeWeight 0;
   :numberOfNodes 3;

@@ -53,6 +53,7 @@
     <module>ldcbench.parent</module>
     <module>ldcbench.rdfa-gen</module>
     <module>ldcbench.microdata-gen</module>
+    <module>ldcbench.microformat-gen</module>
     <module>ldcbench.jsonld-gen</module>
     <module>ldcbench.html-embd-node</module>
     <module>ldcbench.sparql-node</module>
