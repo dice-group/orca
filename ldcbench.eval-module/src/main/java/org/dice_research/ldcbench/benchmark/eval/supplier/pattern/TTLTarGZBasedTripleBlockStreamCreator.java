@@ -55,7 +55,7 @@ public class TTLTarGZBasedTripleBlockStreamCreator implements TripleBlockStreamC
         final int[] edgeTypes = graph.outgoingEdgeTypes(node);
         final int[] edgeTargets = graph.outgoingEdgeTargets(node);
         return IntStream.range(0, edgeTypes.length).mapToObj(e -> creator.create(node, edgeTypes[e], edgeTargets[e],
-                graph.getExternalNodeId(edgeTargets[e]), graph.getGraphId(edgeTargets[e])));
+                graph.getExternalNodeId(edgeTargets[e]), graph.getGraphId(edgeTargets[e]), graph.getNodeType(edgeTargets[e])));
     }
 
 }

@@ -7,6 +7,7 @@ import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.apache.jena.vocabulary.DCAT;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+import org.dice_research.ldcbench.rdf.RDFNodeType;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 
 public class CkanQueryPatternCreator implements QueryPatternCreator {
@@ -28,10 +29,16 @@ public class CkanQueryPatternCreator implements QueryPatternCreator {
      */
     @Override
     public ElementTriplesBlock create(int sourceId, int propertyId, int targetId, int targetExtId, int targetExtGraphId) {
+        return create(sourceId, propertyId, targetId, targetExtId, targetExtGraphId, null);
+    }
+
+    @Override
+    public ElementTriplesBlock create(int sourceId, int propertyId, int targetId, int targetExtId, int targetExtGraphId,
+            RDFNodeType targetNodeType) {
         ElementTriplesBlock pattern = new ElementTriplesBlock();
         Node dataset = NodeFactory.createVariable("dataset");
         Node distribution = NodeFactory.createVariable("resource");
-        Node target = tripleCreator.createNode(targetId, targetExtId, targetExtGraphId);
+        Node target = tripleCreator.createNode(targetId, targetExtId, targetExtGraphId, targetNodeType);
         pattern.addTriple(new Triple(dataset, RDF.type.asNode(), DCAT.Dataset.asNode()));
         pattern.addTriple(new Triple(dataset, DCAT.distribution.asNode(), distribution));
         pattern.addTriple(new Triple(dataset, DCTerms.title.asNode(), NodeFactory.createLiteral("Dataset " + target.getURI())));
