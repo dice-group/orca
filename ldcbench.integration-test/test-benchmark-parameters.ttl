@@ -18,7 +18,7 @@ experiments:New a hobbit:Experiment;
   :httpDumpNodeCompressedRatio 1;
   :dereferencingHttpNodeWeight 0;
   :httpDumpNodeWeight 1;
-  :graphGenerator :RandomRDFGraphGenerator;
+  :graphGenerator :DefaultRDFGraphGenerator;
   :useTurtleDumps "true"^^xsd:boolean;
   :useJsonLdDumps "true"^^xsd:boolean;
   :useN3Dumps "true"^^xsd:boolean;

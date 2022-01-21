@@ -13,7 +13,7 @@ public class LDCBench {
 
     public static final Resource ExponentialDistNodeSize = resource("ExponentialDistNodeSize");
     public static final Resource StaticNodeSize = resource("StaticNodeSize");
-    public static final Resource randomRDFGraphGenerator = resource("RandomRDFGraphGenerator");
+    public static final Resource defaultRDFGraphGenerator = resource("DefaultRDFGraphGenerator");
     public static final Resource lubmGraphGenerator = resource("LUBMGraphGenerator");
     public static final Resource fileBasedGraphGenerator = resource("FileBasedGraphGenerator");
 

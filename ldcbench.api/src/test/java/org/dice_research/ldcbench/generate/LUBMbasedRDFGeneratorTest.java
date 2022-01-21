@@ -25,10 +25,14 @@ public class LUBMbasedRDFGeneratorTest {
     @Test
     public void graphWithOneDeptOfOneUni() {
         lubmGen.generateGraph(1000, 0.5, 15L, g);
-        Assert.assertTrue(g.getNumberOfNodes() < 2* VERTICES_PER_DEPT);
+        Assert.assertTrue("Generated graph is empty", 0 < g.getNumberOfNodes());
+        Assert.assertTrue("Generated graph's size is less than required", 1000 < g.getNumberOfNodes());
+        Assert.assertTrue("Generated graph's size exceed expected size", g.getNumberOfNodes() < 2* VERTICES_PER_DEPT);
 
         g = new GrphBasedGraph();
         lubmGen.generateGraph(0.5, 2000, 15L, g);
-        Assert.assertTrue(g.getNumberOfNodes() < 2* VERTICES_PER_DEPT);
+        Assert.assertTrue("Generated graph is empty", 0 < g.getNumberOfEdges());
+        Assert.assertTrue("Generated graph's size is less than required", 2000 < g.getNumberOfEdges());
+        Assert.assertTrue("Generated graph's size exceed expected size", g.getNumberOfNodes() < 2* EDGES_PER_DEPT);
     }
 }

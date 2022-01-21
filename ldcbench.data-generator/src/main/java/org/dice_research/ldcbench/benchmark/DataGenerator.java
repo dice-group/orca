@@ -225,18 +225,18 @@ public class DataGenerator extends AbstractDataGenerator {
                 throw new IllegalStateException("Node " + getNodeId() + " needs to link to node " + targetNodeGraph
                         + " but there are no entrypoints.");
             }
-            for(int i = 0; i < numberOfnodesLinks; i++) {                
-                // get node in target graph
-                int entranceInTargetGraph = gm.entranceNodes[random.nextInt(gm.entranceNodes.length)];
-                // use random node
-                int nodeWithOutgoingLink = random.nextInt(numberOfInternalNodes);
-                // add a new node
-                int externalNode = g.addNode();
-                g.setGraphIdOfNode(externalNode, targetNodeGraph, entranceInTargetGraph);
-                int propertyId = i;
-                g.addEdge(nodeWithOutgoingLink, externalNode, propertyId);
-                LOGGER.debug("Added the edge ({}, {}, {}) where the target is node {} in graph {}.", nodeWithOutgoingLink,
-                        propertyId, externalNode, entranceInTargetGraph, targetNodeGraph);
+            for (int entranceNode : gm.entranceNodes) {
+                for(int i = 0; i < numberOfnodesLinks; i++) {
+                    // use random node
+                    int nodeWithOutgoingLink = random.nextInt(numberOfInternalNodes);
+                    // add a new node
+                    int externalNode = g.addNode();
+                    g.setGraphIdOfNode(externalNode, targetNodeGraph, entranceNode);
+                    int propertyId = i;
+                    g.addEdge(nodeWithOutgoingLink, externalNode, propertyId);
+                    LOGGER.debug("Added the edge ({}, {}, {}) where the target is node {} in graph {}.", nodeWithOutgoingLink,
+                            propertyId, externalNode, entranceNode, targetNodeGraph);
+                }
             }
         }
     }

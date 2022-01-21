@@ -303,12 +303,12 @@
   rdfs:comment "The generator that will be used to create the RDF Graph"@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range :GraphGenerator;
-  hobbit:defaultValue :RandomRDFGraphGenerator .
+  hobbit:defaultValue :DefaultRDFGraphGenerator .
 
 :GraphGenerator a rdfs:Class .
 
-:RandomRDFGraphGenerator a :GraphGenerator .
-  rdfs:label "random RDF generator"@en;
+:DefaultRDFGraphGenerator a :GraphGenerator .
+  rdfs:label "the default RDF generator"@en;
   rdfs:comment "Generates a random RDF graph."@en .
 
 :LUBMGraphGenerator a :GraphGenerator.
