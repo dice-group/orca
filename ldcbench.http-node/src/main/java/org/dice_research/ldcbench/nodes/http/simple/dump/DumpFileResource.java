@@ -36,25 +36,18 @@ public class DumpFileResource extends AbstractCrawleableResource {
     public static final List<Archiver> ARCHIVERS = Arrays.asList(new TarArchiver(),
             new TarArchiver(ReflectionBasedStreamFactory.create("java.util.zip.GZIPOutputStream", "application/gzip", ".gz")),
             new ZipArchiver());
-    public static final ArrayList<File> multipleFile = new ArrayList<File>();
 
     public static DumpFileResource create(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates,
-            Graph[] graphs, Predicate<Request> predicate, Lang lang, CompressionStreamFactory compression, boolean multipleDump, Archiver archiver) {
+            Graph[] graphs, Predicate<Request> predicate, Lang lang, CompressionStreamFactory compression, Archiver archiver) {
         DumpFileBuilder builder = new DumpFileBuilder(domainId, resourceUriTemplates, accessUriTemplates, graphs,
-                lang, compression,multipleDump);
+                lang, compression);
         try {
             File dumpFile = builder.build();
             String contentType = builder.buildContentType();
-            multipleFile.add(dumpFile);
             if (archiver != null)  {
-            	//Add dump Files to a List and put them into Archive
-            	Iterator<File> it = multipleFile.iterator();
+                //Add dump Files to a List and put them into Archive
                 File archive = File.createTempFile("ldcbench", ".archive");
-                ArchiveOutputStream aos =  archiver.createStream(archive);
-                while(it.hasNext()) {
-                	archiver.addFileToArchive(aos, it.next());
-                }
-            	contentType = archiver.getMediaType();
+                archiver.buildArchive(archive, dumpFile);
                 return new DumpFileResource(predicate, contentType, archive);
             }
             return new DumpFileResource(predicate, contentType, dumpFile);

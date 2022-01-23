@@ -358,7 +358,7 @@ public class DataGenerator extends AbstractDataGenerator {
         //initialize all graphs
         GraphBuilder graphs[] = new GraphBuilder[numberOfGraphs];
         for (int i = 0; i < numberOfGraphs; i++) {
-        	graphs[i] = new GrphBasedGraph();
+            graphs[i] = new GrphBasedGraph();
             graphs[i].setGraphId(i);
         }
 
@@ -414,8 +414,8 @@ public class DataGenerator extends AbstractDataGenerator {
             dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.array());
         } else {
             // Broadcast the graph's metadata for every graph.
-        	for (GraphBuilder mygraph : graphs) {
-        		GraphMetadata gm = new GraphMetadata();
+            for (GraphBuilder mygraph : graphs) {
+                GraphMetadata gm = new GraphMetadata();
                 gm.numberOfNodes = mygraph.getNumberOfNodes();
                 gm.entranceNodes = mygraph.getEntranceNodes();
                 gm.graphId = mygraph.getGraphId();

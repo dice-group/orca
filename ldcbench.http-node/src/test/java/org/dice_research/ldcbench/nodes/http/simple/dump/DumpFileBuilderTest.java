@@ -60,7 +60,7 @@ public class DumpFileBuilderTest {
     @Test
     public void test() throws NoSuchMethodException, SecurityException, IOException, ReflectiveOperationException, ParserException, NotFoundException {
         DumpFileBuilder builder = new DumpFileBuilder(domainId, RESOURCE_URI_TEMPLATES, ACCESS_URI_TEMPLATES, graphs,
-                lang, compression,false);
+                lang, compression);
         System.out.println(
                 "Testing " + lang + (compression == null ? "" : (" with compression " + compression.getMediaType())));
 

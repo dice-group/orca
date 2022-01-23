@@ -65,18 +65,16 @@ public class DumpFileBuilder {
     protected final Lang lang;
     protected final CompressionStreamFactory compression;
     protected File dumpFile;
-    protected final boolean multipleDump;
     protected Path path; 
 
     public DumpFileBuilder(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs,
-            Lang lang, CompressionStreamFactory compression,boolean multipleDump) {
+            Lang lang, CompressionStreamFactory compression) {
         this.domainId = domainId;
         this.resourceUriTemplates = resourceUriTemplates;
         this.accessUriTemplates = accessUriTemplates;
         this.graphs = graphs;
         this.lang = lang;
         this.compression = compression;
-        this.multipleDump = multipleDump;
         this.generateFolder();
         
     }
@@ -104,11 +102,7 @@ public class DumpFileBuilder {
         // fileNameBuilder.append('.');
         // fileNameBuilder.append(fileExt.get(0));
         // }
-        if(multipleDump) {
-            dumpFile = File.createTempFile("ldcbench", ".dump",path.toFile());
-        } else {
-            dumpFile = File.createTempFile("ldcbench", ".dump");
-        }
+        dumpFile = File.createTempFile("ldcbench", ".dump");
         OutputStream out = new FileOutputStream(dumpFile);
         out = new BufferedOutputStream(out);
         if (compression != null) {
