@@ -48,6 +48,7 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_NUMBER_OF_NODES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_NODES";
     public static final String ENV_AVERAGE_DEGREE_KEY = "LDCBENCH_DATAGENERATOR_AVERAGE_DEGREE";
     public static final String ENV_BLANK_NODES_RATIO ="LDCBENCH_DATAGENERATOR_BLANK_NODES_RATIO";
+    public static final String ENV_LITERALS_RATIO ="LDCBENCH_DATAGENERATOR_LITERALS_RATIO";
     public static final String ENV_NUMBER_OF_EDGES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_EDGES";
     public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
     public static final String ENV_DATAGENERATOR_EXCHANGE_KEY = "LDCBENCH_DATAGENERATOR_EXCHANGE";
@@ -126,7 +127,10 @@ public class DataGenerator extends AbstractDataGenerator {
      * The ratio of blank Nodes in the graph
      */
     private double blankNodesRatio;
-
+    /**
+     * The ratio of literals in the graph
+     */
+    private double literalsRatio;
     /**
      * The channel that is used for communication.
      */
@@ -241,12 +245,32 @@ public class DataGenerator extends AbstractDataGenerator {
      */
     private void addBlankNodes(GraphBuilder g, int nodeCount, long seed) {
         int blankNodesIndex = g.getNumberOfNodes();
-        g.setBlankNodesIndex(blankNodesIndex);
+        g.setBlankNodesRange(blankNodesIndex, nodeCount);
+        addBNodesOrLiterals(g, blankNodesIndex, nodeCount, seed);
+    }
+
+    /**
+     * Append a given number of literals to an existing graph.
+     * Edges are created to link to the literals.
+     *
+     * @param g the graph
+     * @param nodeCount
+     *            the number of literals
+     * @param seed
+     */
+    private void addLiterals(GraphBuilder g, int nodeCount, long seed) {
+        int literalIndex = g.getNumberOfNodes();
+        g.setLiteralsRange(literalIndex, nodeCount);
+        addBNodesOrLiterals(g, literalIndex, nodeCount, seed);
+    }
+
+    private void addBNodesOrLiterals(GraphBuilder g, int index, int numberOfNodes, long seed) {
         Random generator = new Random(seed);
-        g.addNodes(nodeCount);
-        for (int i = blankNodesIndex; i < g.getNumberOfNodes(); i++) {
+        int numberOfIriNodes = g.getNumberOfIriNodes();
+        g.addNodes(numberOfNodes);
+        for (int i = index; i < g.getNumberOfNodes(); i++) {
             //Get a random Source Node
-            int sourceNode = generator.nextInt(blankNodesIndex);
+            int sourceNode = generator.nextInt(numberOfIriNodes);
             int propertyId = 0;
             g.addEdge(sourceNode, i, propertyId);
         }
@@ -364,13 +388,6 @@ public class DataGenerator extends AbstractDataGenerator {
             generator.generateGraph(avgDegree, numberOfEdges, seed, graph);
         }
 
-        if (type == Types.RDF_GRAPH_GENERATOR) {
-            seed = seedGenerator.getNextSeed();
-            blankNodesRatio = Double.parseDouble(EnvVariables.getString(ENV_BLANK_NODES_RATIO));
-            addBlankNodes(graph, (int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),
-                    seed);
-        }
-
         if (type == Types.NODE_GRAPH_GENERATOR) {
             LOGGER.info("Node types generated: {}", Arrays.toString(((RandomCloudGraph) generator).getNodeTypes()));
             LOGGER.debug("Broadcasting the node graph...");
@@ -417,6 +434,13 @@ public class DataGenerator extends AbstractDataGenerator {
 
             LOGGER.info("Got all relevant rdf graphs.", generatorId);
             addInterlinks(graph);
+
+            blankNodesRatio = Double.parseDouble(EnvVariables.getString(ENV_BLANK_NODES_RATIO));
+            addBlankNodes(graph, (int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),
+                    seedGenerator.getNextSeed());
+            literalsRatio = Double.parseDouble(EnvVariables.getString(ENV_LITERALS_RATIO));
+            addLiterals(graph, (int) Math.ceil(graph.getNumberOfNodes() * literalsRatio),
+                    seedGenerator.getNextSeed());
 
             // Send the final graph data.
             LOGGER.info("Sending the final rdf graph data...");

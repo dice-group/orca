@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.aksw.jena_sparql_api.core.QueryExecutionFactoryDataset;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
@@ -122,6 +123,48 @@ public class SparqlBasedValidatorTest implements TripleBlockStreamSupplier {
         dataset.addNamedModel("http://domain1.org", model);
         data.add(new Object[] { dataset, domains, graphs,
                 new ValidationResult[] { new ValidationResult(3, 2), new ValidationResult(3, 1) } });
+
+        // Graph with blank Node and Literal
+
+        // Graph 1: Simple graph containing blank nodes
+        builder1 = new GrphBasedGraph();
+        builder1.addNodes(3);
+        builder1.setBlankNodesRange(1,2);
+        builder1.addEdge(0, 0, 0);
+        builder1.addEdge(0, 1, 0);
+        builder1.addEdge(0, 2, 1);
+        builder1.setEntranceNodes(new int[] { 0 });
+
+        // Graph 2: Simple graph containing blank nodes
+        builder2 = new GrphBasedGraph();
+        builder2.addNodes(3);
+        builder2.setLiteralsRange(1,2);
+        builder2.addEdge(0, 0, 0);
+        builder2.addEdge(0, 1, 0);
+        builder2.addEdge(0, 2, 1);
+        builder2.setEntranceNodes(new int[] { 0 });
+        dataset = DatasetFactory.createTxnMem();
+        model = ModelFactory.createDefaultModel();
+        model.add(model.getResource("http://domain0.org/dataset-0/resource-0"),
+                model.getProperty("http://domain0.org/dataset-0/property-1"),
+                model.getRDFNode(NodeFactory.createBlankNode("2c1e21645df88fe91a7b0770fd5e06c6")));
+        model.add(model.getResource("http://domain0.org/dataset-0/resource-0"),
+                model.getProperty("http://domain0.org/dataset-0/property-0"),
+                model.getResource("http://domain0.org/dataset-0/resource-0"));
+        dataset.addNamedModel("http://domain0.org", model);
+        model = ModelFactory.createDefaultModel();
+        model.add(model.getResource("http://domain1.org/dataset-0/resource-0"),
+        model.getProperty("http://domain1.org/dataset-0/property-0"),
+        model.getResource("http://domain1.org/dataset-0/resource-0"));
+        model.add(model.getResource("http://domain1.org/dataset-0/resource-0"),
+        model.getProperty("http://domain1.org/dataset-0/property-0"),
+        model.getRDFNode(NodeFactory.createLiteral("testLiteral")));
+        dataset.addNamedModel("http://domain1.org", model);
+
+        graphs = new Graph[] { builder1, builder2 };
+
+        data.add(new Object[] { dataset, domains, graphs,
+                new ValidationResult[] { new ValidationResult(3, 2), new ValidationResult(3, 2) } });
 
         return data;
     }

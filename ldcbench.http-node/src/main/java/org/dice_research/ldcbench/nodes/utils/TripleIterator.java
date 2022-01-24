@@ -43,6 +43,6 @@ public class TripleIterator implements Iterator<Triple> {
     private Triple createTriple(int targetId, int propertyId) {
         return tripleCreator.createTriple(nodeId, propertyId, targetId,
                 graphs[datasetId].getExternalNodeId(targetId), graphs[datasetId].getGraphId(targetId),
-                graphs[datasetId].isBlankNode(targetId));
+                graphs[datasetId].getNodeType(targetId));
     }
 }

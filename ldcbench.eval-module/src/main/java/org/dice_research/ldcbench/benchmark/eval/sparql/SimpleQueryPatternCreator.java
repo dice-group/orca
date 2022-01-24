@@ -1,6 +1,7 @@
 package org.dice_research.ldcbench.benchmark.eval.sparql;
 
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
+import org.dice_research.ldcbench.rdf.RDFNodeType;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 
 public class SimpleQueryPatternCreator implements QueryPatternCreator {
@@ -16,13 +17,18 @@ public class SimpleQueryPatternCreator implements QueryPatternCreator {
         tripleCreator = new SimpleTripleCreator(graphId, resourceUriTemplates, accessUriTemplates);
     }
 
+    @Override
+    public ElementTriplesBlock create(int sourceId, int propertyId, int targetId, int targetExtId, int targetExtGraphId) {
+        return create(sourceId, propertyId, targetId, targetExtId, targetExtGraphId, null);
+    }
+
     /**
      * Creates a corresponding triple for the specified graph edge.
      */
     @Override
-    public ElementTriplesBlock create(int sourceId, int propertyId, int targetId, int targetExtId, int targetExtGraphId) {
+    public ElementTriplesBlock create(int sourceId, int propertyId, int targetId, int targetExtId, int targetExtGraphId, RDFNodeType targetNodeType) {
         ElementTriplesBlock pattern = new ElementTriplesBlock();
-        pattern.addTriple(tripleCreator.createTriple(sourceId, propertyId, targetId, targetExtId, targetExtGraphId));
+        pattern.addTriple(tripleCreator.createTriple(sourceId, propertyId, targetId, targetExtId, targetExtGraphId, targetNodeType));
         return pattern;
     }
 }

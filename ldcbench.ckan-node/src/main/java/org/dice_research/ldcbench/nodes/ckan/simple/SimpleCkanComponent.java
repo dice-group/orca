@@ -15,6 +15,7 @@ import org.dice_research.ldcbench.graph.Graph;
 import org.dice_research.ldcbench.nodes.ckan.Constants;
 import org.dice_research.ldcbench.nodes.ckan.dao.CkanDAO;
 import org.dice_research.ldcbench.nodes.components.NodeComponent;
+import org.dice_research.ldcbench.rdf.RDFNodeType;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.utils.CloseableHelper;
 import org.hobbit.core.components.Component;
@@ -154,7 +155,7 @@ public class SimpleCkanComponent extends NodeComponent implements Component {
         boolean success = false;
         while (!success) {
             try {
-                addDataSource(tripleCreator.createNode(0, -1, -2, false).toString());
+                addDataSource(tripleCreator.createNode(0, -1, -2).toString());
                 success = true;
             } catch (CkanException ce) {
                 if (ce.getMessage().contains("Solr returned an error"))

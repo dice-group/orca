@@ -64,6 +64,7 @@ import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.generate.SeedGenerator;
 import org.dice_research.ldcbench.generate.SequentialSeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
+import org.dice_research.ldcbench.rdf.RDFNodeType;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.utils.CloseableHelper;
 import org.dice_research.ldcbench.vocab.LDCBench;
@@ -533,7 +534,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // FIXME use one of entrance nodes in graph instead of 0
         // FIXME better signal that we just want an externally accessible URI instead of
         // -2
-        return tripleCreator.createNode(0, -1, -2, false).toString();
+        return tripleCreator.createNode(0, -1, -2, RDFNodeType.IRI).toString();
     }
 
     protected void addNodeToSeed(ArrayList<String> seedURIs, int node) {

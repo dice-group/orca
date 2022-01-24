@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.benchmark.DataGenerator;
 import org.dice_research.ldcbench.graph.Graph;
+import org.dice_research.ldcbench.rdf.RDFNodeType;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.utils.tar.TarFileGenerator;
 import org.hobbit.core.rabbit.RabbitQueueFactory;
@@ -99,7 +100,7 @@ public class RDFaDataGenerator extends DataGenerator {
     protected String generateEntranceNodeUri(Graph graph, SimpleTripleCreator creator) {
         int entranceNode = graph.getEntranceNodes()[0];
         return creator
-                .createNode(entranceNode, graph.getExternalNodeId(entranceNode), graph.getGraphId(entranceNode), false)
+                .createNode(entranceNode, graph.getExternalNodeId(entranceNode), graph.getGraphId(entranceNode), RDFNodeType.IRI)
                 .getURI();
     }
 
@@ -108,8 +109,7 @@ public class RDFaDataGenerator extends DataGenerator {
         int entranceNodes[] = graph.getEntranceNodes();
         for (int i = 0; i < entranceNodes.length; ++i) {
             outgoingLinks.addAll(Arrays.stream(graph.outgoingEdgeTargets(entranceNodes[i]))
-                    .mapToObj(id -> creator.createNode(id, graph.getExternalNodeId(id), graph.getGraphId(id), false,
-                            id >= graph.getBlankNodesIndex()))
+                    .mapToObj(id -> creator.createNode(id, graph.getExternalNodeId(id), graph.getGraphId(id), graph.getNodeType(id)))
                     .map(n -> n.getURI()).collect(Collectors.toSet()));
         }
         return outgoingLinks;
