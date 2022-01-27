@@ -1,5 +1,7 @@
 package org.dice_research.ldcbench.graph;
 
+import org.dice_research.ldcbench.rdf.RDFNodeType;
+
 /**
  * A simple graph interface for the graphs LDC-bench is using. The nodes are
  * represented by IDs. Edges are directed and represented using the nodes IDs of
@@ -130,17 +132,46 @@ public interface Graph {
     public int getExternalNodeId(int nodeId);
 
     /**
-     * Returns the ID of the first Blank Node of the graph
+     * Returns the range of Blank Nodes of the graph
      *
-     * @return the ID of the first Blank Node
+     * @return the range of Blank Nodes of the graph
      */
-    public int getBlankNodesIndex();
+    public int[] getBlankNodesRange();
 
     /**
-     * Check if a node is a blank node or not
+     * Returns the range of literals of the graph
+     *
+     * @return the range of literals of the graph
+     */
+    public int[] getLiteralsRange();
+
+    /**
+     * Check if a node is a blank node
      *
      * @param nodeId the ID of the node to check
      * @return true if node with given nodeId is blank node and false otherwise
      */
     public boolean isBlankNode(int nodeId);
+
+    /**
+     * Check if a node is a literal
+     *
+     * @param nodeId the ID of the node to check
+     * @return true if node with given nodeId is literal and false otherwise
+     */
+    public boolean isLiteral(int nodeId);
+
+    /**
+     * Returns the number of IRI nodes of the graph
+     *
+     * @return the number of IRI nodes of the graph
+     */
+    public int getNumberOfIriNodes();
+
+    /**
+     * Return the type of a given node
+     * @param nodeId the id of the node
+     * @return the type of the node with the given id
+     */
+    public RDFNodeType getNodeType(int nodeId);
 }

@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.IntStream;
 
+import org.dice_research.ldcbench.rdf.RDFNodeType;
+
 import grph.Grph;
 import grph.in_memory.InMemoryGrph;
 import it.unimi.dsi.fastutil.ints.IntIterator;
@@ -41,6 +43,11 @@ public class GrphBasedGraph implements GraphBuilder {
 
     protected int actualGraphId;
 
+    protected int[] blankNodesRange = {Integer.MAX_VALUE,Integer.MAX_VALUE};
+    /**
+     * Index of first literal of this graph.
+     */
+    protected int[] literalsRange = {Integer.MAX_VALUE,Integer.MAX_VALUE};
     /**
      * Constructor for an empty GraphBuilder.
      */
@@ -141,9 +148,20 @@ public class GrphBasedGraph implements GraphBuilder {
         return graph.getNumberOfEdges();
     }
 
+    public int getNumberOfIriNodes() {
+        int numberOfBlankNode = blankNodesRange[1] - blankNodesRange[0];
+        int numberOfLiterals = literalsRange[1] - literalsRange[0];
+        return this.getNumberOfNodes() - numberOfBlankNode - numberOfLiterals;
+    }
+
     @Override
-    public int getBlankNodesIndex() {
-        return blankNodesIndex;
+    public int[] getBlankNodesRange() {
+        return blankNodesRange;
+    }
+
+    @Override
+    public int[] getLiteralsRange() {
+        return literalsRange;
     }
 
     public boolean addEdge(int sourceId, int targetId, int typeId) {
@@ -272,14 +290,35 @@ public class GrphBasedGraph implements GraphBuilder {
     public void setGraphId(int id) {
         actualGraphId = id;
     }
-    
+
     @Override
     public boolean isBlankNode(int nodeId) {
-        return nodeId >= getBlankNodesIndex();
+        return nodeId >= getBlankNodesRange()[0] && nodeId < getBlankNodesRange()[1];
     }
 
     @Override
-    public void setBlankNodesIndex(int index) {
-        blankNodesIndex = index;
+    public void setBlankNodesRange(int firstBnodeId, int bNodesCount) {
+        blankNodesRange[0] = firstBnodeId;
+        blankNodesRange[1] = firstBnodeId + bNodesCount;
+    }
+
+    @Override
+    public void setLiteralsRange(int firstLiteralId, int literalsCount) {
+        literalsRange[0] = firstLiteralId;
+        literalsRange[1] = firstLiteralId + literalsCount;
+    }
+
+    @Override
+    public boolean isLiteral(int nodeId) {
+        return nodeId >= getLiteralsRange()[0] && nodeId < getLiteralsRange()[1];
+    }
+
+    @Override
+    public RDFNodeType getNodeType(int nodeId) {
+        if (this.isBlankNode(nodeId))
+            return RDFNodeType.BlankNode;
+        if (this.isLiteral(nodeId))
+            return RDFNodeType.Literal;
+        return RDFNodeType.IRI;
     }
 }

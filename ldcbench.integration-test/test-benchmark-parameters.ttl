@@ -27,6 +27,7 @@ experiments:New a hobbit:Experiment;
   :ckanNodeWeight 0.01;
   :jsonldNodeWeight 1;
   :microdataNodeWeight 1;
+  :microformatNodeWeight 1;
   # FIXME if using SPARQL node:
   #
   #     ERROR [org.hobbit.sdk.utils.ComponentsExecutor] - <Error while running component SimpleSparqlComponent:>
@@ -38,4 +39,5 @@ experiments:New a hobbit:Experiment;
   :numberOfNodes 3;
   :numberOfGraphs 2;
   :averageNodeGraphDegree 2;
-  :blankNodesRatio 0.5.
+  :blankNodesRatio 0.05;
+  :literalsRatio 0.05.

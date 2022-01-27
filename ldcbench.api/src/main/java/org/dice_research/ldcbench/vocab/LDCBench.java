@@ -30,6 +30,7 @@ public class LDCBench {
     public static final Property numberOfNodes = property("numberOfNodes");
     public static final Property numberOfGraphs = property("numberOfGraphs");
     public static final Property blankNodesRatio = property("blankNodesRatio");
+    public static final Property literalsRatio = property("literalsRatio");
     public static final Property macroRecall = property("macroRecall");
     public static final Property microRecall = property("microRecall");
     public static final Property nodeSizeDeterminer = property("nodeSizeDeterminer");
@@ -38,6 +39,7 @@ public class LDCBench {
     public static final Property rdfaNodeWeight = property("rdfaNodeWeight");
     public static final Property jsonldNodeWeight = property("jsonldNodeWeight");
     public static final Property microdataNodeWeight = property("microdataNodeWeight");
+    public static final Property microformatNodeWeight = property("microformatNodeWeight");
     public static final Property resourceUsageOverTime = property("resourceUsageOverTime");
     public static final Property runtime = property("runtime");
     public static final Property seed = property("seed");

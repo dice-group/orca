@@ -25,6 +25,7 @@
     :numberOfGraphs,
     :averageTriplesPerNode,
     :blankNodesRatio,
+    :literalsRatio,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
     :averageCrawlDelay,
@@ -35,6 +36,7 @@
     :rdfaNodeWeight,
     :jsonldNodeWeight,
     :microdataNodeWeight,
+    :microformatNodeWeight,
     :httpDumpNodeWeight,
     :httpDumpNodeCompressedRatio,
     :useTurtleDumps,
@@ -84,6 +86,7 @@
     :numberOfGraphs,
     :averageTriplesPerNode,
     :blankNodesRatio,
+    :literalsRatio,
     :averageNodeGraphDegree,
     :averageRdfGraphDegree,
     :averageCrawlDelay,
@@ -94,6 +97,7 @@
     :rdfaNodeWeight,
     :jsonldNodeWeight,
     :microdataNodeWeight,
+    :microformatNodeWeight,
     :httpDumpNodeWeight,
     :httpDumpNodeCompressedRatio,
     :useTurtleDumps,
@@ -155,10 +159,17 @@
 
 :blankNodesRatio a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Ratio of blank nodes"@en;
-  rdfs:comment "The ratio of blank nodes in the generated RDF graph."@en;
+  rdfs:comment "Factor that is multiplied to the number of nodes to determine the number of blank nodes that are added to the graph."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:double;
-  hobbit:defaultValue "0.5"^^xsd:double .
+  hobbit:defaultValue "0.05"^^xsd:double .
+
+:literalsRatio a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Ratio of literals"@en;
+  rdfs:comment "Factor that is multiplied to the number of nodes to determine the number of literals that are added to the graph."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:double;
+  hobbit:defaultValue "0.05"^^xsd:double .
 
 :averageNodeGraphDegree a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Average node degree"@en;

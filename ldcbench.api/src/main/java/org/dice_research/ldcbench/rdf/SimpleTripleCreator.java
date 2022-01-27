@@ -39,19 +39,27 @@ public class SimpleTripleCreator implements TripleCreator {
 
     @Override
     public Triple createTriple(int sourceId, int propertyId, int targetId, int targetExtId, int targetExtGraphId) {
-        return createTriple(sourceId, propertyId, targetId, targetExtId, targetExtGraphId, false);
+        return createTriple(sourceId, propertyId, targetId, targetExtId, targetExtGraphId, null);
     }
 
     @Override
     public Triple createTriple(int sourceId, int propertyId, int targetId, int targetExtId,
-            int targetExtGraphId, boolean withBlankNode) {
-        return new Triple(createNode(sourceId, -1, Graph.INTERNAL_NODE_GRAPH_ID, false),
-                createNode(propertyId, -1, Graph.INTERNAL_NODE_GRAPH_ID, true),
-                createNode(targetId, targetExtId, targetExtGraphId, false, withBlankNode));
+            int targetExtGraphId, RDFNodeType targetNodeType) {
+        return new Triple(createNode(sourceId, -1, Graph.INTERNAL_NODE_GRAPH_ID, RDFNodeType.IRI),
+                createNode(propertyId, -1, Graph.INTERNAL_NODE_GRAPH_ID, RDFNodeType.Property),
+                createNode(targetId, targetExtId, targetExtGraphId, targetNodeType));
     }
 
-    public Node createNode(int nodeId, int externalId, int extGraphId, boolean isProperty) {
-        return createNode(nodeId, externalId, extGraphId, isProperty, false);
+    /**
+     * Create a node of type IRI
+     * use this function to create a basic IRI node without having to specify the node type
+     * @param nodeId
+     * @param externalId
+     * @param extGraphId
+     * @return
+     */
+    public Node createNode(int nodeId, int externalId, int extGraphId) {
+       return createNode(nodeId, externalId, extGraphId, RDFNodeType.IRI);
     }
 
     /**
@@ -68,13 +76,19 @@ public class SimpleTripleCreator implements TripleCreator {
      * @param isProperty
      *            a flag indicating whether the node is a property
      * @param isBlankNode
-     *            a flag indicating wheter the node is a blankNode
+     *            a flag indicating whether the node is a blankNode
+     * @param isLiteral
+     *            a flag indicating whether the node is a literal
      * @return the created {@link Node} instance
      */
-    public Node createNode(int nodeId, int externalId, int extGraphId, boolean isProperty, boolean isBlankNode) {
+    public Node createNode(int nodeId, int externalId, int extGraphId, RDFNodeType nodeType) {
         Node n;
-        if (isBlankNode) {
+        if (nodeType == RDFNodeType.BlankNode) {
             n = NodeFactory.createBlankNode(String.valueOf(nodeId));
+            return n;
+        }
+        if (nodeType == RDFNodeType.Literal) {
+            n = NodeFactory.createLiteral(String.format(UriHelper.LITERAL, nodeId));
             return n;
         }
         String domain;
@@ -88,7 +102,7 @@ public class SimpleTripleCreator implements TripleCreator {
             domain = accessUriTemplates[extGraphId];
             // TODO get the datasetId on the other server
         }
-        if (isProperty) {
+        if (nodeType == RDFNodeType.Property) {
             n = ResourceFactory.createProperty(UriHelper.createUri(domain, 0, UriHelper.PROPERTY_NODE_TYPE, externalId))
                     .asNode();
         } else {

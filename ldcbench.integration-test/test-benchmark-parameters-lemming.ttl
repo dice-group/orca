@@ -24,11 +24,13 @@ experiments:New a hobbit:Experiment;
   :rdfaNodeWeight 0;
   :jsonldNodeWeight 0;
   :microdataNodeWeight 0;
+  :microformatNodeWeight 0;
   :ckanNodeWeight 0;
   :sparqlNodeWeight 0;
   :numberOfNodes 3;
   :numberOfGraphs 2;
-  :blankNodesRatio 0.5;
+  :blankNodesRatio 0.05;
+  :literalsRatio 0.05;
   :dataset :LemmingTestDataset;
   :averageNodeGraphDegree 2.
 

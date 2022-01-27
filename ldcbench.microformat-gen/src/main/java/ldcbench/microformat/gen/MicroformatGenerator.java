@@ -1,8 +1,9 @@
-package org.dice_research.ldcbench.rdfa.gen;
+package org.dice_research.ldcbench.microformat.gen;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -16,12 +17,19 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.benchmark.DataGenerator;
 import org.dice_research.ldcbench.graph.Graph;
-import org.dice_research.ldcbench.rdf.RDFNodeType;
+import org.dice_research.ldcbench.microformat.gen.MicroformatEntranceFileGenerator;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.utils.tar.TarFileGenerator;
 import org.hobbit.core.rabbit.RabbitQueueFactory;
@@ -29,46 +37,49 @@ import org.hobbit.core.rabbit.SimpleFileSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RDFaDataGenerator extends DataGenerator {
+public class MicroformatGenerator extends DataGenerator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RDFaDataGenerator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MicroformatGenerator.class);
 
     public static final String ENTRANCE_HTML_FILE_NAME = "entrance.html";
     public static final String ENTRANCE_TTL_FILE_NAME = "entrance.ttl";
     public static final String ACCESS_URI_TEMPLATE_PATTERN = "/%s-%s/%s-%s";
-    
+
     protected static final File ENTRANCE_HTML_FILE = new File(ENTRANCE_HTML_FILE_NAME);
     protected static final File ENTRANCE_TTL_FILE = new File(ENTRANCE_TTL_FILE_NAME);
-    protected static final String RDFA_TEST_DOMAIN = "http://rdfa.info/test-suite/test-cases/";
 
-    // "../ldcbench.rdfa-gen/" makes it work in ldcbench.controller tests
-    protected static final String TEST_ROOT_DIRECTORY = "../ldcbench.rdfa-gen/rdfa.github.io/test-suite/test-cases/";
+    // "../ldcbench.microformat-gen/" makes it work in ldcbench.controller tests
+    protected static final String TEST_ROOT_DIRECTORY = "../ldcbench.microformat-gen/microformats.tests/tests/";
 
-    protected static final String TEST_CASES[] = new String[] { "rdfa1.0/html4", "rdfa1.0/xhtml1", "rdfa1.1/html4",
-            "rdfa1.1/html5", "rdfa1.1/xhtml1", "rdfa1.1/xhtml5" };
+    protected static final String MICROFORMAT_TEST_DOMAIN = "http://microformats.org/wiki/test-suite/tests/"; //TODO?
+
+    protected static final String TEST_CASES[] = new String[] { "microformats-mixed", "microformats-v1", "microformats-v2" };
 
     @Override
     protected void sendFinalGraph(Graph graph) throws Exception {
-        // iterate over the available test sets
-        LOGGER.info("Reading manifest files of different test cases...");
+        // there is no manifest-file, so we need to find the test-cases
+        LOGGER.info("Crawling the test cases...");
         Map<String, String> tests = loadTestFiles();
         LOGGER.info("Found {} test files. Processing them...", tests.size());
+
+
         SortedMap<String, File> htmlFiles = new TreeMap<>();
         SortedMap<String, File> ttlFiles = new TreeMap<>();
-        convertTestUrisToFiles(tests.keySet(), htmlFiles);
-        convertTestUrisToFiles(tests.values(), ttlFiles);
+        convertTestFilesToUris(tests.keySet(), htmlFiles);
+        convertTestFilesToUris(tests.values(), ttlFiles);
 
         // Generate URL of resources on the node
         String nodeDomain = accessUriTemplates[getNodeId()].replace(ACCESS_URI_TEMPLATE_PATTERN,
                 "") + "/";
         // Load the tests and replace URIs
-        replaceUrisInFiles(htmlFiles, RDFA_TEST_DOMAIN, nodeDomain);
-        replaceUrisInFiles(ttlFiles, RDFA_TEST_DOMAIN, nodeDomain);
-        htmlFiles = replaceUrisInMapping(htmlFiles, RDFA_TEST_DOMAIN, nodeDomain);
-        ttlFiles = replaceUrisInMapping(ttlFiles, RDFA_TEST_DOMAIN, nodeDomain);
+        replaceUrisInFiles(htmlFiles, MICROFORMAT_TEST_DOMAIN, nodeDomain);
+        replaceUrisInFiles(ttlFiles, MICROFORMAT_TEST_DOMAIN, nodeDomain);
+        htmlFiles = replaceUrisInMapping(htmlFiles, MICROFORMAT_TEST_DOMAIN, nodeDomain);
+        ttlFiles = replaceUrisInMapping(ttlFiles, MICROFORMAT_TEST_DOMAIN, nodeDomain);
 
         // Generate HTML and TTL file based on the graph and the list of test files
         generateEntranceFile(graph, htmlFiles, ENTRANCE_HTML_FILE, ENTRANCE_TTL_FILE);
+
         // Add entrance file to the list of HTML and ttl files
         htmlFiles.put(ENTRANCE_HTML_FILE_NAME, ENTRANCE_HTML_FILE);
         ttlFiles.put(ENTRANCE_TTL_FILE_NAME, ENTRANCE_TTL_FILE);
@@ -93,14 +104,14 @@ public class RDFaDataGenerator extends DataGenerator {
 
         String entranceUri = generateEntranceNodeUri(graph, creator);
 
-        RDFaEntranceFileGenerator generator = new RDFaEntranceFileGenerator();
+        MicroformatEntranceFileGenerator generator = new MicroformatEntranceFileGenerator();
         generator.generate(entranceFile, entranceTTLFile, entranceUri, outgoingLinks);
     }
 
     protected String generateEntranceNodeUri(Graph graph, SimpleTripleCreator creator) {
         int entranceNode = graph.getEntranceNodes()[0];
         return creator
-                .createNode(entranceNode, graph.getExternalNodeId(entranceNode), graph.getGraphId(entranceNode), RDFNodeType.IRI)
+                .createNode(entranceNode, graph.getExternalNodeId(entranceNode), graph.getGraphId(entranceNode), false)
                 .getURI();
     }
 
@@ -109,15 +120,22 @@ public class RDFaDataGenerator extends DataGenerator {
         int entranceNodes[] = graph.getEntranceNodes();
         for (int i = 0; i < entranceNodes.length; ++i) {
             outgoingLinks.addAll(Arrays.stream(graph.outgoingEdgeTargets(entranceNodes[i]))
-                    .mapToObj(id -> creator.createNode(id, graph.getExternalNodeId(id), graph.getGraphId(id), graph.getNodeType(id)))
+                    .mapToObj(id -> creator.createNode(id, graph.getExternalNodeId(id), graph.getGraphId(id), false))
                     .map(n -> n.getURI()).collect(Collectors.toSet()));
         }
         return outgoingLinks;
     }
 
-    protected static void convertTestUrisToFiles(Collection<String> testUris, Map<String, File> files) {
-        for (String uri : testUris) {
-            files.put(uri, new File(TEST_ROOT_DIRECTORY, uri.substring(RDFA_TEST_DOMAIN.length())));
+    protected static void convertTestFilesToUris(Collection<String> testFiles, Map<String, File> files) {
+        for (String file : testFiles) {
+            String[] pathElements = file.split("/");
+            int elementsCount = pathElements.length;
+            StringBuilder uriBuilder = new StringBuilder();
+            uriBuilder.append(MICROFORMAT_TEST_DOMAIN);
+            uriBuilder.append(pathElements[elementsCount-3] + "/");
+            uriBuilder.append(pathElements[elementsCount-2] + "/");
+            uriBuilder.append(pathElements[elementsCount-1]);
+            files.put(uriBuilder.toString(), new File(file));
         }
     }
 
@@ -148,16 +166,44 @@ public class RDFaDataGenerator extends DataGenerator {
         }
     }
 
+    /**
+     * returns a Map (<PathToHtml> , <PathToTtl>) containing all tests
+     */
     protected static Map<String, String> loadTestFiles() {
-        ManifestProcessor processor = new ManifestProcessor();
         Map<String, String> testFiles = new HashMap<>();
+
         for (int i = 0; i < TEST_CASES.length; ++i) {
             StringBuilder pathBuilder = new StringBuilder();
             pathBuilder.append(TEST_ROOT_DIRECTORY);
             pathBuilder.append(TEST_CASES[i]);
-            pathBuilder.append("/manifest.ttl");
-            testFiles.putAll(processor.loadTests(pathBuilder.toString()));
+
+            try {
+                List<Path> allTests = Files.walk(Paths.get(pathBuilder.toString()))
+                        .filter(s -> s.toString().endsWith(".json"))
+                        .map(foo -> foo = Paths.get(foo.toString().substring(0, foo.toString().lastIndexOf('.')))) // remove the extension
+                        .collect(Collectors.toList());
+
+                //generate ttl for all *.json-files
+                for (Path p: allTests) {
+                    File fileTtlOut = new File(p.toString() + ".ttl");
+
+                    Model model = RDFDataMgr.loadModel(p.toString() + ".json", Lang.JSONLD) ;
+
+                    RDFDataMgr.write(new FileOutputStream(fileTtlOut), model, Lang.TURTLE) ;
+                }
+
+                for (Path p : allTests) {
+                    testFiles.put(
+                            p.toString() + ".html",
+                            p.toString() + ".ttl"
+                    );
+                }
+            } catch (IOException e) {
+                LOGGER.error("Microformat-gen: Failed to load test files", e);
+                e.printStackTrace();
+            }
         }
+
         return testFiles;
     }
 
