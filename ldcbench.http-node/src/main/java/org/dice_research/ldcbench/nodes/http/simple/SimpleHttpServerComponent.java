@@ -75,7 +75,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
         compressedRatio = Double.parseDouble(EnvVariables.getString(ApiConstants.ENV_COMPRESSED_RATIO_KEY, LOGGER));
         disallowedRatio = Double.parseDouble(EnvVariables.getString(ApiConstants.ENV_DISALLOWED_RATIO_KEY, LOGGER));
         crawlDelay = EnvVariables.getInt(ApiConstants.ENV_CRAWL_DELAY_KEY, LOGGER);
-        noOfGraphs = EnvVariables.getInt(ApiConstants.ENV_NUMBER_OF_GRAPHS_KEY,1,LOGGER);     
+        noOfGraphs = EnvVariables.getInt(ApiConstants.ENV_NUMBER_OF_GRAPHS_KEY,1,LOGGER);
 
         String hostname = InetAddress.getLocalHost().getHostName();
         LOGGER.info("Hostname: {}", hostname);
@@ -178,12 +178,13 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
         if (dumpFileNode) {
         	for(int i=0; i<noOfGraphs;i++) {
         	   resource = DumpFileResource.create(cloudNodeId.get(),
-                       Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
-                       Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                       graphsArray,
+                       resourceUriTemplates,
+                       accessUriTemplates,
+                       new Graph[] {graphsArray[i]},
+                       i,
                        r -> r.getPath().toString().equals(dumpFilePath),
-                       dumpFileLang, dumpFileCompression,dumpfileArchiver);
-        	   
+                       dumpFileLang, dumpFileCompression, dumpfileArchiver);
+
         	   resources.add(resource);
         	}
         } else {

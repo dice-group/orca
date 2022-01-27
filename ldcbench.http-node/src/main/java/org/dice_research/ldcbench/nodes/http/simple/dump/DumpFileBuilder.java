@@ -7,8 +7,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
@@ -65,18 +63,17 @@ public class DumpFileBuilder {
     protected final Lang lang;
     protected final CompressionStreamFactory compression;
     protected File dumpFile;
-    protected Path path; 
+    protected int dumpfileCount;
 
     public DumpFileBuilder(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs,
-            Lang lang, CompressionStreamFactory compression) {
+            Lang lang, CompressionStreamFactory compression, int dumpfileCount) {
         this.domainId = domainId;
         this.resourceUriTemplates = resourceUriTemplates;
         this.accessUriTemplates = accessUriTemplates;
         this.graphs = graphs;
         this.lang = lang;
         this.compression = compression;
-        this.generateFolder();
-        
+        this.dumpfileCount = dumpfileCount;
     }
 
     public File build()
@@ -102,7 +99,7 @@ public class DumpFileBuilder {
         // fileNameBuilder.append('.');
         // fileNameBuilder.append(fileExt.get(0));
         // }
-        dumpFile = File.createTempFile("ldcbench", ".dump");
+        dumpFile = File.createTempFile("ldcbench_" + this.dumpfileCount, ".dump");
         OutputStream out = new FileOutputStream(dumpFile);
         out = new BufferedOutputStream(out);
         if (compression != null) {
@@ -172,7 +169,7 @@ public class DumpFileBuilder {
         TripleIterator iterator;
         LOGGER.info("Domain ID: " + domainId);
         LOGGER.info("graph size: " + graphs.length);
-        
+
         Model model = ModelFactory.createDefaultModel();
         org.apache.jena.graph.Graph modelGraph = model.getGraph();
         int datasetId = 0;
@@ -198,14 +195,6 @@ public class DumpFileBuilder {
             return compression.getMediaType();
         }
         return lang.getHeaderString();
-    } 
-    
-    private void generateFolder() {
-        try {
-            path = Files.createTempDirectory("multiDump-");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
 }
