@@ -158,7 +158,7 @@ public class SparqlBasedValidatorTest implements TripleBlockStreamSupplier {
         model.getResource("http://domain1.org/dataset-0/resource-0"));
         model.add(model.getResource("http://domain1.org/dataset-0/resource-0"),
         model.getProperty("http://domain1.org/dataset-0/property-0"),
-        model.getRDFNode(NodeFactory.createLiteral("testLiteral")));
+        model.getRDFNode(NodeFactory.createLiteral("literal-1")));
         dataset.addNamedModel("http://domain1.org", model);
 
         graphs = new Graph[] { builder1, builder2 };
