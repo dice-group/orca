@@ -1,8 +1,5 @@
 package org.dice_research.ldcbench.generate;
 
-import static org.junit.Assert.assertEquals;
-
-import org.apache.jena.ext.com.google.common.graph.GraphBuilder;
 import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.junit.Before;
 import org.junit.Test;
