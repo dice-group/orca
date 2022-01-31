@@ -30,7 +30,9 @@ experiments:New a hobbit:Experiment;
   :numberOfNodes 3;
   :blankNodesRatio 0.05;
   :literalsRatio 0.05;
+  :numberOfNodesLinks 3;
   :dataset :LemmingTestDataset;
+  :graphGenerator :DefaultRDFGraphGenerator;
   :averageNodeGraphDegree 2.
 
 :LemmingTestDataset a :LemmingDataset;

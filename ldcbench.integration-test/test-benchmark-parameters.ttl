@@ -18,6 +18,7 @@ experiments:New a hobbit:Experiment;
   :httpDumpNodeCompressedRatio 1;
   :dereferencingHttpNodeWeight 0;
   :httpDumpNodeWeight 1;
+  :graphGenerator :DefaultRDFGraphGenerator;
   :useTurtleDumps "true"^^xsd:boolean;
   :useJsonLdDumps "true"^^xsd:boolean;
   :useN3Dumps "true"^^xsd:boolean;
@@ -39,4 +40,5 @@ experiments:New a hobbit:Experiment;
   :numberOfNodes 3;
   :averageNodeGraphDegree 2;
   :blankNodesRatio 0.05;
-  :literalsRatio 0.05.
+  :literalsRatio 0.05;
+  :numberOfNodesLinks 3.

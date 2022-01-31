@@ -13,6 +13,9 @@ public class LDCBench {
 
     public static final Resource ExponentialDistNodeSize = resource("ExponentialDistNodeSize");
     public static final Resource StaticNodeSize = resource("StaticNodeSize");
+    public static final Resource defaultRDFGraphGenerator = resource("DefaultRDFGraphGenerator");
+    public static final Resource lubmGraphGenerator = resource("LUBMGraphGenerator");
+    public static final Resource fileBasedGraphGenerator = resource("FileBasedGraphGenerator");
 
     // Properties sorted alphabetically
     public static final Property averageCrawlDelay = property("averageCrawlDelay");
@@ -30,9 +33,11 @@ public class LDCBench {
     public static final Property numberOfNodes = property("numberOfNodes");
     public static final Property blankNodesRatio = property("blankNodesRatio");
     public static final Property literalsRatio = property("literalsRatio");
+    public static final Property numberOfNodesLinks = property("numberOfNodesLinks");
     public static final Property macroRecall = property("macroRecall");
     public static final Property microRecall = property("microRecall");
     public static final Property nodeSizeDeterminer = property("nodeSizeDeterminer");
+    public static final Property graphGenerator = property("graphGenerator");
     public static final Property numberOfDisallowedResources = property("numberOfDisallowedResources");
     public static final Property ratioOfRequestedDisallowedResources = property("ratioOfRequestedDisallowedResources");
     public static final Property rdfaNodeWeight = property("rdfaNodeWeight");
