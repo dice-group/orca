@@ -42,8 +42,8 @@ For the full license text, see [LICENSE](../LICENSE).
 | --- | --- | ---
 | Number of nodes | The number of nodes in the synthetic graph. | [orca:numberOfNodes](http://w3id.org/dice-research/orca/ontology#numberOfNodes)
 | Average node degree | The average degree of the nodes in the generated graph. | [orca:averageNodeGraphDegree](http://w3id.org/dice-research/orca/ontology#averageNodeGraphDegree)
-| Ratio of blank nodes | The ratio of blank nodes in the generated graph. | [orca:blankNodesRatio](http://w3id.org/dice-research/orca/ontology#blankNodesRatio)
-| Ratio of literals | The ratio literals in the generated graph. | [orca:literalsRatio](http://w3id.org/dice-research/orca/ontology#literalsRatio)
+| Ratio of blank nodes | Factor that is multiplied to the number of nodes to determine the number of blank nodes that are added to the graph. | [orca:blankNodesRatio](http://w3id.org/dice-research/orca/ontology#blankNodesRatio)
+| Ratio of literals | Factor that is multiplied to the number of nodes to determine the number of literals that are added to the graph. | [orca:literalsRatio](http://w3id.org/dice-research/orca/ontology#literalsRatio)
 | Number of links between nodes | The number of links between the nodes of the synthetic graph. | [orca:numberOfNodesLinks](http://w3id.org/dice-research/orca/ontology#numberOfNodesLinks)
 | RDF dataset size | Average number of triples of the generated RDF graphs. | [orca:averageTriplesPerNode](http://w3id.org/dice-research/orca/ontology#averageTriplesPerNode)
 | Average resource degree | The average degree of the resources in the RDF graphs. | [orca:averageRdfGraphDegree](http://w3id.org/dice-research/orca/ontology#averageRdfGraphDegree)

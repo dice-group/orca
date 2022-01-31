@@ -52,6 +52,8 @@ import org.dice_research.ldcbench.benchmark.cloud.CkanNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.DereferencingHttpNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.HttpDumpNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.JsonLdNodeManager;
+import org.dice_research.ldcbench.benchmark.cloud.MicrodataNodeManager;
+import org.dice_research.ldcbench.benchmark.cloud.MicroformatNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.NodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.RDFaNodeManager;
 import org.dice_research.ldcbench.benchmark.cloud.SparqlNodeManager;
@@ -62,6 +64,7 @@ import org.dice_research.ldcbench.data.NodeMetadata;
 import org.dice_research.ldcbench.generate.SeedGenerator;
 import org.dice_research.ldcbench.generate.SequentialSeedGenerator;
 import org.dice_research.ldcbench.graph.Graph;
+import org.dice_research.ldcbench.rdf.RDFNodeType;
 import org.dice_research.ldcbench.rdf.SimpleTripleCreator;
 import org.dice_research.ldcbench.utils.CloseableHelper;
 import org.dice_research.ldcbench.vocab.LDCBench;
@@ -95,6 +98,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
         HttpDumpNodeManager.class,
         RDFaNodeManager.class,
         JsonLdNodeManager.class,
+        MicrodataNodeManager.class,
+        MicroformatNodeManager.class,
     };
 
     private boolean dockerized;
@@ -529,7 +534,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
         // FIXME use one of entrance nodes in graph instead of 0
         // FIXME better signal that we just want an externally accessible URI instead of
         // -2
-        return tripleCreator.createNode(0, -1, -2, false).toString();
+        return tripleCreator.createNode(0, -1, -2, RDFNodeType.IRI).toString();
     }
 
     protected void addNodeToSeed(ArrayList<String> seedURIs, int node) {
@@ -650,8 +655,13 @@ public class BenchmarkController extends AbstractBenchmarkController {
         long disallowedRequested = 0;
         for (int i = 0; i < nodesAmount; i++) {
             Resource nodeResource = resultModel.createResource(getNodeURI(i));
-            double recall = Double
+            double recall = Double.NaN;
+            try {
+                recall = Double
                     .parseDouble(RdfHelper.getStringValue(resultModel, nodeResource, LDCBench.microRecall));
+            } catch (Exception e) {
+                LOGGER.error("Error while trying to load the micro recall for node " + nodeResource.toString() + " : ", e);
+            }
 
             Double crawlDelayFulfillment = null;
             Double minCrawlDelay = null;

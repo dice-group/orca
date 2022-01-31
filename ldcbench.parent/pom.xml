@@ -18,7 +18,7 @@
     <junit.version>4.13.2</junit.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- The versions of jena and the sparql-api have to fit to each other -->
-    <jena.version>3.6.0</jena.version><!-- should be increased, e.g., to 
+    <jena.version>3.6.0</jena.version><!-- should be increased, e.g., to
       3.12.0 -->
     <jena-sparql-api.version>${jena.version}-1</jena-sparql-api.version>
   </properties>
@@ -106,6 +106,16 @@
       <dependency>
         <groupId>org.dice_research</groupId>
         <artifactId>ldcbench.rdfa-gen</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dice_research</groupId>
+        <artifactId>ldcbench.microdata-gen</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dice_research</groupId>
+        <artifactId>ldcbench.microformat-gen</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

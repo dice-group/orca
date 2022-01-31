@@ -86,7 +86,7 @@ public interface GraphBuilder extends Graph {
      *
      * @param firstBnodeId
      * @param bNodeCount
-     *            the number of literals
+     *            the number of blankNodes
      */
     public void setBlankNodesRange(int firstBnodeId, int bNodesCount);
 

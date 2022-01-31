@@ -22,6 +22,13 @@ public class RDFaNodeManager extends AbstractNodeManager {
     }
 
     @Override
+    public String[] getNodeEnvironment() {
+        return new String[]{
+            "LDCBENCH_USE_SINGLE_FILE=" + Boolean.FALSE.toString()
+        };
+    };
+
+    @Override
     public String[] getDataGeneratorEnvironment(long averageRdfGraphDegree, long triplesPerNode) {
         String[] env = new String[]{
             DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 0,

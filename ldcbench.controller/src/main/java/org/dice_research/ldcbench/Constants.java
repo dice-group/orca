@@ -21,6 +21,8 @@ public class Constants {
     public static final String HENODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.html-embd-node";
     public static final String RDFADATAGEN_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.rdfa-gen";
     public static final String JSONLDDATAGEN_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.jsonld-gen";
+    public static final String MICRODATAGEN_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.microdata-gen";
+    public static final String MICROFORMATGEN_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.microformat-gen";
     public static final String SPARQLNODE_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.sparql-node";
     public static final String EMPTY_SERVER_IMAGE_NAME = GIT_REPO_PATH+PROJECT_NAME +"/ldcbench.empty-server";
 

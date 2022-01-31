@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.aksw.jena_sparql_api.core.QueryExecutionFactoryDataset;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
@@ -52,12 +53,12 @@ public class SparqlBasedValidatorTest implements TripleBlockStreamSupplier {
         builder2.setEntranceNodes(new int[] { 0 });
 
         Graph[] graphs = new Graph[] { builder1, builder2 };
-        String[] domains = new String[] { "domain0.org", "domain1.org" };
+        String[] domains = new String[] { "http://domain0.org/%s-%s/%s-%s", "http://domain1.org/%s-%s/%s-%s" };
 
         // First graph is completely correct, second graph is empty
         Dataset dataset;
         Model model;
-        dataset = DatasetFactory.create();
+        dataset = DatasetFactory.createTxnMem();
         model = ModelFactory.createDefaultModel();
         model.add(model.getResource("http://domain0.org/dataset-0/resource-0"),
                 model.getProperty("http://domain0.org/dataset-0/property-0"),
@@ -76,7 +77,7 @@ public class SparqlBasedValidatorTest implements TripleBlockStreamSupplier {
                 new ValidationResult[] { new ValidationResult(3, 3), new ValidationResult(3, 0) } });
 
         // First graph is empty, second graph is completely correct
-        dataset = DatasetFactory.create();
+        dataset = DatasetFactory.createTxnMem();
         model = ModelFactory.createDefaultModel();
         dataset.addNamedModel("http://domain0.org", model);
         model = ModelFactory.createDefaultModel();
@@ -95,7 +96,7 @@ public class SparqlBasedValidatorTest implements TripleBlockStreamSupplier {
                 new ValidationResult[] { new ValidationResult(3, 0), new ValidationResult(3, 3) } });
 
         // First both are correct
-        dataset = DatasetFactory.create();
+        dataset = DatasetFactory.createTxnMem();
         dataset.addNamedModel("http://domain0.org", correctModel1);
         dataset.addNamedModel("http://domain1.org", correctModel2);
         data.add(new Object[] { dataset, domains, graphs,
@@ -103,7 +104,7 @@ public class SparqlBasedValidatorTest implements TripleBlockStreamSupplier {
 
         // First graph has two correct triples, second graph has only one correct triple
         // and one additional triple which shouldn't matter
-        dataset = DatasetFactory.create();
+        dataset = DatasetFactory.createTxnMem();
         model = ModelFactory.createDefaultModel();
         model.add(model.getResource("http://domain0.org/dataset-0/resource-0"),
                 model.getProperty("http://domain0.org/dataset-0/property-0"),
@@ -123,6 +124,48 @@ public class SparqlBasedValidatorTest implements TripleBlockStreamSupplier {
         data.add(new Object[] { dataset, domains, graphs,
                 new ValidationResult[] { new ValidationResult(3, 2), new ValidationResult(3, 1) } });
 
+        // Graph with blank Node and Literal
+
+        // Graph 1: Simple graph containing blank nodes
+        builder1 = new GrphBasedGraph();
+        builder1.addNodes(3);
+        builder1.setBlankNodesRange(1,2);
+        builder1.addEdge(0, 0, 0);
+        builder1.addEdge(0, 1, 0);
+        builder1.addEdge(0, 2, 1);
+        builder1.setEntranceNodes(new int[] { 0 });
+
+        // Graph 2: Simple graph containing blank nodes
+        builder2 = new GrphBasedGraph();
+        builder2.addNodes(3);
+        builder2.setLiteralsRange(1,2);
+        builder2.addEdge(0, 0, 0);
+        builder2.addEdge(0, 1, 0);
+        builder2.addEdge(0, 2, 1);
+        builder2.setEntranceNodes(new int[] { 0 });
+        dataset = DatasetFactory.createTxnMem();
+        model = ModelFactory.createDefaultModel();
+        model.add(model.getResource("http://domain0.org/dataset-0/resource-0"),
+                model.getProperty("http://domain0.org/dataset-0/property-1"),
+                model.getRDFNode(NodeFactory.createBlankNode("2c1e21645df88fe91a7b0770fd5e06c6")));
+        model.add(model.getResource("http://domain0.org/dataset-0/resource-0"),
+                model.getProperty("http://domain0.org/dataset-0/property-0"),
+                model.getResource("http://domain0.org/dataset-0/resource-0"));
+        dataset.addNamedModel("http://domain0.org", model);
+        model = ModelFactory.createDefaultModel();
+        model.add(model.getResource("http://domain1.org/dataset-0/resource-0"),
+        model.getProperty("http://domain1.org/dataset-0/property-0"),
+        model.getResource("http://domain1.org/dataset-0/resource-0"));
+        model.add(model.getResource("http://domain1.org/dataset-0/resource-0"),
+        model.getProperty("http://domain1.org/dataset-0/property-0"),
+        model.getRDFNode(NodeFactory.createLiteral("testLiteral")));
+        dataset.addNamedModel("http://domain1.org", model);
+
+        graphs = new Graph[] { builder1, builder2 };
+
+        data.add(new Object[] { dataset, domains, graphs,
+                new ValidationResult[] { new ValidationResult(3, 2), new ValidationResult(3, 2) } });
+
         return data;
     }
 
@@ -140,10 +183,10 @@ public class SparqlBasedValidatorTest implements TripleBlockStreamSupplier {
             ValidationResult result;
             for (int i = 0; i < expectedResults.length; ++i) {
                 result = validator.validate(this, i);
-                Assert.assertEquals("Got an unexpected result for graph " + i, expectedResults[i].checkedTriples,
+                Assert.assertEquals("Checked triples: Got an unexpected result for graph " + i, expectedResults[i].checkedTriples,
                         result.checkedTriples);
-                Assert.assertEquals("Got an unexpected result for graph " + i, expectedResults[i].checkedTriples,
-                        result.checkedTriples);
+                Assert.assertEquals("True positives: Got an unexpected result for graph " + i, expectedResults[i].truePositives,
+                        result.truePositives);
             }
         }
     }

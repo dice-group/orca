@@ -8,6 +8,8 @@ import static org.dice_research.ldcbench.Constants.HTTPNODE_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.SPARQLNODE_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.HENODE_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.JSONLDDATAGEN_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.MICRODATAGEN_IMAGE_NAME;
+import static org.dice_research.ldcbench.Constants.MICROFORMATGEN_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.RDFADATAGEN_IMAGE_NAME;
 import static org.dice_research.ldcbench.Constants.SYSTEM_IMAGE_NAME;
 import static org.hobbit.core.Constants.BENCHMARK_PARAMETERS_MODEL_KEY;
@@ -43,6 +45,8 @@ import org.dice_research.ldcbench.nodes.htmlembd.SimpleHEComponent;
 // import org.dice_research.ldcbench.rdfa.node.SimpleRDFaComponent;
 import org.dice_research.ldcbench.rdfa.gen.RDFaDataGenerator;
 import org.dice_research.ldcbench.jsonld.gen.JsonLDDataGenerator;
+import org.dice_research.ldcbench.microdata.gen.MicrodataGenerator;
+import org.dice_research.ldcbench.microformat.gen.MicroformatGenerator;
 import org.dice_research.ldcbench.system.SystemAdapter;
 import org.dice_research.ldcbench.vocab.LDCBench;
 import org.hobbit.core.components.Component;
@@ -86,6 +90,10 @@ public class BenchmarkTestBase {
     protected LDCBenchNodeBuilder rdfaGenBuilder;
     protected LDCBenchNodeBuilder jsonLdNodeBuilder;
     protected LDCBenchNodeBuilder jsonLdGenBuilder;
+    protected LDCBenchNodeBuilder microdataNodeBuilder;
+    protected LDCBenchNodeBuilder microdataGenBuilder;
+    protected LDCBenchNodeBuilder microformatNodeBuilder;
+    protected LDCBenchNodeBuilder microformatGenBuilder;
 
     public void init(Boolean useCachedImage) throws Exception {
 
@@ -126,11 +134,53 @@ public class BenchmarkTestBase {
                 return RDFADATAGEN_IMAGE_NAME;
             }
         };
-        jsonLdNodeBuilder = new LDCBenchNodeBuilder(new ExampleDockersBuilder(SimpleHEComponent.class, HENODE_IMAGE_NAME).useCachedImage(useCachedImage)) {
-            @Override public String getName() { return HENODE_IMAGE_NAME; }
+        jsonLdNodeBuilder = new LDCBenchNodeBuilder(
+                new ExampleDockersBuilder(SimpleHEComponent.class, HENODE_IMAGE_NAME)
+                    .useCachedImage(useCachedImage)) {
+            @Override
+            public String getName() {
+                return HENODE_IMAGE_NAME;
+            }
         };
-        jsonLdGenBuilder = new LDCBenchNodeBuilder(new ExampleDockersBuilder(JsonLDDataGenerator.class, JSONLDDATAGEN_IMAGE_NAME).useCachedImage(useCachedImage)) {
-            @Override public String getName() { return JSONLDDATAGEN_IMAGE_NAME; }
+        jsonLdGenBuilder = new LDCBenchNodeBuilder(
+                new ExampleDockersBuilder(JsonLDDataGenerator.class, JSONLDDATAGEN_IMAGE_NAME)
+                    .useCachedImage(useCachedImage)) {
+            @Override
+            public String getName() {
+                return JSONLDDATAGEN_IMAGE_NAME;
+            }
+        };
+        microdataNodeBuilder = new LDCBenchNodeBuilder(
+                new ExampleDockersBuilder(SimpleHEComponent.class, HENODE_IMAGE_NAME)
+                    .useCachedImage(useCachedImage)) {
+            @Override
+            public String getName() {
+                return HENODE_IMAGE_NAME;
+            }
+        };
+        microdataGenBuilder = new LDCBenchNodeBuilder(
+                new ExampleDockersBuilder(MicrodataGenerator.class, MICRODATAGEN_IMAGE_NAME)
+                    .useCachedImage(useCachedImage)) {
+            @Override
+            public String getName() {
+                return MICRODATAGEN_IMAGE_NAME;
+            }
+        };
+        microformatNodeBuilder = new LDCBenchNodeBuilder(
+                new ExampleDockersBuilder(SimpleHEComponent.class, HENODE_IMAGE_NAME)
+                    .useCachedImage(useCachedImage)) {
+            @Override
+            public String getName() {
+                return HENODE_IMAGE_NAME;
+            }
+        };
+        microformatGenBuilder = new LDCBenchNodeBuilder(
+                new ExampleDockersBuilder(MicroformatGenerator.class, MICROFORMATGEN_IMAGE_NAME)
+                    .useCachedImage(useCachedImage)) {
+            @Override
+            public String getName() {
+                return MICROFORMATGEN_IMAGE_NAME;
+            }
         };
 
 //        benchmarkBuilder = new BenchmarkDockerBuilder(new PullBasedDockersBuilder(BENCHMARK_IMAGE_NAME));
@@ -181,6 +231,10 @@ public class BenchmarkTestBase {
         Component rdfaGen = new RDFaDataGenerator();
         Component jsonldNode = new SimpleHEComponent();
         Component jsonldGen = new JsonLDDataGenerator();
+        Component microdataNode = new SimpleHEComponent();
+        Component microdataGen = new MicrodataGenerator();
+        Component microformatNode = new SimpleHEComponent();
+        Component microformatGen = new MicroformatGenerator();
 
         if (dockerized) {
 
@@ -195,6 +249,10 @@ public class BenchmarkTestBase {
             rdfaGen = rdfaGenBuilder.build();
             jsonldNode = jsonLdNodeBuilder.build();
             jsonldGen = jsonLdGenBuilder.build();
+            microdataNode = microdataNodeBuilder.build();
+            microdataGen = microdataGenBuilder.build();
+            microformatNode = microformatNodeBuilder.build();
+            microformatGen = microformatGenBuilder.build();
         }
 
         CommandQueueListener commandQueueListener = new CommandQueueListener();
@@ -216,6 +274,10 @@ public class BenchmarkTestBase {
                         .customContainerImage(rdfaGen, RDFADATAGEN_IMAGE_NAME)
                         .customContainerImage(jsonldNode, HENODE_IMAGE_NAME)
                         .customContainerImage(jsonldGen, JSONLDDATAGEN_IMAGE_NAME)
+                        .customContainerImage(microdataNode, HENODE_IMAGE_NAME)
+                        .customContainerImage(microdataGen, MICRODATAGEN_IMAGE_NAME)
+                        .customContainerImage(microformatNode, HENODE_IMAGE_NAME)
+                        .customContainerImage(microformatGen, MICROFORMATGEN_IMAGE_NAME)
                         //.customContainerImage(systemAdapter, DUMMY_SYSTEM_IMAGE_NAME)
                 ;
 

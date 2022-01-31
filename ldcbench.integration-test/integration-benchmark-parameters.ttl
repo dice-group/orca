@@ -26,10 +26,12 @@ experiments:New a hobbit:Experiment;
   :rdfaNodeWeight 1;
   :ckanNodeWeight 0.01;
   :jsonldNodeWeight 1;
+  :microdataNodeWeight 1;
+  :microformatNodeWeight 1;
   :sparqlNodeWeight 0.01;
   :numberOfNodes 4;
   :averageNodeGraphDegree 2;
-  :blankNodesRatio 0.5;
-  :literalsRatio 0.5;
+  :blankNodesRatio 0.05;
+  :literalsRatio 0.05;
   :numberOfNodesLinks 3;
   :graphGenerator :DefaultRDFGraphGenerator.

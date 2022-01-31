@@ -271,12 +271,13 @@ public class DataGenerator extends AbstractDataGenerator {
         addBNodesOrLiterals(g, literalIndex, nodeCount, seed);
     }
 
-    private void addBNodesOrLiterals(GraphBuilder g, int index, int NumberOfNodes, long seed) {
+    private void addBNodesOrLiterals(GraphBuilder g, int index, int numberOfNodes, long seed) {
         Random generator = new Random(seed);
-        g.addNodes(NumberOfNodes);
+        int numberOfIriNodes = g.getNumberOfIriNodes();
+        g.addNodes(numberOfNodes);
         for (int i = index; i < g.getNumberOfNodes(); i++) {
             //Get a random Source Node
-            int sourceNode = generator.nextInt(index);
+            int sourceNode = generator.nextInt(numberOfIriNodes);
             int propertyId = 0;
             g.addEdge(sourceNode, i, propertyId);
         }

@@ -15,6 +15,17 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryFactory;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.E_Call;
+import org.apache.jena.sparql.expr.E_Function;
+import org.apache.jena.sparql.expr.E_IsBlank;
+import org.apache.jena.sparql.expr.E_IsLiteral;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.expr.ExprVar;
+import org.apache.jena.sparql.syntax.ElementFilter;
+import org.apache.jena.sparql.syntax.ElementGroup;
+import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.apache.jena.vocabulary.XSD;
 import org.dice_research.ldcbench.benchmark.eval.GraphValidator;
@@ -190,8 +201,32 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
     protected boolean execute(Triple triple) {
         Query q = QueryFactory.create();
         q.setQueryAskType();
-        ElementTriplesBlock pattern = new ElementTriplesBlock();
-        pattern.addTriple(triple);
+        ElementGroup pattern = new ElementGroup();
+        Triple queryTriple = triple;
+        ElementFilter filterPattern = null;
+
+        if (triple.getObject().isBlank() || triple.getObject().isLiteral()) {
+            Var objVar = Var.alloc("obj");
+            queryTriple = new Triple(triple.getSubject(), triple.getPredicate(),
+                    objVar);
+            Expr ObjExpr = new ExprVar(objVar).getExpr();
+            Expr filterExpr = null;
+            if (triple.getObject().isBlank())
+                filterExpr = new E_IsBlank(ObjExpr);
+            else if (triple.getObject().isLiteral())
+                filterExpr = new E_IsLiteral(ObjExpr);
+            filterPattern = new ElementFilter(filterExpr);
+        }
+
+        ElementTriplesBlock triplePattern = new ElementTriplesBlock();
+        triplePattern.addTriple(queryTriple);
+        ExprVar var = new ExprVar("g");
+        ElementNamedGraph namedGraphPattern = new ElementNamedGraph(var.getAsNode(), triplePattern);
+        pattern.addElement(namedGraphPattern);
+
+        if (filterPattern != null)
+            pattern.addElementFilter(filterPattern);
+
         q.setQueryPattern(pattern);
         try (QueryExecution qe = qef.createQueryExecution(q)) {
             return execAskQuery(qe, 5, 5000);
@@ -217,7 +252,7 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
         Query q = QueryFactory.create();
         q.setQueryAskType();
         ElementTriplesBlock pattern = creator.create(edge[0], edge[1], edge[2], graph.getExternalNodeId(edge[2]),
-                graph.getGraphId(edge[2]));
+                graph.getGraphId(edge[2]),graph.getNodeType(edge[2]));
         assert !pattern.isEmpty();
         int expected = 0;
         for (Iterator<?> i = pattern.patternElts(); i.hasNext(); i.next()) {
