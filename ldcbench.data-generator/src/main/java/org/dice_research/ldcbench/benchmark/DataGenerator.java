@@ -117,10 +117,6 @@ public class DataGenerator extends AbstractDataGenerator {
      */
     private int numberOfNodes;
     /**
-     *  The number of graphs for a node
-     */
-    private int numberOfGraphs;
-    /**
      * The average degree of the nodes.
      */
     private double avgDegree;
@@ -343,7 +339,7 @@ public class DataGenerator extends AbstractDataGenerator {
         seed = seedGenerator.getNextSeed();
 
         numberOfNodes = EnvVariables.getInt(ENV_NUMBER_OF_NODES_KEY, 0);
-        numberOfGraphs = EnvVariables.getInt(ENV_NUMBER_OF_GRAPHS_KEY, 1);
+        int numberOfGraphs = EnvVariables.getInt(ENV_NUMBER_OF_GRAPHS_KEY, 1);
         avgDegree = Double.parseDouble(EnvVariables.getString(ENV_AVERAGE_DEGREE_KEY));
         numberOfEdges = EnvVariables.getInt(ENV_NUMBER_OF_EDGES_KEY, 0);
 
