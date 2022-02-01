@@ -204,17 +204,13 @@ public class SparqlBasedValidator implements GraphValidator, AutoCloseable {
         ElementGroup pattern = new ElementGroup();
         Triple queryTriple = triple;
         ElementFilter filterPattern = null;
-
-        if (triple.getObject().isBlank() || triple.getObject().isLiteral()) {
+        //Update the query for blank node
+        if (triple.getObject().isBlank()) {
             Var objVar = Var.alloc("obj");
             queryTriple = new Triple(triple.getSubject(), triple.getPredicate(),
                     objVar);
             Expr ObjExpr = new ExprVar(objVar).getExpr();
-            Expr filterExpr = null;
-            if (triple.getObject().isBlank())
-                filterExpr = new E_IsBlank(ObjExpr);
-            else if (triple.getObject().isLiteral())
-                filterExpr = new E_IsLiteral(ObjExpr);
+            Expr filterExpr = new E_IsBlank(ObjExpr);
             filterPattern = new ElementFilter(filterExpr);
         }
 

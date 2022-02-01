@@ -14,8 +14,11 @@ import java.util.concurrent.Semaphore;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.dice_research.ldcbench.ApiConstants;
 import org.dice_research.ldcbench.generate.GraphGenerator;
+import org.dice_research.ldcbench.generate.LUBMbasedRDFGenerator;
 import org.dice_research.ldcbench.generate.RandomCloudGraph;
 import org.dice_research.ldcbench.generate.RandomRDF;
 import org.dice_research.ldcbench.generate.SeedGenerator;
@@ -26,9 +29,12 @@ import org.dice_research.ldcbench.graph.GraphMetadata;
 import org.dice_research.ldcbench.graph.GrphBasedGraph;
 import org.dice_research.ldcbench.graph.serialization.DumbSerializer;
 import org.dice_research.ldcbench.graph.serialization.SerializationHelper;
+import org.dice_research.ldcbench.vocab.LDCBench;
+import org.hobbit.core.Constants;
 import org.hobbit.core.components.AbstractDataGenerator;
 import org.hobbit.core.rabbit.SimpleFileSender;
 import org.hobbit.utils.EnvVariables;
+import org.hobbit.utils.rdf.RdfHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +56,7 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_AVERAGE_DEGREE_KEY = "LDCBENCH_DATAGENERATOR_AVERAGE_DEGREE";
     public static final String ENV_BLANK_NODES_RATIO ="LDCBENCH_DATAGENERATOR_BLANK_NODES_RATIO";
     public static final String ENV_LITERALS_RATIO ="LDCBENCH_DATAGENERATOR_LITERALS_RATIO";
+    public static final String ENV_NUMBER_OF_NODES_LINKS ="LDCBENCH_DATAGENERATOR_NUMBER_OF_NODES_LINKS";
     public static final String ENV_NUMBER_OF_EDGES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_EDGES";
     public static final String ENV_DATA_QUEUE_KEY = "LDCBENCH_DATA_QUEUE";
     public static final String ENV_DATAGENERATOR_EXCHANGE_KEY = "LDCBENCH_DATAGENERATOR_EXCHANGE";
@@ -58,6 +65,7 @@ public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_TYPECONNECTIVITY_KEY = "LDCBENCH_DATAGENERATOR_TYPECONNECTIVITY";
     public static final String ENV_ACCESS_URI_TEMPLATES_KEY = "ACCESS_URI_TEMPLATES";
     public static final String ENV_RESOURCE_URI_TEMPLATES_KEY = "RESOURCE_URI_TEMPLATES";
+    public static final String ENV_GRAPH_GENERATOR = "LDCBENCH_DATAGENERATOR_GRAPH_GENERATOR";
 
     /**
      * Types of data generator instances.
@@ -208,31 +216,31 @@ public class DataGenerator extends AbstractDataGenerator {
         dataGeneratorsChannel.basicConsume(queueName, true, consumer);
     }
 
-    protected void addInterlinks(GraphBuilder g) {
+    protected void addInterlinks(GraphBuilder g, int numberOfnodesLinks) {
         int numberOfInternalNodes = g.getNumberOfNodes();
         Random random = new Random(seedGenerator.getNextSeed());
         for (Map.Entry<Integer, GraphMetadata> entry : rdfMetadata.entrySet()) {
             int targetNodeGraph = entry.getKey();
             GraphMetadata gm = entry.getValue();
 
-            // use random node
-            int nodeWithOutgoingLink = random.nextInt(numberOfInternalNodes);
-//            if (gm.entranceNodes.length == 0) {
-//                throw new IllegalStateException("Node " + nodeId + " needs to link to node " + targetNodeGraph
-//                        + " but there are no entrypoints.");
-//            }
-            // get node in target graph
-            int entranceInTargetGraph = 0;// FIXME use gm.entranceNodes[random.nextInt(gm.entranceNodes.length)];
-            // add a new node
-            int externalNode = g.addNode();
-            g.setGraphIdOfNode(externalNode, targetNodeGraph, entranceInTargetGraph);
-            g.setGraphId(gm.graphId);
-
-            // FIXME don't always use edge type 0
-            int propertyId = 0;
-            g.addEdge(nodeWithOutgoingLink, externalNode, propertyId);
-            LOGGER.debug("Added the edge ({}, {}, {}) where the target is node {} in graph {}.", nodeWithOutgoingLink,
-                    propertyId, externalNode, entranceInTargetGraph, targetNodeGraph);
+            if (gm.entranceNodes.length == 0) {
+                throw new IllegalStateException("Node " + getNodeId() + " needs to link to node " + targetNodeGraph
+                        + " but there are no entrypoints.");
+            }
+            for (int entranceNode : gm.entranceNodes) {
+                for(int i = 0; i < numberOfnodesLinks; i++) {
+                    // use random node
+                    int nodeWithOutgoingLink = random.nextInt(numberOfInternalNodes);
+                    // add a new node
+                    int externalNode = g.addNode();
+                    g.setGraphIdOfNode(externalNode, targetNodeGraph, entranceNode);
+                    g.setGraphId(gm.graphId);
+                    int propertyId = i;
+                    g.addEdge(nodeWithOutgoingLink, externalNode, propertyId);
+                    LOGGER.debug("Added the edge ({}, {}, {}) where the target is node {} in graph {}.", nodeWithOutgoingLink,
+                            propertyId, externalNode, entranceNode, targetNodeGraph);
+                }
+            }
         }
     }
 
@@ -319,6 +327,11 @@ public class DataGenerator extends AbstractDataGenerator {
      * @return the {@link GraphGenerator} instance used to generated the RDF graph
      */
     protected GraphGenerator createRDFGraphGenerator() {
+        Model benchmarkParamModel = EnvVariables.getModel(Constants.BENCHMARK_PARAMETERS_MODEL_KEY, LOGGER);
+        Resource method = RdfHelper.getObjectResource(benchmarkParamModel, null, LDCBench.graphGenerator);
+        if (LDCBench.lubmGraphGenerator.equals(method)) {
+            return new LUBMbasedRDFGenerator();
+        }
         return new RandomRDF("Graph " + generatorId);
     }
 
@@ -460,6 +473,11 @@ public class DataGenerator extends AbstractDataGenerator {
             targetMetadataReceivedSemaphore.acquire(rdfMetadata.size());
 
             LOGGER.info("Got all relevant rdf graphs.", generatorId);
+<<<<<<< HEAD
+=======
+            int numberOfnodesLinks = Integer.parseInt(EnvVariables.getString(ENV_NUMBER_OF_NODES_LINKS));
+            addInterlinks(graph, numberOfnodesLinks);
+>>>>>>> develop
 
             for (int i = 0; i < numberOfGraphs; i++) {
                 addInterlinks(graphs[i]);
