@@ -216,7 +216,7 @@ public class DataGenerator extends AbstractDataGenerator {
     }
 
     protected void addInterlinks(GraphBuilder g, int numberOfnodesLinks) {
-        int numberOfInternalNodes = g.getNumberOfNodes();
+        int numberOfInternalNodes = g.getNumberOfIriNodes();
         Random random = new Random(seedGenerator.getNextSeed());
         for (Map.Entry<Integer, GraphMetadata> entry : rdfMetadata.entrySet()) {
             int targetNodeGraph = entry.getKey();

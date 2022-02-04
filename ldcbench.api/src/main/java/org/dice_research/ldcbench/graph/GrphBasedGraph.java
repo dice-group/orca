@@ -67,6 +67,8 @@ public class GrphBasedGraph implements GraphBuilder {
             }
         }
         setEntranceNodes(other.getEntranceNodes());
+        this.blankNodesRange = other.getBlankNodesRange().clone();
+        this.literalsRange = other.getLiteralsRange().clone();
     }
 
     /**
