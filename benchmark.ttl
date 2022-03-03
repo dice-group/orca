@@ -15,6 +15,9 @@
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.eval-module",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.http-node",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.rdfa-gen",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.microdata-gen",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.microformat-gen",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.jsonld-gen",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.html-embd-node",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.sparql-node",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.system";
@@ -22,6 +25,7 @@
   hobbit:hasParameter
     :seed,
     :numberOfNodes,
+    :numberOfGraphs,
     :averageTriplesPerNode,
     :blankNodesRatio,
     :literalsRatio,
@@ -78,12 +82,15 @@
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.rdfa-gen",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.html-embd-node",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.microdata-gen",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.microformat-gen",
+    "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.jsonld-gen",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.sparql-node",
     "git.project-hobbit.eu:4567/ldcbench/ldcbench/ldcbench.system";
   hobbit:version "v1.1"@en;
   hobbit:hasParameter
     :seed,
     :numberOfNodes,
+    :numberOfGraphs,
     :averageTriplesPerNode,
     :blankNodesRatio,
     :literalsRatio,
@@ -236,6 +243,20 @@
   rdfs:range xsd:float;
   hobbit:defaultValue "1"^^xsd:float .
 
+:microdataNodeWeight a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Weight of Microdata node occurrence"@en;
+  rdfs:comment "The proportion of nodes that should have this type. If above 0, at least one node of this type would exist."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:float;
+  hobbit:defaultValue "1"^^xsd:float .
+
+:microformatNodeWeight a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Weight of Microformat node occurrence"@en;
+  rdfs:comment "The proportion of nodes that should have this type. If above 0, at least one node of this type would exist."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:float;
+  hobbit:defaultValue "1"^^xsd:float .
+
 :httpDumpNodeWeight a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Weight of HTTP dump file node occurrence"@en;
   rdfs:comment "The proportion of nodes that should have this type. If above 0, at least one node of this type would exist."@en;
@@ -284,13 +305,20 @@
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:boolean;
   hobbit:defaultValue "true"^^xsd:boolean .
-  
+
 :useHDTDumps a hobbit:Parameter, hobbit:ConfigurableParameter;
   rdfs:label "Use HDT dumps"@en;
   rdfs:comment "Whether HTTP dump nodes would include HDT format for serialization."@en;
   rdfs:domain hobbit:Experiment, hobbit:Challenge;
   rdfs:range xsd:boolean;
   hobbit:defaultValue "true"^^xsd:boolean .
+
+:numberOfGraphs a hobbit:Parameter, hobbit:ConfigurableParameter;
+  rdfs:label "Number of graphs"@en;
+  rdfs:comment "The number of graphs a node can have."@en;
+  rdfs:domain hobbit:Experiment, hobbit:Challenge;
+  rdfs:range xsd:integer;
+  hobbit:defaultValue "1"^^xsd:integer .
 
 :graphVisualization a hobbit:Parameter ;
   rdfs:label "Cloud graph visualization"@en;
@@ -336,15 +364,15 @@
 
 :GraphGenerator a rdfs:Class .
 
-:DefaultRDFGraphGenerator a :GraphGenerator .
+:DefaultRDFGraphGenerator a :GraphGenerator;
   rdfs:label "the default RDF generator"@en;
   rdfs:comment "Generates a random RDF graph."@en .
 
-:LUBMGraphGenerator a :GraphGenerator.
-  rdfs:label "Generate RDF as specified in th LUBM documentation"@en;
+:LUBMGraphGenerator a :GraphGenerator;
+  rdfs:label "Generate RDF as specified in the LUBM documentation"@en;
   rdfs:comment "Uses the LUBM library to generate an RDF graph based on universities data."@en .
 
-:FileBasedGraphGenerator a :GraphGenerator .
+:FileBasedGraphGenerator a :GraphGenerator;
   rdfs:label "Generate RDF from a file"@en;
   rdfs:comment "Loads the graph from a given RDF file and converts it into a graph object."@en .
 

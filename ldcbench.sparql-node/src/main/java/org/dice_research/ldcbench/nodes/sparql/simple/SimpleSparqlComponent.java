@@ -69,7 +69,8 @@ public class SimpleSparqlComponent extends NodeComponent implements Component {
                 int[] targets = graph.outgoingEdgeTargets(node);
                 int edges = targets.length;
                 for (int edge = 0; edge < edges; edge++) {
-                    Triple t = tripleCreator.createTriple(node, types[edge], targets[edge], graph.getExternalNodeId(targets[edge]), graph.getGraphId(targets[edge]));
+                    Triple t = tripleCreator.createTriple(node, types[edge], targets[edge], graph.getExternalNodeId(targets[edge]),
+                            graph.getGraphId(targets[edge]), graph.getNodeType(targets[edge]));
                     LOGGER.debug("Triple: {}", t);
                     sink.addTriple(uri, t);
                     triples++;
