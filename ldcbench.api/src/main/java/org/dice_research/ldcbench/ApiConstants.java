@@ -14,6 +14,7 @@ public class ApiConstants {
     public static final String ENV_CRAWL_DELAY_KEY = "LDCBENCH_CRAWL_DELAY";
     public static final String ENV_DISALLOWED_RATIO_KEY = "LDCBENCH_DISALLOWED_RATIO";
     public static final String ENV_COMPRESSED_RATIO_KEY = "LDCBENCH_COMPRESSED_RATIO";
+    public static final String ENV_NUMBER_OF_GRAPHS_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_GRAPHS";
 
     public static final String ENV_SEED_KEY = "LDCBENCH_DATAGENERATOR_SEED";
     public static final String ENV_COMPONENT_COUNT_KEY = "LDCBENCH_COMPONENT_COUNT";

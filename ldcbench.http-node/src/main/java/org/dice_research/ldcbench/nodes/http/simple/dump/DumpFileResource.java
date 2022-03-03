@@ -35,17 +35,16 @@ public class DumpFileResource extends AbstractCrawleableResource {
             new ZipArchiver());
 
     public static DumpFileResource create(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates,
-            Graph[] graphs, Predicate<Request> predicate, Lang lang, CompressionStreamFactory compression, Archiver archiver) {
+            Graph[] graphs, int dumpfileCount, Predicate<Request> predicate, Lang lang, CompressionStreamFactory compression, Archiver archiver) {
         DumpFileBuilder builder = new DumpFileBuilder(domainId, resourceUriTemplates, accessUriTemplates, graphs,
-                lang, compression);
+                lang, compression, dumpfileCount);
         try {
             File dumpFile = builder.build();
             String contentType = builder.buildContentType();
             if (archiver != null)  {
-                //TODO support more than one file
                 //Add dump Files to a List and put them into Archive
                 File archive = File.createTempFile("ldcbench", ".archive");
-                archiver.buildArchive(archive,dumpFile);
+                archiver.buildArchive(archive, dumpFile);
                 return new DumpFileResource(predicate, contentType, archive);
             }
             return new DumpFileResource(predicate, contentType, dumpFile);

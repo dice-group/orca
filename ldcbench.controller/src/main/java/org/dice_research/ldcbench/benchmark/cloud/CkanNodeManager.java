@@ -16,10 +16,11 @@ public class CkanNodeManager extends AbstractNodeManager {
     }
 
     @Override
-    public String[] getDataGeneratorEnvironment(long averageRdfGraphDegree, long triplesPerNode) {
+    public String[] getDataGeneratorEnvironment(long averageRdfGraphDegree, long triplesPerNode, long numberOfGraphs) {
         String[] env = new String[]{
             DataGenerator.ENV_AVERAGE_DEGREE_KEY + "=" + 0,
             DataGenerator.ENV_NUMBER_OF_NODES_KEY + "=" + 1,
+            DataGenerator.ENV_NUMBER_OF_GRAPHS_KEY + "=" + 1,
         };
         return env;
     }

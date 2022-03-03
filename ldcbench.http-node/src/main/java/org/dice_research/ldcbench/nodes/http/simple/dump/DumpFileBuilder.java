@@ -63,15 +63,17 @@ public class DumpFileBuilder {
     protected final Lang lang;
     protected final CompressionStreamFactory compression;
     protected File dumpFile;
+    protected int dumpfileCount;
 
     public DumpFileBuilder(int domainId, String[] resourceUriTemplates, String[] accessUriTemplates, Graph[] graphs,
-            Lang lang, CompressionStreamFactory compression) {
+            Lang lang, CompressionStreamFactory compression, int dumpfileCount) {
         this.domainId = domainId;
         this.resourceUriTemplates = resourceUriTemplates;
         this.accessUriTemplates = accessUriTemplates;
         this.graphs = graphs;
         this.lang = lang;
         this.compression = compression;
+        this.dumpfileCount = dumpfileCount;
     }
 
     public File build()
@@ -97,7 +99,7 @@ public class DumpFileBuilder {
         // fileNameBuilder.append('.');
         // fileNameBuilder.append(fileExt.get(0));
         // }
-        dumpFile = File.createTempFile("ldcbench", ".dump");
+        dumpFile = File.createTempFile("ldcbench_" + this.dumpfileCount, ".dump");
         OutputStream out = new FileOutputStream(dumpFile);
         out = new BufferedOutputStream(out);
         if (compression != null) {
@@ -167,7 +169,7 @@ public class DumpFileBuilder {
         TripleIterator iterator;
         LOGGER.info("Domain ID: " + domainId);
         LOGGER.info("graph size: " + graphs.length);
-        
+
         Model model = ModelFactory.createDefaultModel();
         org.apache.jena.graph.Graph modelGraph = model.getGraph();
         int datasetId = 0;

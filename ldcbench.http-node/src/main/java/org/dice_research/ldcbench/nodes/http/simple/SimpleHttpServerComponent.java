@@ -68,6 +68,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
     protected Lang dumpFileLang = null;
     protected CompressionStreamFactory dumpFileCompression = null;
     protected Archiver dumpfileArchiver = null;
+    protected int noOfGraphs;
 
     @Override
     public void initBeforeDataGeneration() throws Exception {
@@ -75,6 +76,7 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
         compressedRatio = Double.parseDouble(EnvVariables.getString(ApiConstants.ENV_COMPRESSED_RATIO_KEY, LOGGER));
         disallowedRatio = Double.parseDouble(EnvVariables.getString(ApiConstants.ENV_DISALLOWED_RATIO_KEY, LOGGER));
         crawlDelay = EnvVariables.getInt(ApiConstants.ENV_CRAWL_DELAY_KEY, LOGGER);
+        noOfGraphs = EnvVariables.getInt(ApiConstants.ENV_NUMBER_OF_GRAPHS_KEY,1,LOGGER);
 
         String hostname = InetAddress.getLocalHost().getHostName();
         LOGGER.info("Hostname: {}", hostname);
@@ -175,12 +177,17 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
         String[] accessUriTemplates = Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate())
                 .toArray(String[]::new);
         if (dumpFileNode) {
-            resource = DumpFileResource.create(cloudNodeId.get(),
-                    Stream.of(nodeMetadata).map(nm -> nm.getResourceUriTemplate()).toArray(String[]::new),
-                    Stream.of(nodeMetadata).map(nm -> nm.getAccessUriTemplate()).toArray(String[]::new),
-                    graphs.toArray(new Graph[graphs.size()]),
-                    r -> r.getPath().toString().equals(dumpFilePath),
-                    dumpFileLang, dumpFileCompression, dumpfileArchiver);
+        	for(int i=0; i<noOfGraphs;i++) {
+        	   resource = DumpFileResource.create(cloudNodeId.get(),
+                       resourceUriTemplates,
+                       accessUriTemplates,
+                       new Graph[] {graphsArray[i]},
+                       i,
+                       r -> r.getPath().toString().equals(dumpFilePath),
+                       dumpFileLang, dumpFileCompression, dumpfileArchiver);
+
+        	   resources.add(resource);
+        	}
         } else {
             SimpleTripleCreator tripleCreator = new SimpleTripleCreator(cloudNodeId.get(), resourceUriTemplates,
                     accessUriTemplates);
@@ -225,9 +232,9 @@ public class SimpleHttpServerComponent extends NodeComponent implements Componen
                             && r.getTarget().contains(UriHelper.RESOURCE_NODE_TYPE)),
                     contentTypes.toArray(new String[contentTypes.size()]));
             resource = graphBasedResource;
+            resources.add(resource);
         }
         Objects.requireNonNull(resource, "Couldn't create crawleable resource. Exiting.");
-        resources.add(resource);
         return new CrawleableResourceContainer(resources.toArray(new CrawleableResource[resources.size()]));
     }
 

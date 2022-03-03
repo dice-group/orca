@@ -28,6 +28,7 @@ experiments:New a hobbit:Experiment;
   :ckanNodeWeight 0;
   :sparqlNodeWeight 0;
   :numberOfNodes 4;
+  :numberOfGraphs 2;
   :blankNodesRatio 0.05;
   :literalsRatio 0.05;
   :numberOfNodesLinks 3;

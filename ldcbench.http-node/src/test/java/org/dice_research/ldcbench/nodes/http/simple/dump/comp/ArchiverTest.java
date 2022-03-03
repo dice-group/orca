@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -61,6 +63,19 @@ public class ArchiverTest {
         File archive = File.createTempFile("dummy", ".archive");
         archiver.buildArchive(archive, fileToArchive);
         
+        //archive multiple files
+        Path path = Files.createTempDirectory("multiDump-");
+        File file1 = File.createTempFile("tempFile1", ".dump",path.toFile());
+        FileUtils.writeByteArrayToFile(file1, data);
+        File file2 = File.createTempFile("tempFile2", ".dump",path.toFile());
+        FileUtils.writeByteArrayToFile(file2, data);
+        File file3 = File.createTempFile("tempFile3", ".dump",path.toFile());
+        FileUtils.writeByteArrayToFile(file3, data);
+        File multiArchive = File.createTempFile("multiDump", ".archive");
+        archiver.buildArchive(multiArchive, path.toFile());
+        
+        
+        
         //unarchive
         FileInputStream fis = new FileInputStream(archive);
         ArchiveInputStream ais;
@@ -74,8 +89,33 @@ public class ArchiverTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		//unarchive multiple files
+		FileInputStream fisMulti = new FileInputStream(multiArchive);
+        ArchiveInputStream aisMulti;
+        File unarchivedFile1 = null;
+        File unarchivedFile2 = null;
+        File unarchivedFile3 = null;
+		try {
+			aisMulti = generateInputStream(new BufferedInputStream(fisMulti), unarchiverClassName, decompressionClassName);
+			aisMulti.getNextEntry();
+			unarchivedFile1 = File.createTempFile("file1", ".unarchived");
+			IOUtils.copy(aisMulti, new FileOutputStream(unarchivedFile1));
+			aisMulti.getNextEntry();
+			unarchivedFile2 = File.createTempFile("file2", ".unarchived");
+			IOUtils.copy(aisMulti, new FileOutputStream(unarchivedFile2));
+			aisMulti.getNextEntry();
+			unarchivedFile3 = File.createTempFile("file3", ".unarchived");
+			IOUtils.copy(aisMulti, new FileOutputStream(unarchivedFile3));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         
         assertTrue(FileUtils.contentEquals(fileToArchive, unarchivedFile));
+        assertTrue(FileUtils.contentEquals(file1, unarchivedFile1));
+        assertTrue(FileUtils.contentEquals(file2, unarchivedFile2));
+        assertTrue(FileUtils.contentEquals(file3, unarchivedFile3));
     }
 
     protected static byte[] generateData() {

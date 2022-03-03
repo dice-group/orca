@@ -59,14 +59,16 @@ public class DumpFileBuilderTest {
 
     @Test
     public void test() throws NoSuchMethodException, SecurityException, IOException, ReflectiveOperationException, ParserException, NotFoundException {
+        int dumpfileCount = 0; //only create a single file
         DumpFileBuilder builder = new DumpFileBuilder(domainId, RESOURCE_URI_TEMPLATES, ACCESS_URI_TEMPLATES, graphs,
-                lang, compression);
+                lang, compression, dumpfileCount);
         System.out.println(
                 "Testing " + lang + (compression == null ? "" : (" with compression " + compression.getMediaType())));
 
         File file = builder.build();
+
         Model writtenModel = ModelFactory.createDefaultModel();
-        
+
         if(!lang.equals(LangUtils.HDT_LANG)) {
             try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(file))) {
                 RDFParser parser = RDFParser.create().forceLang(lang).source(in).build();

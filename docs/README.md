@@ -41,6 +41,7 @@ For the full license text, see [LICENSE](../LICENSE).
 | Parameter | Description | Ontology resources
 | --- | --- | ---
 | Number of nodes | The number of nodes in the synthetic graph. | [orca:numberOfNodes](http://w3id.org/dice-research/orca/ontology#numberOfNodes)
+| Number of graphs | The number of graphs a node can have. | [orca:numberOfGraphs](http://w3id.org/dice-research/orca/ontology#numberOfGraphs)
 | Average node degree | The average degree of the nodes in the generated graph. | [orca:averageNodeGraphDegree](http://w3id.org/dice-research/orca/ontology#averageNodeGraphDegree)
 | Ratio of blank nodes | Factor that is multiplied to the number of nodes to determine the number of blank nodes that are added to the graph. | [orca:blankNodesRatio](http://w3id.org/dice-research/orca/ontology#blankNodesRatio)
 | Ratio of literals | Factor that is multiplied to the number of nodes to determine the number of literals that are added to the graph. | [orca:literalsRatio](http://w3id.org/dice-research/orca/ontology#literalsRatio)

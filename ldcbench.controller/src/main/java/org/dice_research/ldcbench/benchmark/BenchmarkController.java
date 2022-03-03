@@ -232,6 +232,8 @@ public class BenchmarkController extends AbstractBenchmarkController {
                 .getInt();
         int averageRdfGraphDegree = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.averageRdfGraphDegree)
                 .getInt();
+        int numberOfGraphs = RdfHelper.getLiteral(benchmarkParamModel, null, LDCBench.numberOfGraphs)
+                .getInt();
         double httpDumpNodeCompressedRatio = RdfHelper
                 .getLiteral(benchmarkParamModel, null, LDCBench.httpDumpNodeCompressedRatio).getDouble();
 
@@ -446,7 +448,7 @@ public class BenchmarkController extends AbstractBenchmarkController {
                         DataGenerator.ENV_ACCESS_URI_TEMPLATES_KEY + "=" + serializedAccessUris,
                         DataGenerator.ENV_RESOURCE_URI_TEMPLATES_KEY + "=" + serializedResourceUris, },
                         nodeManagers.get(i).getDataGeneratorEnvironment(averageRdfGraphDegree,
-                                nodeSizeDeterminer.getNodeSize()));
+                                nodeSizeDeterminer.getNodeSize(), numberOfGraphs));
                 createDataGenerator(nodeManagers.get(i), envVariables);
                 // FIXME: HOBBIT SDK workaround (setting environment for "containers")
                 if (sdk) {

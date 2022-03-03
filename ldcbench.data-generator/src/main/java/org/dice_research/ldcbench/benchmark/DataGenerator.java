@@ -45,13 +45,14 @@ import com.rabbitmq.client.Consumer;
  * Data generator of ORCA. It fulfills two main roles: either, it generates the
  * node graph, i.e., the graph comprising the single nodes (= servers) of the
  * synthetic cloud, or it generates the RDF graph for a single node.
- * 
+ *
  * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
  *
  */
 public class DataGenerator extends AbstractDataGenerator {
     public static final String ENV_TYPE_KEY = "LDCBENCH_DATAGENERATOR_TYPE";
     public static final String ENV_NUMBER_OF_NODES_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_NODES";
+    public static final String ENV_NUMBER_OF_GRAPHS_KEY = "LDCBENCH_DATAGENERATOR_NUMBER_OF_GRAPHS";
     public static final String ENV_AVERAGE_DEGREE_KEY = "LDCBENCH_DATAGENERATOR_AVERAGE_DEGREE";
     public static final String ENV_BLANK_NODES_RATIO ="LDCBENCH_DATAGENERATOR_BLANK_NODES_RATIO";
     public static final String ENV_LITERALS_RATIO ="LDCBENCH_DATAGENERATOR_LITERALS_RATIO";
@@ -68,7 +69,7 @@ public class DataGenerator extends AbstractDataGenerator {
 
     /**
      * Types of data generator instances.
-     * 
+     *
      * @author Michael R&ouml;der (michael.roeder@uni-paderborn.de)
      */
     public static enum Types {
@@ -221,6 +222,7 @@ public class DataGenerator extends AbstractDataGenerator {
         for (Map.Entry<Integer, GraphMetadata> entry : rdfMetadata.entrySet()) {
             int targetNodeGraph = entry.getKey();
             GraphMetadata gm = entry.getValue();
+
             if (gm.entranceNodes.length == 0) {
                 throw new IllegalStateException("Node " + getNodeId() + " needs to link to node " + targetNodeGraph
                         + " but there are no entrypoints.");
@@ -232,6 +234,7 @@ public class DataGenerator extends AbstractDataGenerator {
                     // add a new node
                     int externalNode = g.addNode();
                     g.setGraphIdOfNode(externalNode, targetNodeGraph, entranceNode);
+                    g.setGraphId(gm.graphId);
                     int propertyId = i;
                     g.addEdge(nodeWithOutgoingLink, externalNode, propertyId);
                     LOGGER.debug("Added the edge ({}, {}, {}) where the target is node {} in graph {}.", nodeWithOutgoingLink,
@@ -304,7 +307,7 @@ public class DataGenerator extends AbstractDataGenerator {
     /**
      * Factory method to create the {@link GraphGenerator} instance used to
      * generated the node graph.
-     * 
+     *
      * @return the {@link GraphGenerator} instance used to generated the node graph
      */
     protected GraphGenerator createNodeGraphGenerator() {
@@ -320,7 +323,7 @@ public class DataGenerator extends AbstractDataGenerator {
     /**
      * Factory method to create the {@link GraphGenerator} instance used to
      * generated the RDF graph.
-     * 
+     *
      * @return the {@link GraphGenerator} instance used to generated the RDF graph
      */
     protected GraphGenerator createRDFGraphGenerator() {
@@ -349,6 +352,7 @@ public class DataGenerator extends AbstractDataGenerator {
         seed = seedGenerator.getNextSeed();
 
         numberOfNodes = EnvVariables.getInt(ENV_NUMBER_OF_NODES_KEY, 0);
+        int numberOfGraphs = EnvVariables.getInt(ENV_NUMBER_OF_GRAPHS_KEY, 1);
         avgDegree = Double.parseDouble(EnvVariables.getString(ENV_AVERAGE_DEGREE_KEY));
         numberOfEdges = EnvVariables.getInt(ENV_NUMBER_OF_EDGES_KEY, 0);
 
@@ -384,20 +388,41 @@ public class DataGenerator extends AbstractDataGenerator {
             generator = createRDFGraphGenerator();
         }
 
-        GraphBuilder graph = new GrphBasedGraph();
+        //initialize all graphs
+        GraphBuilder graphs[] = new GraphBuilder[numberOfGraphs];
+        for (int i = 0; i < numberOfGraphs; i++) {
+            graphs[i] = new GrphBasedGraph();
+            graphs[i].setGraphId(i);
+        }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
-            nodeGraph = graph;
+            nodeGraph = graphs[0];
         }
 
         if (numberOfNodes != 0) {
-            LOGGER.debug("Generator {} : Generating a graph with {} nodes {} average degree and {} seed", generatorId,
-                    numberOfNodes, avgDegree, seed);
-            generator.generateGraph(numberOfNodes, avgDegree, seed, graph);
+            LOGGER.debug("Generator {} : Generating {} graphs", generatorId, numberOfGraphs);
+            for (int i = 0; i < graphs.length; i++) {
+                LOGGER.debug("Generator {} : Generating a graph with {} nodes {} average degree and {} seed", generatorId,
+                        numberOfNodes, avgDegree, seed);
+                seed = seedGenerator.getNextSeed();
+            	generator.generateGraph(numberOfNodes/numberOfGraphs, avgDegree, seed, graphs[i]);
+            }
         } else {
             LOGGER.debug("Generator {} : Generating a graph with {} average degree and {} edges and {} seed",
                     generatorId, avgDegree, numberOfEdges, seed);
-            generator.generateGraph(avgDegree, numberOfEdges, seed, graph);
+            for (int i = 0; i < graphs.length; i++) {
+            	generator.generateGraph(avgDegree, numberOfEdges, seed, graphs[i]);
+                seed = seedGenerator.getNextSeed();
+            }
+        }
+
+        if (type == Types.RDF_GRAPH_GENERATOR) {
+            seed = seedGenerator.getNextSeed();
+            blankNodesRatio = Double.parseDouble(EnvVariables.getString(ENV_BLANK_NODES_RATIO));
+            for (int i = 0; i < graphs.length; i++) {
+                addBlankNodes(graphs[i], (int) Math.ceil(graphs[i].getNumberOfNodes() * blankNodesRatio),
+                        seed);
+            }
         }
 
         if (type == Types.NODE_GRAPH_GENERATOR) {
@@ -421,17 +446,20 @@ public class DataGenerator extends AbstractDataGenerator {
             buf.put(data);
             dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.array());
         } else {
-            // Broadcast our graph's metadata.
-            GraphMetadata gm = new GraphMetadata();
-            gm.numberOfNodes = graph.getNumberOfNodes();
-            gm.entranceNodes = graph.getEntranceNodes();
+            // Broadcast the graph's metadata for every graph.
+            for (GraphBuilder mygraph : graphs) {
+                GraphMetadata gm = new GraphMetadata();
+                gm.numberOfNodes = mygraph.getNumberOfNodes();
+                gm.entranceNodes = mygraph.getEntranceNodes();
+                gm.graphId = mygraph.getGraphId();
 
-            ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            buf.write(header.array(), 0, header.capacity());
-            ObjectOutputStream output = new ObjectOutputStream(buf);
-            output.writeObject(gm);
+                ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                buf.write(header.array(), 0, header.capacity());
+                ObjectOutputStream output = new ObjectOutputStream(buf);
+                output.writeObject(gm);
 
-            dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.toByteArray());
+                dataGeneratorsChannel.basicPublish(dataGeneratorsExchange, "", null, buf.toByteArray());
+            }
         }
 
         if (type == Types.RDF_GRAPH_GENERATOR) {
@@ -445,9 +473,17 @@ public class DataGenerator extends AbstractDataGenerator {
             targetMetadataReceivedSemaphore.acquire(rdfMetadata.size());
 
             LOGGER.info("Got all relevant rdf graphs.", generatorId);
+<<<<<<< HEAD
+=======
             int numberOfnodesLinks = Integer.parseInt(EnvVariables.getString(ENV_NUMBER_OF_NODES_LINKS));
             addInterlinks(graph, numberOfnodesLinks);
+>>>>>>> develop
 
+            for (int i = 0; i < numberOfGraphs; i++) {
+                addInterlinks(graphs[i]);
+            }
+
+            // Send the final graph(s) data.
             blankNodesRatio = Double.parseDouble(EnvVariables.getString(ENV_BLANK_NODES_RATIO));
             addBlankNodes(graph, (int) Math.ceil(graph.getNumberOfNodes() * blankNodesRatio),
                     seedGenerator.getNextSeed());
@@ -457,7 +493,8 @@ public class DataGenerator extends AbstractDataGenerator {
 
             // Send the final graph data.
             LOGGER.info("Sending the final rdf graph data...");
-            sendFinalGraph(graph);
+            for(GraphBuilder g: graphs)
+                sendFinalGraph(g);
         }
 
         LOGGER.debug("Generation done.", generatorId);
@@ -466,7 +503,7 @@ public class DataGenerator extends AbstractDataGenerator {
     /**
      * Parses the given string assuming that it has been generated with
      * {@link Arrays#toString()}.
-     * 
+     *
      * @param envValue the string containing the array
      * @return the parsed String array
      */
