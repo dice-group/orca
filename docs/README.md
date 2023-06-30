@@ -36,6 +36,12 @@ For the full license text, see [LICENSE](../LICENSE).
 * **[Squirrel](https://github.com/dice-group/ldcbench-squirrel-adapter)**
 * [How to integrate a crawler with ORCA](adding-crawlers.md)
 
+## Experiments
+
+* [Data Web](https://w3id.org/hobbit/experiments#1584544940477,1584544956511,1584544971478,1585403645660,1584545072279,1585230107697,1584962226404,1584962243223,1585574894994,1585574924888,1585532668155,1585574716469)
+* [Efficiency](https://w3id.org/hobbit/experiments#1608306725630,1608306734009,1609758770866,1604685169129,1608052657254,1609763993514,1609779299724,1609792299538,1608038447931)
+* [Robots Exclusion Protocol](https://w3id.org/hobbit/experiments#1575626666061,1575592492658,1575592510594)
+
 ## Parameters
 
 | Parameter | Description | Ontology resources
